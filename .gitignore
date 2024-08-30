@@ -1,0 +1,20 @@
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Testing
+*.test
+
+# Go workspace file
+go.work
+
+# UIDEA files
+.idea/
+
+# Dependencies
+vendor/
+
+versionbump
