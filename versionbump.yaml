@@ -8,4 +8,4 @@ files:                   # The files to update with the new version.
     replace: "v{version}" # The search string to replace in the file.
 
   - path: "README.md"
-    replace: "v{version}"
+    replace: "**Latest Version:** v{version}"
