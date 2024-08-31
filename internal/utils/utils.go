@@ -1,4 +1,4 @@
-package internal
+package utils
 
 import (
 	"bufio"
@@ -42,8 +42,8 @@ func ReplaceInString(input string, search string, replace string) string {
 	return strings.ReplaceAll(input, search, replace)
 }
 
-// countStringOccurrences returns the number of times the search string occurs in the file at the given path.
-func CountStringOccurrences(filePath, searchString string) (int, error) {
+// CountStringsInFile returns the number of times the search string occurs in the file at the given path.
+func CountStringsInFile(filePath, searchString string) (int, error) {
 	// Open the file
 	file, err := os.Open(filePath)
 	if err != nil {
@@ -70,8 +70,8 @@ func CountStringOccurrences(filePath, searchString string) (int, error) {
 	return count, nil
 }
 
-// getParentDirAbsolutePath returns the absolute path of the parent directory of the given relative file path.
-func getParentDirAbsolutePath(relativePath string) (string, error) {
+// ParentDirAbsolutePath returns the absolute path of the parent directory of the given relative file path.
+func ParentDirAbsolutePath(relativePath string) (string, error) {
 	// Get the absolute path of the file
 	absolutePath, err := filepath.Abs(relativePath)
 	if err != nil {
