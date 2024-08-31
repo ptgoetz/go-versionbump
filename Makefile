@@ -2,13 +2,14 @@
 
 # Variables
 APP_NAME := "versionbump"
+VERSION := "v0.0.2"
 GO_FILES := $(shell find . -name '*.go' | grep -v /vendor/)
 PKG := ./...
 INTEGRATION_TEST_DIR := ./test/integration
 DIST_DIR := dist
 OS := $(shell go env GOOS)
 ARCH := $(shell go env GOARCH)
-BINARY_NAME := $(APP_NAME)-$(OS)-$(ARCH)
+BINARY_NAME := $(APP_NAME)-$(VERSION)-$(OS)-$(ARCH)
 TARBALL := $(BINARY_NAME).tgz
 ZIPFILE := $(BINARY_NAME).zip
 
@@ -85,9 +86,12 @@ dist-all: clean ## Create binary distributions for common OS and architecture co
 			EXT=""; \
 			if [ "$$os" = "windows" ]; then EXT=".exe"; fi; \
 			GOOS=$$os GOARCH=$$arch go build -o $(DIST_DIR)/$(APP_NAME)$$EXT cmd/$(APP_NAME)/*.go; \
-			tar -czvf $(DIST_DIR)/$(APP_NAME)-$$os-$$arch.tgz -C $(DIST_DIR) $(APP_NAME)$$EXT; \
-			zip -j $(DIST_DIR)/$(APP_NAME)-$$os-$$arch.zip $(DIST_DIR)/$(APP_NAME)$$EXT; \
+			cp README.md $(DIST_DIR)/; \
+			tar -czvf $(DIST_DIR)/$(APP_NAME)-$(VERSION)-$$os-$$arch.tgz -C $(DIST_DIR) $(APP_NAME)$$EXT README.md; \
+			zip -j $(DIST_DIR)/$(APP_NAME)-$(VERSION)-$$os-$$arch.zip $(DIST_DIR)/$(APP_NAME)$$EXT README.md; \
 			rm $(DIST_DIR)/$(APP_NAME)$$EXT; \
+			rm $(DIST_DIR)/README.md; \
 		done; \
 	done
 	@echo "All distributions created in the $(DIST_DIR) directory."
+

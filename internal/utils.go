@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-// replaceInFile replaces all occurrences of the search string with the replace string in the file at the given path.
+// ReplaceInFile replaces all occurrences of the search string with the replace string in the file at the given path.
 func ReplaceInFile(filePath string, search string, replace string) error {
 	// Open the file
 	file, err := os.Open(filePath)
@@ -30,7 +30,7 @@ func ReplaceInFile(filePath string, search string, replace string) error {
 	}
 
 	// Write the updated lines back to the file
-	err = os.WriteFile(filePath, []byte(strings.Join(lines, "\n")), 0644)
+	err = os.WriteFile(filePath, []byte(strings.Join(lines, "\n")+"\n"), 0644)
 	if err != nil {
 		return err
 	}
