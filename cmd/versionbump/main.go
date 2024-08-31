@@ -4,8 +4,10 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
-	vb "github.com/ptgoetz/go-versionbump/internal"
+	config2 "github.com/ptgoetz/go-versionbump/internal/config"
 	"github.com/ptgoetz/go-versionbump/internal/git"
+	vb "github.com/ptgoetz/go-versionbump/internal/utils"
+	vbv "github.com/ptgoetz/go-versionbump/internal/version"
 	"os"
 	"path"
 	"strings"
@@ -24,7 +26,7 @@ var (
 func main() {
 	// Define command-line flags
 	// TODO Migrate to Cobra
-	flag.BoolVar(&showVersion, "V", false, "Show the version of VersionBump and exit.")
+	flag.BoolVar(&showVersion, "V", false, "Show the version of VBConfig and exit.")
 	flag.StringVar(&configPath, "config", "versionbump.yaml", "The path to the configuration file")
 	flag.BoolVar(&dryRun, "dry-run", false, "Dry run. Don't change anything, just report what would "+
 		"be changed")
@@ -39,7 +41,7 @@ func main() {
 
 	// print the version and exit
 	if showVersion {
-		fmt.Println(vb.VersionBumpVersion)
+		fmt.Println(vbv.VersionBumpVersion)
 		os.Exit(0)
 	}
 
@@ -50,11 +52,11 @@ func main() {
 	}
 
 	// Log the version and configuration path
-	logVerbose(vb.VersionBumpVersion)
+	logVerbose(vbv.VersionBumpVersion)
 	logVerbose(fmt.Sprintf("Config path: %s", configPath))
 
 	// Load the configuration file
-	config, root, err := vb.LoadConfig(configPath)
+	config, root, err := config2.LoadConfig(configPath)
 	if err != nil {
 		fmt.Printf("Error loading configuration file: '%s' %v\n", configPath, err)
 		os.Exit(1)
@@ -78,7 +80,7 @@ func main() {
 			fmt.Printf("ERROR: Invalid semantic version for reset: %s\n", reset)
 			os.Exit(1)
 		}
-		parsedVersion, _ := vb.ParseVersion(reset)
+		parsedVersion, _ := vbv.ParseVersion(reset)
 		reset = parsedVersion.String()
 
 		quiet = false
@@ -87,7 +89,7 @@ func main() {
 		os.Exit(0)
 	}
 
-	var bumpMetadata *vb.VersionBumpMetadata
+	var bumpMetadata *config2.VBMetadata
 	if len(args) == 1 { // We got a version bump request.
 		if !validateVersionPart(args[0]) {
 			fmt.Printf("ERROR: Invalid version bump part: %s\n", args[0])
@@ -121,7 +123,7 @@ func main() {
 	}
 }
 
-func performReset(config *vb.VersionBump, root string) {
+func performReset(config *config2.VBConfig, root string) {
 	// Log the reset information
 	logVerbose(fmt.Sprintf("Resetting version to: %s", reset))
 	if promptUserConfirmation("Do you want to proceed with the reset?") {
@@ -133,7 +135,7 @@ func performReset(config *vb.VersionBump, root string) {
 
 func validateVersionPart(part string) bool {
 	switch part {
-	case vb.VersionMajorStr, vb.VersionMinorStr, vb.VersionPatchStr:
+	case vbv.VersionMajorStr, vbv.VersionMinorStr, vbv.VersionPatchStr:
 		return true
 	default:
 		return false
@@ -141,11 +143,11 @@ func validateVersionPart(part string) bool {
 }
 
 func validateVersion(version string) bool {
-	_, err := vb.ParseVersion(version)
+	_, err := vbv.ParseVersion(version)
 	return err == nil
 }
 
-func gitCommit(bumpMetadata *vb.VersionBumpMetadata, root string, config *vb.VersionBump) {
+func gitCommit(bumpMetadata *config2.VBMetadata, root string, config *config2.VBConfig) {
 	if noGit {
 		return
 	}
@@ -179,7 +181,7 @@ func gitCommit(bumpMetadata *vb.VersionBumpMetadata, root string, config *vb.Ver
 	}
 }
 
-func gitPreFlight(root string, config *vb.VersionBump) {
+func gitPreFlight(root string, config *config2.VBConfig) {
 	if noGit {
 		return
 	}
@@ -187,7 +189,7 @@ func gitPreFlight(root string, config *vb.VersionBump) {
 		isGitAvalable, version := git.IsGitAvailable()
 		if !isGitAvalable {
 			fmt.Printf("ERROR: Git is required by the configuration but not available. " +
-				"VersionBump requires Git to be installed and available in the system PATH.")
+				"VBConfig requires Git to be installed and available in the system PATH.")
 			os.Exit(1)
 		} else {
 			logVerbose(fmt.Sprintf("Git version: %s", strings.TrimSpace(version)[12:]))
@@ -219,9 +221,9 @@ func gitPreFlight(root string, config *vb.VersionBump) {
 	}
 }
 
-func changePreFlight(root string, config *vb.VersionBump, args []string) {
+func changePreFlight(root string, config *config2.VBConfig, args []string) {
 	// parse the current version:
-	curVersion, err := vb.ParseVersion(config.Version)
+	curVersion, err := vbv.ParseVersion(config.Version)
 	if err != nil {
 		fmt.Printf("Failed to parse semantic version string: %s\n", config.Version)
 		os.Exit(1)
@@ -245,7 +247,7 @@ func changePreFlight(root string, config *vb.VersionBump, args []string) {
 		logVerbose(file.Path)
 		logVerbose(fmt.Sprintf("     Find: \"%s\"", find))
 		logVerbose(fmt.Sprintf("  Replace: \"%s\"", replace))
-		count, err := vb.CountStringOccurrences(path.Join(root, file.Path), find)
+		count, err := vb.CountStringsInFile(path.Join(root, file.Path), find)
 		if err != nil {
 			fmt.Println(fmt.Errorf("error getting replacement count: a%v", err))
 			os.Exit(1)
@@ -259,11 +261,11 @@ func changePreFlight(root string, config *vb.VersionBump, args []string) {
 	}
 }
 
-func makeChanges(root string, config *vb.VersionBump, versionPart string) {
+func makeChanges(root string, config *config2.VBConfig, versionPart string) {
 	// at this point we have already checked the config and there are no errors
 	var currentVersionStr, nextVersionStr string
 	if versionPart != "" {
-		curVersion, _ := vb.ParseVersion(config.Version)
+		curVersion, _ := vbv.ParseVersion(config.Version)
 		currentVersionStr = curVersion.String()
 		// bump version
 		_ = curVersion.StringBump(versionPart)

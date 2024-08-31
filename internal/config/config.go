@@ -1,7 +1,9 @@
-package internal
+package config
 
 import (
 	"fmt"
+	"github.com/ptgoetz/go-versionbump/internal/utils"
+	version2 "github.com/ptgoetz/go-versionbump/internal/version"
 	"gopkg.in/yaml.v3"
 	"os"
 	"path"
@@ -13,8 +15,8 @@ const (
 	DefaultGitTagMessageTemplate = "Release version {new}"
 )
 
-// VersionBump represents the version bump configuration.
-type VersionBump struct {
+// VBConfig represents the version bump configuration.
+type VBConfig struct {
 	Version               string          `yaml:"version"`
 	GitCommit             bool            `yaml:"git-commit"`
 	GitCommitTemplate     string          `yaml:"git-commit-template"`
@@ -24,7 +26,7 @@ type VersionBump struct {
 	Files                 []VersionedFile `yaml:"files"`
 }
 
-type VersionBumpMetadata struct {
+type VBMetadata struct {
 	OldVersion    string
 	NewVersion    string
 	CommitMessage string
@@ -32,18 +34,18 @@ type VersionBumpMetadata struct {
 	TagName       string
 }
 
-func (vbm *VersionBumpMetadata) String() string {
+func (vbm *VBMetadata) String() string {
 	return fmt.Sprintf("Commit Message: %s\nTag Message: %s\nTag Name: %s",
 		vbm.CommitMessage, vbm.TagMessage, vbm.TagName)
 }
 
 // IsGitRequired returns true if any of the Git options are enabled.
-func (v VersionBump) IsGitRequired() bool {
+func (v VBConfig) IsGitRequired() bool {
 	return v.GitCommit || v.GitTag
 }
 
-func (v VersionBump) BumpAndGetMetaData(versionPart string) (*VersionBumpMetadata, error) {
-	version, err := ParseVersion(v.Version)
+func (v VBConfig) BumpAndGetMetaData(versionPart string) (*VBMetadata, error) {
+	version, err := version2.ParseVersion(v.Version)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to parse semantic version string: %s\n", v.Version)
 
@@ -63,8 +65,8 @@ func (v VersionBump) BumpAndGetMetaData(versionPart string) (*VersionBumpMetadat
 	} else {
 		commitMessageTemplate = DefaultGitCommitTemplate
 	}
-	commitMessage := ReplaceInString(commitMessageTemplate, "{old}", oldVersionStr)
-	commitMessage = ReplaceInString(commitMessage, "{new}", newVersionStr)
+	commitMessage := utils.ReplaceInString(commitMessageTemplate, "{old}", oldVersionStr)
+	commitMessage = utils.ReplaceInString(commitMessage, "{new}", newVersionStr)
 
 	var tagTemplate string
 	if v.GitTagTemplate != "" {
@@ -72,8 +74,8 @@ func (v VersionBump) BumpAndGetMetaData(versionPart string) (*VersionBumpMetadat
 	} else {
 		tagTemplate = DefaultGitTagTemplate
 	}
-	tagName := ReplaceInString(tagTemplate, "{old}", oldVersionStr)
-	tagName = ReplaceInString(tagName, "{new}", newVersionStr)
+	tagName := utils.ReplaceInString(tagTemplate, "{old}", oldVersionStr)
+	tagName = utils.ReplaceInString(tagName, "{new}", newVersionStr)
 
 	var tagMessageTemplate string
 	if v.GitTagMessageTemplate != "" {
@@ -81,10 +83,10 @@ func (v VersionBump) BumpAndGetMetaData(versionPart string) (*VersionBumpMetadat
 	} else {
 		tagMessageTemplate = DefaultGitTagMessageTemplate
 	}
-	tagMessage := ReplaceInString(tagMessageTemplate, "{old}", oldVersionStr)
-	tagMessage = ReplaceInString(tagMessage, "{new}", newVersionStr)
+	tagMessage := utils.ReplaceInString(tagMessageTemplate, "{old}", oldVersionStr)
+	tagMessage = utils.ReplaceInString(tagMessage, "{new}", newVersionStr)
 
-	return &VersionBumpMetadata{
+	return &VBMetadata{
 		OldVersion:    oldVersionStr,
 		NewVersion:    newVersionStr,
 		CommitMessage: commitMessage,
@@ -100,7 +102,7 @@ type VersionedFile struct {
 }
 
 // LoadConfig loads the configuration from a YAML file
-func LoadConfig(filePath string) (*VersionBump, string, error) {
+func LoadConfig(filePath string) (*VBConfig, string, error) {
 	// Open the YAML file
 	configFile := path.Base(filePath)
 	file, err := os.Open(filePath)
@@ -114,15 +116,15 @@ func LoadConfig(filePath string) (*VersionBump, string, error) {
 		}
 	}(file)
 
-	// Parse the YAML file into the VersionBump struct
-	var config VersionBump
+	// Parse the YAML file into the VBConfig struct
+	var config VBConfig
 	decoder := yaml.NewDecoder(file)
 	err = decoder.Decode(&config)
 	if err != nil {
 		return nil, "", fmt.Errorf("error parsing config file: %w", err)
 	}
 
-	root, err := getParentDirAbsolutePath(filePath)
+	root, err := utils.ParentDirAbsolutePath(filePath)
 	if err != nil {
 		return nil, "", fmt.Errorf("error getting parent directory: %w", err)
 	}

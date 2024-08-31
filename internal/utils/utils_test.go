@@ -1,4 +1,4 @@
-package internal
+package utils
 
 import (
 	"os"
@@ -23,7 +23,7 @@ func TestCountStringOccurrences(t *testing.T) {
 	}
 
 	// Count occurrences of "Hello"
-	count, err := CountStringOccurrences(filePath, "Hello")
+	count, err := CountStringsInFile(filePath, "Hello")
 	if err != nil {
 		t.Fatalf("countStringOccurrences failed: %v", err)
 	}
@@ -35,7 +35,7 @@ func TestCountStringOccurrences(t *testing.T) {
 	}
 }
 
-// TestGetParentDirAbsolutePath tests the getParentDirAbsolutePath function
+// TestGetParentDirAbsolutePath tests the GetParentDirAbsolutePath function
 func TestGetParentDirAbsolutePath(t *testing.T) {
 	// Create a temporary directory
 	dir, err := os.MkdirTemp("", "getParentDirAbsolutePathTest")
@@ -54,9 +54,9 @@ func TestGetParentDirAbsolutePath(t *testing.T) {
 	}
 
 	// Get the parent directory absolute path
-	parentDir, err := getParentDirAbsolutePath(filePath)
+	parentDir, err := ParentDirAbsolutePath(filePath)
 	if err != nil {
-		t.Fatalf("getParentDirAbsolutePath failed: %v", err)
+		t.Fatalf("GetParentDirAbsolutePath failed: %v", err)
 	}
 
 	// Verify the parent directory path

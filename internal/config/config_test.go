@@ -1,4 +1,4 @@
-package internal
+package config
 
 import (
 	"os"
@@ -111,7 +111,7 @@ files:
 
 // TestBumpAndGetMetaData tests the BumpAndGetMetaData function
 func TestBumpAndGetMetaData(t *testing.T) {
-	config := VersionBump{
+	config := VBConfig{
 		Version:   "1.0.0",
 		GitCommit: true,
 		GitTag:    true,
