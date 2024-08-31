@@ -17,4 +17,4 @@ go.work
 # Dependencies
 vendor/
 
-versionbump
+./versionbump

@@ -71,7 +71,7 @@ init-project: ## Initialize the project by installing necessary tools
 dist: clean ## Create a binary distribution for the current OS and architecture
 	@echo "Creating distribution..."
 	mkdir -p $(DIST_DIR)
-	GOOS=$(OS) GOARCH=$(ARCH) go build -o $(DIST_DIR)/$(APP_NAME) cmd/sample-cli/*.go
+	GOOS=$(OS) GOARCH=$(ARCH) go build -o $(DIST_DIR)/$(APP_NAME) cmd/$(APP_NAME)/*.go
 	tar -czvf $(DIST_DIR)/$(TARBALL) -C $(DIST_DIR) $(APP_NAME)
 	zip -j $(DIST_DIR)/$(ZIPFILE) $(DIST_DIR)/$(APP_NAME)
 	rm $(DIST_DIR)/$(APP_NAME)
@@ -84,7 +84,7 @@ dist-all: clean ## Create binary distributions for common OS and architecture co
 		for arch in amd64 arm64; do \
 			EXT=""; \
 			if [ "$$os" = "windows" ]; then EXT=".exe"; fi; \
-			GOOS=$$os GOARCH=$$arch go build -o $(DIST_DIR)/$(APP_NAME)$$EXT cmd/sample-cli/*.go; \
+			GOOS=$$os GOARCH=$$arch go build -o $(DIST_DIR)/$(APP_NAME)$$EXT cmd/$(APP_NAME)/*.go; \
 			tar -czvf $(DIST_DIR)/$(APP_NAME)-$$os-$$arch.tgz -C $(DIST_DIR) $(APP_NAME)$$EXT; \
 			zip -j $(DIST_DIR)/$(APP_NAME)-$$os-$$arch.zip $(DIST_DIR)/$(APP_NAME)$$EXT; \
 			rm $(DIST_DIR)/$(APP_NAME)$$EXT; \
