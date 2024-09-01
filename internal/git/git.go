@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 )
 
 // IsGitAvailable checks if the 'git' command is available on the system and returns the Git version if available.
@@ -153,4 +154,57 @@ func TagChanges(root string, name string, message string) interface{} {
 	}
 
 	return nil
+}
+
+// GetTags returns a list of git tags for the given project directory
+func GetGitTags(projectDir string) ([]string, error) {
+	// Prepare the git command
+	cmd := exec.Command("git", "tag")
+	cmd.Dir = projectDir
+
+	// Capture the output
+	var out bytes.Buffer
+	cmd.Stdout = &out
+
+	// Run the command
+	if err := cmd.Run(); err != nil {
+		return nil, err
+	}
+
+	// Convert the output to a slice of strings, one per line
+	tags := strings.Split(strings.TrimSpace(out.String()), "\n")
+
+	return tags, nil
+}
+
+// TagExists checks if the given tag exists in the git repository of the project directory
+func TagExists(projectDir string, tagName string) (bool, error) {
+	tags, err := GetGitTags(projectDir)
+	if err != nil {
+		return false, err
+	}
+	for _, tag := range tags {
+		if tag == tagName {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
+// GetCurrentBranch returns the current branch of the git repository in the given project directory
+func GetCurrentBranch(projectDir string) (string, error) {
+	// Prepare the git command
+	cmd := exec.Command("git", "rev-parse", "--abbrev-ref", "HEAD")
+	cmd.Dir = projectDir
+
+	// Capture the output
+	var out bytes.Buffer
+	cmd.Stdout = &out
+
+	// Run the command
+	if err := cmd.Run(); err != nil {
+		return "", err
+	}
+
+	return strings.TrimSpace(out.String()), nil
 }

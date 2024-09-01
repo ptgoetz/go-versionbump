@@ -83,3 +83,17 @@ func (v *Version) StringBump(versionPart string) error {
 		return fmt.Errorf("invalid version part: %s", versionPart)
 	}
 }
+
+func ValidateVersionPart(part string) bool {
+	switch part {
+	case VersionMajorStr, VersionMinorStr, VersionPatchStr:
+		return true
+	default:
+		return false
+	}
+}
+
+func ValidateVersion(version string) bool {
+	_, err := ParseVersion(version)
+	return err == nil
+}

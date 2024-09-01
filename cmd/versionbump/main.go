@@ -4,48 +4,50 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
-	config2 "github.com/ptgoetz/go-versionbump/internal/config"
+	vbc "github.com/ptgoetz/go-versionbump/internal/config"
 	"github.com/ptgoetz/go-versionbump/internal/git"
-	vb "github.com/ptgoetz/go-versionbump/internal/utils"
+	vbu "github.com/ptgoetz/go-versionbump/internal/utils"
 	vbv "github.com/ptgoetz/go-versionbump/internal/version"
 	"os"
 	"path"
 	"strings"
 )
 
-var (
-	configPath  string
-	dryRun      bool
-	quiet       bool
-	noPrompt    bool
-	showVersion bool
-	reset       string
-	noGit       bool
-)
+//var (
+//	configPath  string
+//	dryRun      bool
+//	quiet       bool
+//	noPrompt    bool
+//	showVersion bool
+//	reset       string
+//	noGit       bool
+//)
+
+var opts vbc.Options
 
 func main() {
 	// Define command-line flags
 	// TODO Migrate to Cobra
-	flag.BoolVar(&showVersion, "V", false, "Show the version of VBConfig and exit.")
-	flag.StringVar(&configPath, "config", "versionbump.yaml", "The path to the configuration file")
-	flag.BoolVar(&dryRun, "dry-run", false, "Dry run. Don't change anything, just report what would "+
+	flag.BoolVar(&opts.ShowVersion, "V", false, "Show the version of Config and exit.")
+	flag.StringVar(&opts.ConfigPath, "config", "versionbump.yaml", "The path to the configuration file")
+	flag.BoolVar(&opts.DryRun, "dry-run", false, "Dry run. Don't change anything, just report what would "+
 		"be changed")
-	flag.BoolVar(&noPrompt, "no-prompt", false, "Don't prompt the user for confirmation before making changes.")
-	flag.BoolVar(&quiet, "quiet", false, "Don't print verbose output.")
-	flag.StringVar(&reset, "reset", "", "Reset the version to the specified value.")
-	flag.BoolVar(&noGit, "no-git", false, "Don't perform any git operations.")
+	flag.BoolVar(&opts.NoPrompt, "no-prompt", false, "Don't prompt the user for confirmation before making changes.")
+	flag.BoolVar(&opts.Quiet, "quiet", false, "Don't print verbose output.")
+	flag.StringVar(&opts.ResetVersion, "reset", "", "Reset the version to the specified value.")
+	flag.BoolVar(&opts.NoGit, "no-git", false, "Don't perform any git operations.")
 	flag.Parse()
 	args := flag.Args()
 
 	// TODO: The trash below badly needs refactoring
 
 	// print the version and exit
-	if showVersion {
+	if opts.ShowVersion {
 		fmt.Println(vbv.VersionBumpVersion)
 		os.Exit(0)
 	}
 
-	if len(args) != 1 && reset == "" {
+	if len(args) != 1 && opts.ResetVersion == "" {
 		fmt.Println("ERROR: no version part specified.")
 		flag.Usage()
 		os.Exit(1)
@@ -53,12 +55,12 @@ func main() {
 
 	// Log the version and configuration path
 	logVerbose(vbv.VersionBumpVersion)
-	logVerbose(fmt.Sprintf("Config path: %s", configPath))
+	logVerbose(fmt.Sprintf("Config path: %s", opts.ConfigPath))
 
 	// Load the configuration file
-	config, root, err := config2.LoadConfig(configPath)
+	config, root, err := vbc.LoadConfig(opts.ConfigPath)
 	if err != nil {
-		fmt.Printf("Error loading configuration file: '%s' %v\n", configPath, err)
+		fmt.Printf("Error loading configuration file: '%s' %v\n", opts.ConfigPath, err)
 		os.Exit(1)
 	}
 
@@ -75,23 +77,20 @@ func main() {
 		logVerbose(fmt.Sprintf("  - %s", file.Path))
 	}
 
-	if reset != "" {
-		if !validateVersion(reset) {
-			fmt.Printf("ERROR: Invalid semantic version for reset: %s\n", reset)
+	if opts.ResetVersion != "" {
+		if !vbv.ValidateVersion(opts.ResetVersion) {
+			fmt.Printf("ERROR: Invalid semantic version for reset: %s\n", opts.ResetVersion)
 			os.Exit(1)
 		}
-		parsedVersion, _ := vbv.ParseVersion(reset)
-		reset = parsedVersion.String()
+		parsedVersion, _ := vbv.ParseVersion(opts.ResetVersion)
 
-		quiet = false
-		noPrompt = false
-		performReset(config, root)
+		performReset(config, root, parsedVersion)
 		os.Exit(0)
 	}
 
-	var bumpMetadata *config2.VBMetadata
+	var bumpMetadata *vbc.GitMeta
 	if len(args) == 1 { // We got a version bump request.
-		if !validateVersionPart(args[0]) {
+		if !vbv.ValidateVersionPart(args[0]) {
 			fmt.Printf("ERROR: Invalid version bump part: %s\n", args[0])
 			os.Exit(1)
 		}
@@ -106,9 +105,9 @@ func main() {
 		os.Exit(1)
 	}
 
-	if !dryRun {
+	if !opts.DryRun {
 		proceed := true
-		if !noPrompt {
+		if !opts.NoPrompt {
 			fmt.Println("The following files will be updated:")
 			for _, file := range config.Files {
 				fmt.Printf("  - %s\n", file.Path)
@@ -123,9 +122,9 @@ func main() {
 	}
 }
 
-func performReset(config *config2.VBConfig, root string) {
+func performReset(config *vbc.Config, root string, resetVersion *vbv.Version) {
 	// Log the reset information
-	logVerbose(fmt.Sprintf("Resetting version to: %s", reset))
+	logVerbose(fmt.Sprintf("Resetting version to: %s", resetVersion.String()))
 	if promptUserConfirmation("Do you want to proceed with the reset?") {
 		makeChanges(root, config, "")
 		logVerbose("\nVersion reset complete. No git operations were performed.")
@@ -133,27 +132,13 @@ func performReset(config *config2.VBConfig, root string) {
 	}
 }
 
-func validateVersionPart(part string) bool {
-	switch part {
-	case vbv.VersionMajorStr, vbv.VersionMinorStr, vbv.VersionPatchStr:
-		return true
-	default:
-		return false
-	}
-}
-
-func validateVersion(version string) bool {
-	_, err := vbv.ParseVersion(version)
-	return err == nil
-}
-
-func gitCommit(bumpMetadata *config2.VBMetadata, root string, config *config2.VBConfig) {
-	if noGit {
+func gitCommit(bumpMetadata *vbc.GitMeta, root string, config *vbc.Config) {
+	if opts.NoGit {
 		return
 	}
-	if config.IsGitRequired() && !noPrompt {
+	if config.IsGitRequired() && !opts.NoPrompt {
 		logVerbose(bumpMetadata.String())
-		if !noPrompt {
+		if !opts.NoPrompt {
 			proceed := promptUserConfirmation("Do you want to commit the changes to the git repository?")
 			if !proceed {
 				os.Exit(1)
@@ -181,15 +166,15 @@ func gitCommit(bumpMetadata *config2.VBMetadata, root string, config *config2.VB
 	}
 }
 
-func gitPreFlight(root string, config *config2.VBConfig) {
-	if noGit {
+func gitPreFlight(root string, config *vbc.Config) {
+	if opts.NoGit {
 		return
 	}
 	if config.IsGitRequired() {
 		isGitAvalable, version := git.IsGitAvailable()
 		if !isGitAvalable {
 			fmt.Printf("ERROR: Git is required by the configuration but not available. " +
-				"VBConfig requires Git to be installed and available in the system PATH.")
+				"Config requires Git to be installed and available in the system PATH.")
 			os.Exit(1)
 		} else {
 			logVerbose(fmt.Sprintf("Git version: %s", strings.TrimSpace(version)[12:]))
@@ -203,7 +188,7 @@ func gitPreFlight(root string, config *config2.VBConfig) {
 	if !isGitRepo {
 		fmt.Println("ERROR: The project root is not a Git repository, but Git options are enabled in the " +
 			"configuration file.")
-		if noPrompt {
+		if opts.NoPrompt {
 			os.Exit(1)
 		}
 		if promptUserConfirmation("Do you want to initialize a Git repository in this directory?") {
@@ -221,7 +206,7 @@ func gitPreFlight(root string, config *config2.VBConfig) {
 	}
 }
 
-func changePreFlight(root string, config *config2.VBConfig, args []string) {
+func changePreFlight(root string, config *vbc.Config, args []string) {
 	// parse the current version:
 	curVersion, err := vbv.ParseVersion(config.Version)
 	if err != nil {
@@ -241,13 +226,13 @@ func changePreFlight(root string, config *config2.VBConfig, args []string) {
 
 	// log what changes will be made to each file
 	for _, file := range config.Files {
-		find := vb.ReplaceInString(file.Replace, "{version}", currentVersionStr)
-		replace := vb.ReplaceInString(file.Replace, "{version}", nextVersionStr)
+		find := vbu.ReplaceInString(file.Replace, "{version}", currentVersionStr)
+		replace := vbu.ReplaceInString(file.Replace, "{version}", nextVersionStr)
 
 		logVerbose(file.Path)
 		logVerbose(fmt.Sprintf("     Find: \"%s\"", find))
 		logVerbose(fmt.Sprintf("  Replace: \"%s\"", replace))
-		count, err := vb.CountStringsInFile(path.Join(root, file.Path), find)
+		count, err := vbu.CountStringsInFile(path.Join(root, file.Path), find)
 		if err != nil {
 			fmt.Println(fmt.Errorf("error getting replacement count: a%v", err))
 			os.Exit(1)
@@ -261,7 +246,7 @@ func changePreFlight(root string, config *config2.VBConfig, args []string) {
 	}
 }
 
-func makeChanges(root string, config *config2.VBConfig, versionPart string) {
+func makeChanges(root string, config *vbc.Config, versionPart string) {
 	// at this point we have already checked the config and there are no errors
 	var currentVersionStr, nextVersionStr string
 	if versionPart != "" {
@@ -271,22 +256,24 @@ func makeChanges(root string, config *config2.VBConfig, versionPart string) {
 		_ = curVersion.StringBump(versionPart)
 		nextVersionStr = curVersion.String()
 	} else { // reset
-		currentVersionStr = config.Version
-		nextVersionStr = reset
+		cv, _ := vbv.ParseVersion(config.Version)
+		currentVersionStr = cv.String()
+		nv, _ := vbv.ParseVersion(opts.ResetVersion)
+		nextVersionStr = nv.String()
 	}
 
 	for _, file := range config.Files {
-		find := vb.ReplaceInString(file.Replace, "{version}", currentVersionStr)
-		replace := vb.ReplaceInString(file.Replace, "{version}", nextVersionStr)
+		find := vbu.ReplaceInString(file.Replace, "{version}", currentVersionStr)
+		replace := vbu.ReplaceInString(file.Replace, "{version}", nextVersionStr)
 
-		if !dryRun {
+		if !opts.DryRun {
 			var resolvedPath string
 			if path.IsAbs(file.Path) {
 				resolvedPath = file.Path
 			} else {
 				resolvedPath = path.Join(root, file.Path)
 			}
-			err := vb.ReplaceInFile(resolvedPath, find, replace)
+			err := vbu.ReplaceInFile(resolvedPath, find, replace)
 			if err != nil {
 				fmt.Println(fmt.Errorf("error updating file %s: a%v", file.Path, err))
 				os.Exit(1)
@@ -328,7 +315,7 @@ func promptUserConfirmation(prompt string) bool {
 }
 
 func logVerbose(msg string) {
-	if dryRun || !quiet {
+	if opts.DryRun || !opts.Quiet {
 		fmt.Println(msg)
 	}
 }

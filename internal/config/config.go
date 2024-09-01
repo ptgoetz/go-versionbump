@@ -15,8 +15,8 @@ const (
 	DefaultGitTagMessageTemplate = "Release version {new}"
 )
 
-// VBConfig represents the version bump configuration.
-type VBConfig struct {
+// Config represents the version bump configuration.
+type Config struct {
 	Version               string          `yaml:"version"`
 	GitCommit             bool            `yaml:"git-commit"`
 	GitCommitTemplate     string          `yaml:"git-commit-template"`
@@ -26,7 +26,7 @@ type VBConfig struct {
 	Files                 []VersionedFile `yaml:"files"`
 }
 
-type VBMetadata struct {
+type GitMeta struct {
 	OldVersion    string
 	NewVersion    string
 	CommitMessage string
@@ -34,17 +34,27 @@ type VBMetadata struct {
 	TagName       string
 }
 
-func (vbm *VBMetadata) String() string {
+type Options struct {
+	ConfigPath   string
+	DryRun       bool
+	Quiet        bool
+	NoPrompt     bool
+	ShowVersion  bool
+	ResetVersion string
+	NoGit        bool
+}
+
+func (vbm *GitMeta) String() string {
 	return fmt.Sprintf("Commit Message: %s\nTag Message: %s\nTag Name: %s",
 		vbm.CommitMessage, vbm.TagMessage, vbm.TagName)
 }
 
 // IsGitRequired returns true if any of the Git options are enabled.
-func (v VBConfig) IsGitRequired() bool {
+func (v Config) IsGitRequired() bool {
 	return v.GitCommit || v.GitTag
 }
 
-func (v VBConfig) BumpAndGetMetaData(versionPart string) (*VBMetadata, error) {
+func (v Config) BumpAndGetMetaData(versionPart string) (*GitMeta, error) {
 	version, err := version2.ParseVersion(v.Version)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to parse semantic version string: %s\n", v.Version)
@@ -86,7 +96,7 @@ func (v VBConfig) BumpAndGetMetaData(versionPart string) (*VBMetadata, error) {
 	tagMessage := utils.ReplaceInString(tagMessageTemplate, "{old}", oldVersionStr)
 	tagMessage = utils.ReplaceInString(tagMessage, "{new}", newVersionStr)
 
-	return &VBMetadata{
+	return &GitMeta{
 		OldVersion:    oldVersionStr,
 		NewVersion:    newVersionStr,
 		CommitMessage: commitMessage,
@@ -102,7 +112,7 @@ type VersionedFile struct {
 }
 
 // LoadConfig loads the configuration from a YAML file
-func LoadConfig(filePath string) (*VBConfig, string, error) {
+func LoadConfig(filePath string) (*Config, string, error) {
 	// Open the YAML file
 	configFile := path.Base(filePath)
 	file, err := os.Open(filePath)
@@ -116,8 +126,8 @@ func LoadConfig(filePath string) (*VBConfig, string, error) {
 		}
 	}(file)
 
-	// Parse the YAML file into the VBConfig struct
-	var config VBConfig
+	// Parse the YAML file into the Config struct
+	var config Config
 	decoder := yaml.NewDecoder(file)
 	err = decoder.Decode(&config)
 	if err != nil {

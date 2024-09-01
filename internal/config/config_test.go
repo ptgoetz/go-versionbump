@@ -111,7 +111,7 @@ files:
 
 // TestBumpAndGetMetaData tests the BumpAndGetMetaData function
 func TestBumpAndGetMetaData(t *testing.T) {
-	config := VBConfig{
+	config := Config{
 		Version:   "1.0.0",
 		GitCommit: true,
 		GitTag:    true,
