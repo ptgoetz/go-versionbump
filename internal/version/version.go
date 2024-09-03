@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-const VersionBumpVersion = "VersionBump v0.0.2"
+const VersionBumpVersion = "VersionBump v0.1.0"
 
 const (
 	VersionMajor = iota
