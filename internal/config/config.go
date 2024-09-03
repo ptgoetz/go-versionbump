@@ -42,6 +42,11 @@ type Options struct {
 	ShowVersion  bool
 	ResetVersion string
 	NoGit        bool
+	BumpPart     string
+}
+
+func (o Options) IsResetVersion() bool {
+	return o.ResetVersion != ""
 }
 
 func (vbm *GitMeta) String() string {
