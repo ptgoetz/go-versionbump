@@ -18,6 +18,8 @@ type VersionBump struct {
 	ParentDir  string
 	OldVersion string
 	NewVersion string
+
+	GitCommitMessages config.GitMeta
 }
 
 // NewVersionBump creates a new VersionBump instance.
@@ -64,11 +66,16 @@ func NewVersionBump(configPath string, options config.Options) (*VersionBump, er
 		NewVersion: newVersion,
 	}
 
-	// perform a pre-flight check for Git operations
+	return vb, nil
+}
+
+func (vb VersionBump) Run() {
 	vb.gitPreFlight()
 	vb.bumpPreflight()
-
-	return vb, nil
+	if vb.promptProceedWithChanges() {
+		vb.makeChanges()
+		vb.gitCommit()
+	}
 }
 
 // gitPreFlight performs a pre-flight check for Git operations.
@@ -116,6 +123,48 @@ func (vb VersionBump) gitPreFlight() {
 	}
 }
 
+// gitCommit conditionally commits the changes to the Git repository.
+func (vb VersionBump) gitCommit() {
+	if vb.Options.NoGit {
+		return
+	}
+	if vb.Config.IsGitRequired() && !vb.Options.NoPrompt {
+		logVerbose(vb.Options, fmt.Sprintf("Commit Message: %s\nTag Message: %s\nTag Name: %s",
+			vb.GitCommitMessages.CommitMessage,
+			vb.GitCommitMessages.TagMessage,
+			vb.GitCommitMessages.TagName))
+		proceed := promptUserConfirmation("Do you want to commit the changes to the git repository?")
+		if !proceed {
+			os.Exit(1)
+		}
+	}
+
+	// commit changes
+	if vb.Config.GitCommit {
+		logVerbose(vb.Options, "Committing changes...")
+		err := git.CommitChanges(vb.ParentDir, vb.GitCommitMessages.CommitMessage)
+		if err != nil {
+			fmt.Printf("Error committing changes: %v\n", err)
+			os.Exit(1)
+		}
+		logVerbose(vb.Options, fmt.Sprintf("Committed changes with message: %s", vb.GitCommitMessages.CommitMessage))
+	}
+	if vb.Config.GitTag {
+		logVerbose(vb.Options, "Tagging changes...")
+		err := git.TagChanges(vb.ParentDir, vb.GitCommitMessages.TagName, vb.GitCommitMessages.TagMessage)
+		if err != nil {
+			fmt.Printf("Error tagging changes: %v\n", err)
+			os.Exit(1)
+		}
+		logVerbose(vb.Options,
+			fmt.Sprintf(
+				"Tagged '%s' created with message: %s",
+				vb.GitCommitMessages.TagName,
+				vb.GitCommitMessages.TagMessage))
+	}
+}
+
+// bumpPreflight performs a pre-flight check for the version bump operation.
 func (vb VersionBump) bumpPreflight() {
 	logVerbose(vb.Options, fmt.Sprintf("Bumping version part: %s", vb.Options.BumpPart))
 	logVerbose(vb.Options, fmt.Sprintf("Will bump version %s --> %s", vb.OldVersion, vb.NewVersion))
@@ -140,6 +189,41 @@ func (vb VersionBump) bumpPreflight() {
 			os.Exit(1)
 		}
 	}
+}
+
+// makeChanges updates the version in the files.
+func (vb VersionBump) makeChanges() {
+	// at this point we have already checked the config and there are no errors
+	for _, file := range vb.Config.Files {
+		find := vbu.ReplaceInString(file.Replace, "{version}", vb.OldVersion)
+		replace := vbu.ReplaceInString(file.Replace, "{version}", vb.NewVersion)
+
+		if !vb.Options.DryRun {
+			var resolvedPath string
+			if path.IsAbs(file.Path) {
+				resolvedPath = file.Path
+			} else {
+				resolvedPath = path.Join(vb.ParentDir, file.Path)
+			}
+			err := vbu.ReplaceInFile(resolvedPath, find, replace)
+			if err != nil {
+				fmt.Println(fmt.Errorf("error updating file %s: a%v", file.Path, err))
+				os.Exit(1)
+			}
+			logVerbose(vb.Options, fmt.Sprintf("Updated file: %s", file.Path))
+		}
+	}
+}
+
+// promptProceedWithChanges prompts the user to proceed with the changes.
+func (vb VersionBump) promptProceedWithChanges() bool {
+	if !vb.Options.NoPrompt {
+		if !promptUserConfirmation("Proceed with the changes?") {
+			logVerbose(vb.Options, "Cancelled by user.")
+			os.Exit(0)
+		}
+	}
+	return true
 }
 
 // promptUserConfirmation prompts the user with the given prompt string and expects 'y' or 'n' input.
