@@ -10,10 +10,9 @@ import (
 	"os"
 )
 
-var opts vbc.Options
-
 func main() {
 	// Define command-line flags
+	var opts vbc.Options
 	// TODO Migrate to Cobra
 	flag.BoolVar(&opts.ShowVersion, "V", false, "Show the version of Config and exit.")
 	flag.StringVar(&opts.ConfigPath, "config", "versionbump.yaml", "The path to the configuration file")
@@ -33,16 +32,17 @@ func main() {
 		os.Exit(0)
 	}
 
-	if len(args) != 1 && opts.ResetVersion == "" {
+	if len(args) > 0 {
+		opts.BumpPart = args[0]
+	}
+	if len(args) == 0 && opts.ResetVersion == "" {
 		fmt.Println("ERROR: no version part specified.")
 		flag.Usage()
 		os.Exit(1)
-	} else {
-		opts.BumpPart = args[0]
 	}
 
 	// Create a new VersionBump instance
-	vb, err := internal.NewVersionBump(opts.ConfigPath, opts)
+	vb, err := internal.NewVersionBump(opts)
 	if err != nil {
 		log.Fatal(err)
 	}

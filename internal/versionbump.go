@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/ptgoetz/go-versionbump/internal/config"
 	"github.com/ptgoetz/go-versionbump/internal/git"
+	"github.com/ptgoetz/go-versionbump/internal/utils"
 	vbu "github.com/ptgoetz/go-versionbump/internal/utils"
 	vbv "github.com/ptgoetz/go-versionbump/internal/version"
 
@@ -19,17 +20,15 @@ type VersionBump struct {
 	ParentDir  string
 	OldVersion string
 	NewVersion string
-
-	GitCommitMessages config.GitMeta
 }
 
 // NewVersionBump creates a new VersionBump instance.
 // It loads the configuration file and determines/validates the old and new versions.
 // If the reset version option is set, the new version is set to the reset version.
-func NewVersionBump(configPath string, options config.Options) (*VersionBump, error) {
+func NewVersionBump(options config.Options) (*VersionBump, error) {
 	// Log the version and configuration path
 
-	cfg, parentDir, err := config.LoadConfig(configPath)
+	cfg, parentDir, err := config.LoadConfig(options.ConfigPath)
 	if err != nil {
 		return nil, err
 	}
@@ -72,7 +71,46 @@ func NewVersionBump(configPath string, options config.Options) (*VersionBump, er
 	return vb, nil
 }
 
-func (vb VersionBump) Run() {
+func (vb *VersionBump) GitMetadata() (*config.GitMeta, error) {
+	var commitMessageTemplate string
+	if vb.Config.GitCommitTemplate != "" {
+		commitMessageTemplate = vb.Config.GitCommitTemplate
+	} else {
+		commitMessageTemplate = vb.Config.GitCommitTemplate
+	}
+	commitMessage := utils.ReplaceInString(commitMessageTemplate, "{old}", vb.OldVersion)
+	commitMessage = utils.ReplaceInString(commitMessage, "{new}", vb.NewVersion)
+
+	var tagTemplate string
+	if vb.Config.GitTagTemplate != "" {
+		tagTemplate = vb.Config.GitTagTemplate
+	} else {
+		tagTemplate = config.DefaultGitTagTemplate
+	}
+	tagName := utils.ReplaceInString(tagTemplate, "{old}", vb.OldVersion)
+	tagName = utils.ReplaceInString(tagName, "{new}", vb.NewVersion)
+
+	var tagMessageTemplate string
+	if vb.Config.GitTagMessageTemplate != "" {
+		tagMessageTemplate = vb.Config.GitTagMessageTemplate
+	} else {
+		tagMessageTemplate = config.DefaultGitTagMessageTemplate
+	}
+	tagMessage := utils.ReplaceInString(tagMessageTemplate, "{old}", vb.OldVersion)
+	tagMessage = utils.ReplaceInString(tagMessage, "{new}", vb.NewVersion)
+
+	return &config.GitMeta{
+		CommitMessage: commitMessage,
+		TagMessage:    tagMessage,
+		TagName:       tagName,
+	}, nil
+}
+
+// -------------------------
+
+// -------------------------
+
+func (vb *VersionBump) Run() {
 	vb.preamble()
 	vb.gitPreFlight()
 	vb.bumpPreflight()
@@ -82,7 +120,7 @@ func (vb VersionBump) Run() {
 	}
 }
 
-func (vb VersionBump) gitPreFlight() {
+func (vb *VersionBump) gitPreFlight() {
 	if vb.Options.NoGit {
 		return
 	}
@@ -127,22 +165,27 @@ func (vb VersionBump) gitPreFlight() {
 }
 
 // gitPreFlight performs a pre-flight check for Git operations.
-func (vb VersionBump) preamble() {
-	logVerbose(vb.Options, fmt.Sprintf("VersionBump v%s", vbv.VersionBumpVersion))
+func (vb *VersionBump) preamble() {
+	logVerbose(vb.Options, vbv.VersionBumpVersion)
 	logVerbose(vb.Options, fmt.Sprintf("Configuration file: %s", vb.Options.ConfigPath))
 	logVerbose(vb.Options, fmt.Sprintf("Project root directory: %s", vb.ParentDir))
 }
 
 // gitCommit conditionally commits the changes to the Git repository.
-func (vb VersionBump) gitCommit() {
-	if vb.Options.NoGit {
+func (vb *VersionBump) gitCommit() {
+	if vb.Options.NoGit || !vb.Config.IsGitRequired() {
 		return
 	}
+	gitMeta, err := vb.GitMetadata()
+	if err != nil {
+		logFatal(fmt.Sprintf("Unable to get Git metadata: %v\n", err))
+	}
 	if vb.Config.IsGitRequired() && !vb.Options.NoPrompt {
+
 		logVerbose(vb.Options, fmt.Sprintf("Commit Message: %s\nTag Message: %s\nTag Name: %s",
-			vb.GitCommitMessages.CommitMessage,
-			vb.GitCommitMessages.TagMessage,
-			vb.GitCommitMessages.TagName))
+			gitMeta.CommitMessage,
+			gitMeta.TagMessage,
+			gitMeta.TagName))
 		proceed := promptUserConfirmation("Do you want to commit the changes to the git repository?")
 		if !proceed {
 			os.Exit(1)
@@ -152,16 +195,16 @@ func (vb VersionBump) gitCommit() {
 	// commit changes
 	if vb.Config.GitCommit {
 		logVerbose(vb.Options, "Committing changes...")
-		err := git.CommitChanges(vb.ParentDir, vb.GitCommitMessages.CommitMessage)
+		err := git.CommitChanges(vb.ParentDir, gitMeta.CommitMessage)
 		if err != nil {
 			fmt.Printf("Error committing changes: %v\n", err)
 			os.Exit(1)
 		}
-		logVerbose(vb.Options, fmt.Sprintf("Committed changes with message: %s", vb.GitCommitMessages.CommitMessage))
+		logVerbose(vb.Options, fmt.Sprintf("Committed changes with message: %s", gitMeta.CommitMessage))
 	}
 	if vb.Config.GitTag {
 		logVerbose(vb.Options, "Tagging changes...")
-		err := git.TagChanges(vb.ParentDir, vb.GitCommitMessages.TagName, vb.GitCommitMessages.TagMessage)
+		err := git.TagChanges(vb.ParentDir, gitMeta.TagName, gitMeta.TagMessage)
 		if err != nil {
 			fmt.Printf("Error tagging changes: %v\n", err)
 			os.Exit(1)
@@ -169,14 +212,18 @@ func (vb VersionBump) gitCommit() {
 		logVerbose(vb.Options,
 			fmt.Sprintf(
 				"Tagged '%s' created with message: %s",
-				vb.GitCommitMessages.TagName,
-				vb.GitCommitMessages.TagMessage))
+				gitMeta.TagName,
+				gitMeta.TagMessage))
 	}
 }
 
 // bumpPreflight performs a pre-flight check for the version bump operation.
-func (vb VersionBump) bumpPreflight() {
-	logVerbose(vb.Options, fmt.Sprintf("Bumping version part: %s", vb.Options.BumpPart))
+func (vb *VersionBump) bumpPreflight() {
+	if vb.Options.ResetVersion == "" {
+		logVerbose(vb.Options, fmt.Sprintf("Bumping version part: %s", vb.Options.BumpPart))
+	} else {
+		logVerbose(vb.Options, fmt.Sprintf("Resetting version to: %s", vb.NewVersion))
+	}
 	logVerbose(vb.Options, fmt.Sprintf("Will bump version %s --> %s", vb.OldVersion, vb.NewVersion))
 
 	// log what changes will be made to each file
@@ -202,7 +249,7 @@ func (vb VersionBump) bumpPreflight() {
 }
 
 // makeChanges updates the version in the files.
-func (vb VersionBump) makeChanges() {
+func (vb *VersionBump) makeChanges() {
 	// at this point we have already checked the config and there are no errors
 	for _, file := range vb.Config.Files {
 		find := vbu.ReplaceInString(file.Replace, "{version}", vb.OldVersion)
@@ -226,7 +273,7 @@ func (vb VersionBump) makeChanges() {
 }
 
 // promptProceedWithChanges prompts the user to proceed with the changes.
-func (vb VersionBump) promptProceedWithChanges() bool {
+func (vb *VersionBump) promptProceedWithChanges() bool {
 	if !vb.Options.NoPrompt {
 		if !promptUserConfirmation("Proceed with the changes?") {
 			logVerbose(vb.Options, "Cancelled by user.")

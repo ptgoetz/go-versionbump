@@ -109,7 +109,7 @@ files:
 	}
 }
 
-// TestBumpAndGetMetaData tests the BumpAndGetMetaData function
+// TestBumpAndGetMetaData tests the GetGitMetadata function
 func TestBumpAndGetMetaData(t *testing.T) {
 	config := Config{
 		Version:   "1.0.0",
@@ -121,9 +121,9 @@ func TestBumpAndGetMetaData(t *testing.T) {
 		},
 	}
 
-	metadata, err := config.BumpAndGetMetaData("patch")
+	metadata, err := config.GetGitMetadata("patch")
 	if err != nil {
-		t.Fatalf("BumpAndGetMetaData failed: %v", err)
+		t.Fatalf("GetGitMetadata failed: %v", err)
 	}
 
 	if metadata.OldVersion != "1.0.0" {
