@@ -13,15 +13,6 @@ import (
 	"strings"
 )
 
-//var (
-//	configPath  string
-//	dryRun      bool
-//	quiet       bool
-//	noPrompt    bool
-//	showVersion bool
-//	reset       string
-//	noGit       bool
-//)
 
 var opts vbc.Options
 
