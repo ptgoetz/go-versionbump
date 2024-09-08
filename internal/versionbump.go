@@ -7,6 +7,7 @@ import (
 	"github.com/ptgoetz/go-versionbump/internal/git"
 	vbu "github.com/ptgoetz/go-versionbump/internal/utils"
 	vbv "github.com/ptgoetz/go-versionbump/internal/version"
+
 	"os"
 	"path"
 	"strings"
@@ -26,6 +27,8 @@ type VersionBump struct {
 // It loads the configuration file and determines/validates the old and new versions.
 // If the reset version option is set, the new version is set to the reset version.
 func NewVersionBump(configPath string, options config.Options) (*VersionBump, error) {
+	// Log the version and configuration path
+
 	cfg, parentDir, err := config.LoadConfig(configPath)
 	if err != nil {
 		return nil, err
@@ -70,6 +73,7 @@ func NewVersionBump(configPath string, options config.Options) (*VersionBump, er
 }
 
 func (vb VersionBump) Run() {
+	vb.preamble()
 	vb.gitPreFlight()
 	vb.bumpPreflight()
 	if vb.promptProceedWithChanges() {
@@ -78,7 +82,6 @@ func (vb VersionBump) Run() {
 	}
 }
 
-// gitPreFlight performs a pre-flight check for Git operations.
 func (vb VersionBump) gitPreFlight() {
 	if vb.Options.NoGit {
 		return
@@ -121,6 +124,13 @@ func (vb VersionBump) gitPreFlight() {
 		fmt.Println("ERROR: The Git repository has pending changes. Please commit or stash them before proceeding.")
 		os.Exit(1)
 	}
+}
+
+// gitPreFlight performs a pre-flight check for Git operations.
+func (vb VersionBump) preamble() {
+	logVerbose(vb.Options, fmt.Sprintf("VersionBump v%s", vbv.VersionBumpVersion))
+	logVerbose(vb.Options, fmt.Sprintf("Configuration file: %s", vb.Options.ConfigPath))
+	logVerbose(vb.Options, fmt.Sprintf("Project root directory: %s", vb.ParentDir))
 }
 
 // gitCommit conditionally commits the changes to the Git repository.
