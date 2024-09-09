@@ -47,7 +47,7 @@ func NewVersionBump(options config.Options) (*VersionBump, error) {
 	// get the new or reset version
 	if options.IsResetVersion() {
 		if !vbv.ValidateVersion(options.ResetVersion) {
-			logFatal(fmt.Sprintf("Failed to parse semantic version reset string: %s", options.ResetVersion))
+			logFatal(fmt.Sprintf("Failed to parse semantic version reset string: %s\n", options.ResetVersion))
 		}
 		// set new version to the reset version
 		vTemp, _ = vbv.ParseVersion(options.ResetVersion)
