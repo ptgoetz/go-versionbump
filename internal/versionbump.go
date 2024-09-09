@@ -76,7 +76,7 @@ func (vb *VersionBump) GitMetadata() (*config.GitMeta, error) {
 	if vb.Config.GitCommitTemplate != "" {
 		commitMessageTemplate = vb.Config.GitCommitTemplate
 	} else {
-		commitMessageTemplate = vb.Config.GitCommitTemplate
+		commitMessageTemplate = config.DefaultGitCommitTemplate
 	}
 	commitMessage := utils.ReplaceInString(commitMessageTemplate, "{old}", vb.OldVersion)
 	commitMessage = utils.ReplaceInString(commitMessage, "{new}", vb.NewVersion)
