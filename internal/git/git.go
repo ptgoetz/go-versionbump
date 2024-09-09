@@ -118,15 +118,18 @@ func CommitChanges(dirPath string, commitMessage string) error {
 	cmd := exec.Command("git", "commit", "-am", commitMessage)
 	cmd.Dir = absPath
 
-	// Run the command and capture the output
-	output, err := cmd.Output()
-	if err != nil {
+	// Capture the output
+	var out bytes.Buffer
+	cmd.Stdout = &out
+
+	// Run the command
+	if err := cmd.Run(); err != nil {
+		fmt.Println(out.String())
 		return fmt.Errorf("git commit failed: %w", err)
 	}
-
 	// get the exit status of the command
 	if exitStatus := cmd.ProcessState.ExitCode(); exitStatus != 0 {
-		return fmt.Errorf("git commit failed with exit status %d: %s", exitStatus, output)
+		return fmt.Errorf("git commit failed with exit status %d: %s", exitStatus, out.String())
 	}
 
 	return nil
@@ -142,6 +145,9 @@ func TagChanges(root string, name string, message string) interface{} {
 	cmd := exec.Command("git", "tag", "-a", name, "-m", message)
 	cmd.Dir = absPath
 
+	// Capture the output
+	var out bytes.Buffer
+	cmd.Stdout = &out
 	// Run the command and capture the output
 	output, err := cmd.Output()
 	if err != nil {
