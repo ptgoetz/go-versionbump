@@ -135,7 +135,7 @@ func CommitChanges(dirPath string, commitMessage string) error {
 	return nil
 }
 
-func TagChanges(root string, name string, message string) interface{} {
+func TagChanges(root string, name string, message string) error {
 	// Ensure the path is an absolute path
 	absPath, err := filepath.Abs(root)
 	if err != nil {
@@ -146,17 +146,17 @@ func TagChanges(root string, name string, message string) interface{} {
 	cmd.Dir = absPath
 
 	// Capture the output
-	var out bytes.Buffer
-	cmd.Stdout = &out
-	// Run the command and capture the output
-	output, err := cmd.Output()
-	if err != nil {
-		return fmt.Errorf("git tag failed: %w", err)
-	}
+	var stdOut bytes.Buffer
+	cmd.Stdout = &stdOut
 
-	// get the exit status of the command
-	if exitStatus := cmd.ProcessState.ExitCode(); exitStatus != 0 {
-		return fmt.Errorf("git tag failed with exit status %d: %s", exitStatus, output)
+	var stdErr bytes.Buffer
+	cmd.Stderr = &stdErr
+
+	// Run the command
+	if err := cmd.Run(); err != nil {
+		fmt.Println(stdOut.String())
+		fmt.Println(stdErr.String())
+		return fmt.Errorf("git commit failed: %w", err)
 	}
 
 	return nil
