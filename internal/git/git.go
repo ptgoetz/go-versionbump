@@ -131,10 +131,6 @@ func CommitChanges(dirPath string, commitMessage string) error {
 		fmt.Println(stdErr.String())
 		return fmt.Errorf("git commit failed: %w", err)
 	}
-	// get the exit status of the command
-	if exitStatus := cmd.ProcessState.ExitCode(); exitStatus != 0 {
-		return fmt.Errorf("git commit failed with exit status %d: %s", exitStatus, stdOut.String())
-	}
 
 	return nil
 }
