@@ -113,6 +113,7 @@ func (vb *VersionBump) GitMetadata() (*config.GitMeta, error) {
 func (vb *VersionBump) Run() {
 	vb.preamble()
 	vb.gitPreFlight()
+	vb.logTrackedFiles()
 	vb.bumpPreflight()
 	if vb.promptProceedWithChanges() {
 		vb.makeChanges()
@@ -169,6 +170,14 @@ func (vb *VersionBump) preamble() {
 	logVerbose(vb.Options, vbv.VersionBumpVersion)
 	logVerbose(vb.Options, fmt.Sprintf("Configuration file: %s", vb.Options.ConfigPath))
 	logVerbose(vb.Options, fmt.Sprintf("Project root directory: %s", vb.ParentDir))
+}
+
+func (vb *VersionBump) logTrackedFiles() {
+	// Log the files that will be updated
+	logVerbose(vb.Options, "Tracked Files:")
+	for _, file := range vb.Config.Files {
+		logVerbose(vb.Options, fmt.Sprintf("  - %s", file.Path))
+	}
 }
 
 // gitCommit conditionally commits the changes to the Git repository.
