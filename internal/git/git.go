@@ -119,17 +119,21 @@ func CommitChanges(dirPath string, commitMessage string) error {
 	cmd.Dir = absPath
 
 	// Capture the output
-	var out bytes.Buffer
-	cmd.Stdout = &out
+	var stdOut bytes.Buffer
+	cmd.Stdout = &stdOut
+
+	var stdErr bytes.Buffer
+	cmd.Stderr = &stdErr
 
 	// Run the command
 	if err := cmd.Run(); err != nil {
-		fmt.Println(out.String())
+		fmt.Println(stdOut.String())
+		fmt.Println(stdErr.String())
 		return fmt.Errorf("git commit failed: %w", err)
 	}
 	// get the exit status of the command
 	if exitStatus := cmd.ProcessState.ExitCode(); exitStatus != 0 {
-		return fmt.Errorf("git commit failed with exit status %d: %s", exitStatus, out.String())
+		return fmt.Errorf("git commit failed with exit status %d: %s", exitStatus, stdOut.String())
 	}
 
 	return nil
