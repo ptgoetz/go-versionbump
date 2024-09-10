@@ -62,6 +62,7 @@ Run VersionBump with the desired options:
 - `--dry-run`: Perform a dry run without making any changes.
 - `--no-prompt`: Do not prompt the user for confirmation before making changes.
 - `--no-git`: Do not commit or tag the changes in a Git repository.
+- `--no-color`: Disable colorized output.
 - `--quiet`: Disable verbose logging.
 - `--reset [version]`: Reset the version number to the specified value.
 
