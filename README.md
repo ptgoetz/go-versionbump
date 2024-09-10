@@ -1,6 +1,6 @@
 # go-versionbump
 
-**Latest Version:** v0.1.1
+**Latest Version:** v0.2.0
 
 VersionBump is a powerful command-line tool designed to streamline the process of version management in your projects. 
 By automating version bumping, VersionBump ensures that your project’s version numbers are always up-to-date across all 
