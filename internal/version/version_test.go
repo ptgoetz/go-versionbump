@@ -6,7 +6,7 @@ import (
 
 func TestParseVersion(t *testing.T) {
 	version := "1.2.3"
-	expected := Version{Major: 1, Minor: 2, Patch: 3}
+	expected := Version{major: 1, minor: 2, patch: 3}
 	actual, _ := ParseVersion(version)
 	if *actual != expected {
 		t.Errorf("Expected %v but got %v", expected, *actual)
@@ -14,7 +14,7 @@ func TestParseVersion(t *testing.T) {
 }
 
 func TestVersion_String(t *testing.T) {
-	version := Version{Major: 1, Minor: 2, Patch: 3}
+	version := Version{major: 1, minor: 2, patch: 3}
 	expected := "1.2.3"
 	actual := version.String()
 	if actual != expected {

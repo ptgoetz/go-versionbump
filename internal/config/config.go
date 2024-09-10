@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"github.com/ptgoetz/go-versionbump/internal/utils"
+	"github.com/ptgoetz/go-versionbump/internal/version"
 	"gopkg.in/yaml.v3"
 	"os"
 	"path"
@@ -19,6 +20,7 @@ type Config struct {
 	Version               string          `yaml:"version"`
 	GitCommit             bool            `yaml:"git-commit"`
 	GitCommitTemplate     string          `yaml:"git-commit-template"`
+	GitSign               bool            `yaml:"git-sign"`
 	GitTag                bool            `yaml:"git-tag"`
 	GitTagTemplate        string          `yaml:"git-tag-template"`
 	GitTagMessageTemplate string          `yaml:"git-tag-message-template"`
@@ -35,7 +37,6 @@ type GitMeta struct {
 
 type Options struct {
 	ConfigPath   string
-	DryRun       bool
 	Quiet        bool
 	NoPrompt     bool
 	ShowVersion  bool
@@ -88,9 +89,19 @@ func LoadConfig(filePath string) (*Config, string, error) {
 		return nil, "", fmt.Errorf("error parsing config file: %w", err)
 	}
 
+	// make sure we can resolve the parent directory
 	root, err := utils.ParentDirAbsolutePath(filePath)
 	if err != nil {
 		return nil, "", fmt.Errorf("error getting parent directory: %w", err)
+	}
+
+	// validate the version string is not empty
+	if config.Version == "" {
+		return nil, "", fmt.Errorf("version string is required")
+	}
+
+	if !version.ValidateVersion(config.Version) {
+		return nil, "", fmt.Errorf("invalid version string: %s", config.Version)
 	}
 
 	configPtr := &config

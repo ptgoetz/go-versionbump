@@ -19,15 +19,17 @@ const (
 )
 
 type Version struct {
-	Major int
-	Minor int
-	Patch int
+	major int
+	minor int
+	patch int
 }
 
+// NewVersion creates a new immutable Version instance
 func NewVersion(major int, minor int, patch int) *Version {
-	return &Version{Major: major, Minor: minor, Patch: patch}
+	return &Version{major: major, minor: minor, patch: patch}
 }
 
+// ParseVersion parses a version string and returns a new Version instance
 func ParseVersion(version string) (*Version, error) {
 	vals := strings.Split(version, ".")
 	if len(vals) != 3 {
@@ -48,30 +50,27 @@ func ParseVersion(version string) (*Version, error) {
 	return NewVersion(major, minor, patch), nil
 }
 
+// String returns the version string
 func (v *Version) String() string {
-	return fmt.Sprintf("%d.%d.%d", v.Major, v.Minor, v.Patch)
+	return fmt.Sprintf("%d.%d.%d", v.major, v.minor, v.patch)
 }
 
-func (v *Version) Bump(versionPart int) error {
+// Bump returns a new Version instance after incrementing the specified part
+func (v *Version) Bump(versionPart int) *Version {
 	switch versionPart {
 	case VersionMajor:
-		v.Major++
-		v.Minor = 0
-		v.Patch = 0
-		return nil
+		return NewVersion(v.major+1, 0, 0)
 	case VersionMinor:
-		v.Minor++
-		v.Patch = 0
-		return nil
+		return NewVersion(v.major, v.minor+1, 0)
 	case VersionPatch:
-		v.Patch++
-		return nil
+		return NewVersion(v.major, v.minor, v.patch+1)
 	default:
-		return fmt.Errorf("invalid version part: %d", versionPart)
+		panic(fmt.Sprintf("invalid version part: %d.\n", versionPart))
 	}
 }
 
-func (v *Version) StringBump(versionPart string) error {
+// StringBump returns a new Version instance after incrementing the specified part (as a string)
+func (v *Version) StringBump(versionPart string) *Version {
 	switch versionPart {
 	case VersionMajorStr:
 		return v.Bump(VersionMajor)
@@ -80,10 +79,11 @@ func (v *Version) StringBump(versionPart string) error {
 	case VersionPatchStr:
 		return v.Bump(VersionPatch)
 	default:
-		return fmt.Errorf("invalid version part: %s", versionPart)
+		panic(fmt.Sprintf("invalid version part: %s. Call `ValidateVersionPart()` to prevent this error.\n", versionPart))
 	}
 }
 
+// ValidateVersionPart checks if the provided version part string is valid
 func ValidateVersionPart(part string) bool {
 	switch part {
 	case VersionMajorStr, VersionMinorStr, VersionPatchStr:
@@ -93,6 +93,7 @@ func ValidateVersionPart(part string) bool {
 	}
 }
 
+// ValidateVersion checks if the provided version string is a valid semantic version
 func ValidateVersion(version string) bool {
 	_, err := ParseVersion(version)
 	return err == nil
