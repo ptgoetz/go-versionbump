@@ -63,12 +63,12 @@ func TestGitMetadata(t *testing.T) {
 	assert.Equal(t, "Tagging version 1.0.1", gitMeta.TagMessage)
 }
 
-func verifyFileContent(t *testing.T, filePath, expectedContent string) {
-	content, err := os.ReadFile(filePath)
-	if err != nil {
-		t.Fatalf("Failed to read file %s: %v", filePath, err)
-	}
-	if string(content) != expectedContent {
-		t.Errorf("Expected content '%s', but got '%s'", expectedContent, string(content))
-	}
-}
+//func verifyFileContent(t *testing.T, filePath, expectedContent string) {
+//	content, err := os.ReadFile(filePath)
+//	if err != nil {
+//		t.Fatalf("Failed to read file %s: %v", filePath, err)
+//	}
+//	if string(content) != expectedContent {
+//		t.Errorf("Expected content '%s', but got '%s'", expectedContent, string(content))
+//	}
+//}
