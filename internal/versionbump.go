@@ -8,7 +8,6 @@ import (
 	"github.com/ptgoetz/go-versionbump/internal/utils"
 	vbu "github.com/ptgoetz/go-versionbump/internal/utils"
 	vbv "github.com/ptgoetz/go-versionbump/internal/version"
-
 	"os"
 	"path"
 	"strings"
@@ -40,21 +39,21 @@ func NewVersionBump(options config.Options) (*VersionBump, error) {
 	// get the old version from the config
 	vTemp, err := vbv.ParseVersion(cfg.Version)
 	if err != nil {
-		logFatal(fmt.Sprintf("Failed to parse semantic version string for old version: %s", err))
+		logFatal(options, fmt.Sprintf("Failed to parse semantic version string for old version: %s", err))
 	}
 	oldVersion = vTemp.String()
 
 	// get the new or reset version
 	if options.IsResetVersion() {
 		if !vbv.ValidateVersion(options.ResetVersion) {
-			logFatal(fmt.Sprintf("Failed to parse semantic version reset string: %s\n", options.ResetVersion))
+			logFatal(options, fmt.Sprintf("Failed to parse semantic version reset string: %s\n", options.ResetVersion))
 		}
 		// set new version to the reset version
 		vTemp, _ = vbv.ParseVersion(options.ResetVersion)
 		newVersion = vTemp.String()
 	} else {
 		if !vbv.ValidateVersionPart(options.BumpPart) {
-			logFatal(fmt.Sprintf("Invalid version part: %s", options.BumpPart))
+			logFatal(options, fmt.Sprintf("Invalid version part: %s", options.BumpPart))
 		}
 		_ = vTemp.StringBump(options.BumpPart)
 		newVersion = vTemp.String()
@@ -130,8 +129,8 @@ func (vb *VersionBump) gitPreFlight() {
 	if vb.Config.IsGitRequired() {
 		isGitAvalable, version := git.IsGitAvailable()
 		if !isGitAvalable {
-			logFatal("Git is required by the configuration but is not available. " +
-				"VersionBump requires Git to be installed and available in the system PATH in order †o perform Giit " +
+			logFatal(vb.Options, "Git is required by the configuration but is not available. "+
+				"VersionBump requires Git to be installed and available in the system PATH in order †o perform Giit "+
 				"operations")
 		} else {
 			logVerbose(vb.Options, fmt.Sprintf("Git version: %s", strings.TrimSpace(version)[12:]))
@@ -141,18 +140,18 @@ func (vb *VersionBump) gitPreFlight() {
 	// check if the parent directory is a Git repository
 	isGitRepo, err := git.IsGitRepository(vb.ParentDir)
 	if err != nil {
-		logFatal(fmt.Sprintf("Error checking for git repository: %v\n", err))
+		logFatal(vb.Options, fmt.Sprintf("Error checking for git repository: %v\n", err))
 	}
 	if !isGitRepo {
 
 		if vb.Options.NoPrompt {
-			logFatal("The project root is not a Git repository, but Git options are enabled in the " +
+			logFatal(vb.Options, "The project root is not a Git repository, but Git options are enabled in the "+
 				"configuration file.")
 		}
 		if promptUserConfirmation("Do you want to initialize a Git repository in this directory?") {
 			err := git.InitializeGitRepo(vb.ParentDir)
 			if err != nil {
-				logFatal(fmt.Sprintf("Unable to initialize Git repository: %v\n", err))
+				logFatal(vb.Options, fmt.Sprintf("Unable to initialize Git repository: %v\n", err))
 			}
 		}
 	}
@@ -160,8 +159,7 @@ func (vb *VersionBump) gitPreFlight() {
 	// check if the Git repository has pending changes
 	isDirty, _ := git.HasPendingChanges(vb.ParentDir)
 	if isDirty {
-		fmt.Println("ERROR: The Git repository has pending changes. Please commit or stash them before proceeding.")
-		os.Exit(1)
+		logFatal(vb.Options, "The Git repository has pending changes. Please commit or stash them before proceeding.")
 	}
 }
 
@@ -187,7 +185,7 @@ func (vb *VersionBump) gitCommit() {
 	}
 	gitMeta, err := vb.GitMetadata()
 	if err != nil {
-		logFatal(fmt.Sprintf("Unable to get Git metadata: %v\n", err))
+		logFatal(vb.Options, fmt.Sprintf("Unable to get Git metadata: %v\n", err))
 	}
 	if vb.Config.IsGitRequired() && !vb.Options.NoPrompt {
 
@@ -285,7 +283,7 @@ func (vb *VersionBump) makeChanges() {
 func (vb *VersionBump) promptProceedWithChanges() bool {
 	if !vb.Options.NoPrompt {
 		if !promptUserConfirmation("Proceed with the changes?") {
-			logVerbose(vb.Options, "Cancelled by user.")
+			logWarning(vb.Options, "Cancelled by user.")
 			os.Exit(0)
 		}
 	}
@@ -299,10 +297,10 @@ func promptUserConfirmation(prompt string) bool {
 
 	for {
 		// Print the prompt and read the user's input
-		fmt.Printf("%s [y/N]: ", prompt)
+		printColor(fmt.Sprintf("%s [y/N]: ", prompt), ColorBlue)
 		input, err := reader.ReadString('\n')
 		if err != nil {
-			fmt.Println("Error reading input. Please try again.")
+			printColor("Error reading input. Please try again.", ColorYellow)
 			continue
 		}
 
@@ -318,18 +316,75 @@ func promptUserConfirmation(prompt string) bool {
 		} else if input == "n" {
 			return false
 		} else {
-			fmt.Println("Invalid input. Please enter 'y' or 'n'.")
+			printColor("Invalid input. Please enter 'y' or 'n'.", ColorYellow)
 		}
 	}
 }
 
-func logFatal(msg string) {
-	fmt.Printf("ERROR: %s", msg)
+func logWarning(opts config.Options, msg string) {
+	printColorOpts(opts, fmt.Sprintf("WARNING: %s", msg), ColorYellow)
+}
+
+func logFatal(opts config.Options, msg string) {
+	printColorOpts(opts, fmt.Sprintf("ERROR: %s", msg), ColorRed)
 	os.Exit(1)
 }
 
 func logVerbose(opts config.Options, msg string) {
 	if opts.DryRun || !opts.Quiet {
-		fmt.Println(msg)
+		printColorOpts(opts, fmt.Sprintf("%s\n", msg), ColorLightGray)
+	}
+}
+
+const (
+	ColorRed       = "red"
+	ColorGreen     = "green"
+	ColorYellow    = "yellow"
+	ColorBlue      = "blue"
+	ColorMagenta   = "magenta"
+	ColorCyan      = "cyan"
+	ColorWhite     = "white"
+	ColorLightGray = "lightgray"
+)
+
+// printColor prints the given text in different colors based on the color code
+func printColor(text string, color string) {
+
+	var colorCode string
+
+	// Define ANSI color codes
+	switch color {
+	case ColorRed:
+		colorCode = "\033[31m"
+	case ColorGreen:
+		colorCode = "\033[32m"
+	case ColorYellow:
+		colorCode = "\033[33m"
+	case ColorBlue:
+		colorCode = "\033[34m"
+	case ColorMagenta:
+		colorCode = "\033[35m"
+	case ColorCyan:
+		colorCode = "\033[36m"
+	case ColorWhite:
+		colorCode = "\033[37m"
+	case ColorLightGray:
+		colorCode = "\033[38;5;246m"
+	default:
+		colorCode = "\033[0m" // Default color (white)
+	}
+
+	// Print the text with the chosen color
+	fmt.Printf("%s%s\033[0m", colorCode, text)
+
+}
+
+// printColorOpts conditionally prints the given text in different colors based on the color code
+func printColorOpts(opts config.Options, text string, color string) {
+	if opts.NoColor {
+		fmt.Print(text)
+		return
+	} else {
+		printColor(text, color)
 	}
 }

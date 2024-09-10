@@ -22,9 +22,9 @@ func main() {
 	flag.BoolVar(&opts.Quiet, "quiet", false, "Don't print verbose output.")
 	flag.StringVar(&opts.ResetVersion, "reset", "", "Reset the version to the specified value.")
 	flag.BoolVar(&opts.NoGit, "no-git", false, "Don't perform any git operations.")
+	flag.BoolVar(&opts.NoColor, "no-color", false, "Disable color output.")
 	flag.Parse()
 	args := flag.Args()
-	//fmt.Printf("OS.ARGS: %V\n", args)
 
 	// print the version and exit
 	if opts.ShowVersion {
