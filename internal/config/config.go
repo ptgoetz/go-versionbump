@@ -41,6 +41,7 @@ type Options struct {
 	ShowVersion  bool
 	ResetVersion string
 	NoGit        bool
+	NoColor      bool
 	BumpPart     string
 }
 
