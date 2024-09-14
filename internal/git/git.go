@@ -47,7 +47,7 @@ func HasPendingChanges(dirPath string) (bool, error) {
 
 // InitializeGitRepo initializes a new Git repository in the specified directory path.
 func InitializeGitRepo(dirPath string) error {
-	_, _, err := runGitCommand(dirPath, "init")
+	_, _, err := runGitCommand(dirPath, "init", "--initial-branch=main")
 	if err != nil {
 		return fmt.Errorf("failed to initialize git repository: %w", err)
 	}
