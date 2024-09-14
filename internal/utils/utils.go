@@ -84,3 +84,13 @@ func ParentDirAbsolutePath(relativePath string) (string, error) {
 	// Return the absolute path of the parent directory
 	return parentDir, nil
 }
+
+func PaddingString(length int, padChar string) string {
+	if len(padChar) != 1 {
+		panic("padChar must be a single character")
+	}
+	if length <= 0 {
+		return ""
+	}
+	return strings.Repeat(padChar, length)
+}

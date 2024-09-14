@@ -8,106 +8,56 @@ import (
 	"github.com/ptgoetz/go-versionbump/internal/utils"
 	vbu "github.com/ptgoetz/go-versionbump/internal/utils"
 	vbv "github.com/ptgoetz/go-versionbump/internal/version"
+	"gopkg.in/yaml.v3"
 	"os"
 	"path"
 	"strings"
 )
 
 type VersionBump struct {
-	Config     config.Config
-	Options    config.Options
-	ParentDir  string
-	OldVersion string
-	NewVersion string
+	Config    config.Config
+	Options   config.Options
+	ParentDir string
 }
 
 // NewVersionBump creates a new VersionBump instance.
-// It loads the configuration file and determines/validates the old and new versions.
-// If the reset version option is set, the new version is set to the reset version.
 func NewVersionBump(options config.Options) (*VersionBump, error) {
-	// Log the version and configuration path
 
 	cfg, parentDir, err := config.LoadConfig(options.ConfigPath)
 	if err != nil {
 		return nil, err
 	}
 
-	// determine the old and new versions
-	var oldVersion string
-	var newVersion string
-
-	// get the old version from the config
-	vTemp, err := vbv.ParseVersion(cfg.Version)
-	if err != nil {
-		logFatal(options, fmt.Sprintf("Failed to parse semantic version string for old version: %s", err))
-	}
-	oldVersion = vTemp.String()
-
-	// get the new or reset version
-	if options.IsResetVersion() {
-		if !vbv.ValidateVersion(options.ResetVersion) {
-			logFatal(options, fmt.Sprintf("Failed to parse semantic version reset string: %s\n", options.ResetVersion))
-		}
-		// set new version to the reset version
-		vTemp, _ = vbv.ParseVersion(options.ResetVersion)
-		newVersion = vTemp.String()
-	} else {
-		if !vbv.ValidateVersionPart(options.BumpPart) {
-			logFatal(options, fmt.Sprintf("Invalid version part: %s", options.BumpPart))
-		}
-		_ = vTemp.StringBump(options.BumpPart)
-		newVersion = vTemp.String()
-	}
-
 	vb := &VersionBump{
-		Config:     *cfg,
-		Options:    options,
-		ParentDir:  parentDir,
-		OldVersion: oldVersion,
-		NewVersion: newVersion,
+		Config:    *cfg,
+		Options:   options,
+		ParentDir: parentDir,
 	}
 
 	return vb, nil
 }
 
-func (vb *VersionBump) GitMetadata() (*config.GitMeta, error) {
-	var commitMessageTemplate string
-	if vb.Config.GitCommitTemplate != "" {
-		commitMessageTemplate = vb.Config.GitCommitTemplate
-	} else {
-		commitMessageTemplate = config.DefaultGitCommitTemplate
+func (vb *VersionBump) GetOldVersion() string {
+	if !vbv.ValidateVersion(vb.Config.Version) {
+		logFatal(vb.Options, fmt.Sprintf("Failed to parse semantic version string for old version: %s", vb.Config.Version))
 	}
-	commitMessage := utils.ReplaceInString(commitMessageTemplate, "{old}", vb.OldVersion)
-	commitMessage = utils.ReplaceInString(commitMessage, "{new}", vb.NewVersion)
-
-	var tagTemplate string
-	if vb.Config.GitTagTemplate != "" {
-		tagTemplate = vb.Config.GitTagTemplate
-	} else {
-		tagTemplate = config.DefaultGitTagTemplate
-	}
-	tagName := utils.ReplaceInString(tagTemplate, "{old}", vb.OldVersion)
-	tagName = utils.ReplaceInString(tagName, "{new}", vb.NewVersion)
-
-	var tagMessageTemplate string
-	if vb.Config.GitTagMessageTemplate != "" {
-		tagMessageTemplate = vb.Config.GitTagMessageTemplate
-	} else {
-		tagMessageTemplate = config.DefaultGitTagMessageTemplate
-	}
-	tagMessage := utils.ReplaceInString(tagMessageTemplate, "{old}", vb.OldVersion)
-	tagMessage = utils.ReplaceInString(tagMessage, "{new}", vb.NewVersion)
-
-	return &config.GitMeta{
-		CommitMessage: commitMessage,
-		TagMessage:    tagMessage,
-		TagName:       tagName,
-	}, nil
+	oldVersion, _ := vbv.ParseVersion(vb.Config.Version)
+	return oldVersion.String()
 }
 
-// -------------------------
-
-// -------------------------
+func (vb *VersionBump) GetNewVersion() string {
+	if vb.Options.IsResetVersion() {
+		v, err := vbv.ParseVersion(vb.Options.ResetVersion)
+		if err != nil {
+			logFatal(vb.Options, fmt.Sprintf("Failed to parse semantic version string for reset version: %s", vb.Options.ResetVersion))
+		}
+		return v.String()
+	}
+	oldVersionStr := vb.GetOldVersion()
+	oldVersion, _ := vbv.ParseVersion(oldVersionStr)
+	newVersion := oldVersion.StringBump(vb.Options.BumpPart)
+	return newVersion.String()
+}
 
 func (vb *VersionBump) Run() {
 	vb.preamble()
@@ -120,10 +70,121 @@ func (vb *VersionBump) Run() {
 	}
 }
 
+func (vb *VersionBump) Show(versionStr string) error {
+	var curVersionStr string
+	isProject := false
+	if versionStr != "" {
+		curVersionStr = versionStr
+	} else {
+		curVersionStr = vb.Config.Version
+		isProject = true
+	}
+	curVersion, err := vbv.ParseVersion(curVersionStr)
+	if err != nil {
+		return err
+	}
+
+	if !isProject {
+		logVerbose(vb.Options, fmt.Sprintf("Potential versioning paths for version: %s",
+			curVersion.String()))
+	} else {
+		logVerbose(vb.Options, fmt.Sprintf("Potential versioning paths for project version: %s",
+			curVersion.String()))
+	}
+	// we now know we have a valid version
+	majorVersion := curVersion.StringBump(vbv.VersionMajorStr)
+	minorVersion := curVersion.StringBump(vbv.VersionMinorStr)
+	patchVersion := curVersion.StringBump(vbv.VersionPatchStr)
+
+	padLen := len(curVersion.String()) - 2
+	padding := utils.PaddingString(padLen, " ")
+
+	tree := fmt.Sprintf(
+		`%s ── bump ─┬─ major ─ %s
+        %s    ├─ minor ─ %s
+        %s    ╰─ patch ─ %s
+`,
+		curVersion.String(),
+		majorVersion.String(),
+		padding,
+		minorVersion.String(),
+		padding,
+		patchVersion.String())
+
+	printColorOpts(vb.Options, tree, ColorBlue)
+	return nil
+}
+
+func (vb *VersionBump) ShowEffectiveConfig() error {
+	logVerbose(vb.Options, fmt.Sprintf("Config file: %s", vb.Options.ConfigPath))
+	logVerbose(vb.Options, fmt.Sprintf("Project root: %s", vb.ParentDir))
+	logVerbose(vb.Options, "Effective Configuration YAML:")
+
+	conf := &vb.Config
+
+	// set defaults if not overridden
+	if conf.GitCommitTemplate == "" {
+		conf.GitCommitTemplate = config.DefaultGitCommitTemplate
+	}
+	if conf.GitTagTemplate == "" {
+		conf.GitTagTemplate = config.DefaultGitTagTemplate
+	}
+	if conf.GitTagMessageTemplate == "" {
+		conf.GitTagMessageTemplate = config.DefaultGitTagMessageTemplate
+	}
+
+	b, err := yaml.Marshal(conf)
+	if err != nil {
+		return err
+	}
+	printColorOpts(vb.Options, string(b), ColorBlue)
+	fmt.Println()
+
+	err = vb.Show("")
+	return err
+}
+
+func (vb *VersionBump) GitMetadata() (*config.GitMeta, error) {
+	var commitMessageTemplate string
+	if vb.Config.GitCommitTemplate != "" {
+		commitMessageTemplate = vb.Config.GitCommitTemplate
+	} else {
+		commitMessageTemplate = config.DefaultGitCommitTemplate
+	}
+	commitMessage := utils.ReplaceInString(commitMessageTemplate, "{old}", vb.GetOldVersion())
+	commitMessage = utils.ReplaceInString(commitMessage, "{new}", vb.GetNewVersion())
+
+	var tagTemplate string
+	if vb.Config.GitTagTemplate != "" {
+		tagTemplate = vb.Config.GitTagTemplate
+	} else {
+		tagTemplate = config.DefaultGitTagTemplate
+	}
+	tagName := utils.ReplaceInString(tagTemplate, "{old}", vb.GetOldVersion())
+	tagName = utils.ReplaceInString(tagName, "{new}", vb.GetNewVersion())
+
+	var tagMessageTemplate string
+	if vb.Config.GitTagMessageTemplate != "" {
+		tagMessageTemplate = vb.Config.GitTagMessageTemplate
+	} else {
+		tagMessageTemplate = config.DefaultGitTagMessageTemplate
+	}
+	tagMessage := utils.ReplaceInString(tagMessageTemplate, "{old}", vb.GetOldVersion())
+	tagMessage = utils.ReplaceInString(tagMessage, "{new}", vb.GetNewVersion())
+
+	return &config.GitMeta{
+		CommitMessage: commitMessage,
+		TagMessage:    tagMessage,
+		TagName:       tagName,
+	}, nil
+}
+
 func (vb *VersionBump) gitPreFlight() {
 	if vb.Options.NoGit {
 		return
 	}
+
+	logVerbose(vb.Options, "Checking git configuration...")
 
 	// make sure the `git` command is available
 	if vb.Config.IsGitRequired() {
@@ -138,7 +199,7 @@ func (vb *VersionBump) gitPreFlight() {
 	}
 
 	// check if the parent directory is a Git repository
-	isGitRepo, err := git.IsGitRepository(vb.ParentDir)
+	isGitRepo, err := git.IsRepository(vb.ParentDir)
 	if err != nil {
 		logFatal(vb.Options, fmt.Sprintf("Error checking for git repository: %v\n", err))
 	}
@@ -148,11 +209,47 @@ func (vb *VersionBump) gitPreFlight() {
 			logFatal(vb.Options, "The project root is not a Git repository, but Git options are enabled in the "+
 				"configuration file.")
 		}
-		if promptUserConfirmation("Do you want to initialize a Git repository in this directory?") {
+		if promptUserConfirmation("The project directory is not a git repository.\nDo you want to initialize a git repository in the project directory?") {
 			err := git.InitializeGitRepo(vb.ParentDir)
 			if err != nil {
 				logFatal(vb.Options, fmt.Sprintf("Unable to initialize Git repository: %v\n", err))
 			}
+			logVerbose(vb.Options, "Initialized Git repository.\nAdding tracked files...")
+			vb.logTrackedFiles()
+			err = git.AddFiles(vb.ParentDir, vb.Config.Files...)
+			if err != nil {
+				logFatal(vb.Options, fmt.Sprintf("Error adding files to the Git staging area: %v\n", err))
+			}
+			logVerbose(vb.Options, "Performing initial commit.")
+			err = git.CommitChanges(vb.ParentDir, "Initial commit", vb.Config.GitSign)
+			if err != nil {
+				logFatal(vb.Options, fmt.Sprintf("Error committing initial changes: %v\n", err))
+			}
+		} else {
+			os.Exit(0)
+		}
+	}
+
+	branch, err := git.GetCurrentBranch(vb.ParentDir)
+	if err != nil {
+		logFatal(vb.Options, fmt.Sprintf("Error getting current branch: %v\n", err))
+	}
+	logVerbose(vb.Options, fmt.Sprintf("Current branch: %s", branch))
+
+	if vb.Config.GitTag {
+		// check to see if the tag already exists
+		logVerbose(vb.Options, "Checking for existing tag...")
+		gitMeta, err := vb.GitMetadata()
+		if err != nil {
+			logFatal(vb.Options, fmt.Sprintf("Unable to get Git metadata: %v\n", err))
+		}
+		tagExists, err := git.TagExists(vb.ParentDir, gitMeta.TagName)
+		if err != nil {
+			logFatal(vb.Options, fmt.Sprintf("Error checking for existing tag: %v\n", err))
+		}
+		if tagExists {
+			logFatal(vb.Options, fmt.Sprintf("Tag '%s' already exists in the git repository. "+
+				"Please bump to a different version or remove the existing tag.\n", gitMeta.TagName))
 		}
 	}
 
@@ -161,9 +258,35 @@ func (vb *VersionBump) gitPreFlight() {
 	if isDirty {
 		logFatal(vb.Options, "The Git repository has pending changes. Please commit or stash them before proceeding.")
 	}
+
+	// check if GPG signing is enabled for commits
+	signKey, err := git.GetSigningKey(vb.ParentDir)
+	if err != nil {
+		logFatal(vb.Options, fmt.Sprintf("Error checking for GPG signing key: %v\n", err))
+	}
+	signByDefault, err := git.IsSigningEnabled(vb.ParentDir)
+	if err != nil {
+		logFatal(vb.Options, fmt.Sprintf("Error checking if GPG signing is enabled: %v\n", err))
+	}
+	if signByDefault || vb.Config.GitSign {
+		logVerbose(vb.Options, "GPG signing of git commits is enabled. Checking configuration...")
+	}
+	// sanity check signing key
+	if (signByDefault || vb.Config.GitSign) && signKey == "" {
+		logFatal(vb.Options, "GPG signing of git commits is enabled but no signing key is configured. "+
+			"Please configure a signing key in git.")
+	}
+	if signByDefault && !vb.Config.GitSign {
+		logWarning(vb.Options, "GPG signing of git commits is enabled by default in the git configuration. "+
+			"Consider enabling GPG signing in the VersionBump configuration.")
+	}
+	if signByDefault || vb.Config.GitSign {
+		logVerbose(vb.Options, fmt.Sprintf("Git commits will be signed with GPG key: %s", signKey))
+	}
+
 }
 
-// gitPreFlight performs a pre-flight check for Git operations.
+// preamble prints the version bump preamble.
 func (vb *VersionBump) preamble() {
 	logVerbose(vb.Options, vbv.VersionBumpVersion)
 	logVerbose(vb.Options, fmt.Sprintf("Configuration file: %s", vb.Options.ConfigPath))
@@ -202,7 +325,7 @@ func (vb *VersionBump) gitCommit() {
 	// commit changes
 	if vb.Config.GitCommit {
 		logVerbose(vb.Options, "Committing changes...")
-		err := git.CommitChanges(vb.ParentDir, gitMeta.CommitMessage)
+		err := git.CommitChanges(vb.ParentDir, gitMeta.CommitMessage, vb.Config.GitSign)
 		if err != nil {
 			fmt.Printf("Error committing changes: %v\n", err)
 			os.Exit(1)
@@ -211,14 +334,14 @@ func (vb *VersionBump) gitCommit() {
 	}
 	if vb.Config.GitTag {
 		logVerbose(vb.Options, "Tagging changes...")
-		err := git.TagChanges(vb.ParentDir, gitMeta.TagName, gitMeta.TagMessage)
+		err := git.TagChanges(vb.ParentDir, gitMeta.TagName, gitMeta.TagMessage, vb.Config.GitSign)
 		if err != nil {
 			fmt.Printf("Error tagging changes: %v\n", err)
 			os.Exit(1)
 		}
 		logVerbose(vb.Options,
 			fmt.Sprintf(
-				"Tagged '%s' created with message: %s",
+				"Tag '%s' created with message: %s",
 				gitMeta.TagName,
 				gitMeta.TagMessage))
 	}
@@ -226,17 +349,17 @@ func (vb *VersionBump) gitCommit() {
 
 // bumpPreflight performs a pre-flight check for the version bump operation.
 func (vb *VersionBump) bumpPreflight() {
-	if vb.Options.ResetVersion == "" {
+	if !vb.Options.IsResetVersion() {
 		logVerbose(vb.Options, fmt.Sprintf("Bumping version part: %s", vb.Options.BumpPart))
 	} else {
-		logVerbose(vb.Options, fmt.Sprintf("Resetting version to: %s", vb.NewVersion))
+		logVerbose(vb.Options, fmt.Sprintf("Resetting version to: %s", vb.GetNewVersion()))
 	}
-	logVerbose(vb.Options, fmt.Sprintf("Will bump version %s --> %s", vb.OldVersion, vb.NewVersion))
+	logVerbose(vb.Options, fmt.Sprintf("Will bump version %s --> %s", vb.GetOldVersion(), vb.GetNewVersion()))
 
 	// log what changes will be made to each file
 	for _, file := range vb.Config.Files {
-		find := vbu.ReplaceInString(file.Replace, "{version}", vb.OldVersion)
-		replace := vbu.ReplaceInString(file.Replace, "{version}", vb.NewVersion)
+		find := vbu.ReplaceInString(file.Replace, "{version}", vb.GetOldVersion())
+		replace := vbu.ReplaceInString(file.Replace, "{version}", vb.GetNewVersion())
 
 		logVerbose(vb.Options, file.Path)
 		logVerbose(vb.Options, fmt.Sprintf("     Find: \"%s\"", find))
@@ -249,8 +372,7 @@ func (vb *VersionBump) bumpPreflight() {
 		if count > 0 {
 			logVerbose(vb.Options, fmt.Sprintf("    Found %d replacement(s)", count))
 		} else {
-			fmt.Println("ERROR: No replacements found in file: ", file.Path)
-			os.Exit(1)
+			logFatal(vb.Options, fmt.Sprintf("No replacements found in file: %s\n", file.Path))
 		}
 	}
 }
@@ -259,31 +381,29 @@ func (vb *VersionBump) bumpPreflight() {
 func (vb *VersionBump) makeChanges() {
 	// at this point we have already checked the config and there are no errors
 	for _, file := range vb.Config.Files {
-		find := vbu.ReplaceInString(file.Replace, "{version}", vb.OldVersion)
-		replace := vbu.ReplaceInString(file.Replace, "{version}", vb.NewVersion)
+		find := vbu.ReplaceInString(file.Replace, "{version}", vb.GetOldVersion())
+		replace := vbu.ReplaceInString(file.Replace, "{version}", vb.GetNewVersion())
 
-		if !vb.Options.DryRun {
-			var resolvedPath string
-			if path.IsAbs(file.Path) {
-				resolvedPath = file.Path
-			} else {
-				resolvedPath = path.Join(vb.ParentDir, file.Path)
-			}
-			err := vbu.ReplaceInFile(resolvedPath, find, replace)
-			if err != nil {
-				fmt.Println(fmt.Errorf("error updating file %s: a%v", file.Path, err))
-				os.Exit(1)
-			}
-			logVerbose(vb.Options, fmt.Sprintf("Updated file: %s", file.Path))
+		var resolvedPath string
+		if path.IsAbs(file.Path) {
+			resolvedPath = file.Path
+		} else {
+			resolvedPath = path.Join(vb.ParentDir, file.Path)
 		}
+		err := vbu.ReplaceInFile(resolvedPath, find, replace)
+		if err != nil {
+			fmt.Println(fmt.Errorf("error updating file %s: a%v", file.Path, err))
+			os.Exit(1)
+		}
+		logVerbose(vb.Options, fmt.Sprintf("Updated file: %s", file.Path))
 	}
+
 }
 
 // promptProceedWithChanges prompts the user to proceed with the changes.
 func (vb *VersionBump) promptProceedWithChanges() bool {
 	if !vb.Options.NoPrompt {
 		if !promptUserConfirmation("Proceed with the changes?") {
-			logWarning(vb.Options, "Cancelled by user.")
 			os.Exit(0)
 		}
 	}
@@ -314,6 +434,7 @@ func promptUserConfirmation(prompt string) bool {
 		if input == "y" {
 			return true
 		} else if input == "n" {
+			logVerbose(config.Options{}, "Operation canceled by user.")
 			return false
 		} else {
 			printColor("Invalid input. Please enter 'y' or 'n'.", ColorYellow)
@@ -322,16 +443,16 @@ func promptUserConfirmation(prompt string) bool {
 }
 
 func logWarning(opts config.Options, msg string) {
-	printColorOpts(opts, fmt.Sprintf("WARNING: %s", msg), ColorYellow)
+	printColorOpts(opts, fmt.Sprintf("WARNING: %s\n", msg), ColorYellow)
 }
 
 func logFatal(opts config.Options, msg string) {
-	printColorOpts(opts, fmt.Sprintf("ERROR: %s", msg), ColorRed)
+	printColorOpts(opts, fmt.Sprintf("ERROR: %s\n", msg), ColorRed)
 	os.Exit(1)
 }
 
 func logVerbose(opts config.Options, msg string) {
-	if opts.DryRun || !opts.Quiet {
+	if !opts.Quiet {
 		printColorOpts(opts, fmt.Sprintf("%s\n", msg), ColorLightGray)
 	}
 }

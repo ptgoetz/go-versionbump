@@ -18,7 +18,7 @@ func TestIsGitAvailable(t *testing.T) {
 	t.Logf("Git is available with version: %s", version)
 }
 
-// TestIsGitRepository tests the IsGitRepository function
+// TestIsGitRepository tests the IsRepository function
 func TestIsGitRepository(t *testing.T) {
 	// Create a temporary directory
 	dir, err := os.MkdirTemp("", "gitrepo")
@@ -34,7 +34,7 @@ func TestIsGitRepository(t *testing.T) {
 	}
 
 	// Check if the directory is recognized as a Git repository
-	isRepo, err := IsGitRepository(dir)
+	isRepo, err := IsRepository(dir)
 	if err != nil {
 		t.Fatalf("Unexpected error: %v", err)
 	}

@@ -10,5 +10,9 @@ files:                   # The files to update with the new version.
   - path: "README.md"
     replace: "**Latest Version:** v{version}"
 
+  # Rewrite download URLs in the README to point to the new version.
+  - path: "README.md"
+    replace: "/v{version}"
+
   - path: "Makefile"
     replace: "VERSION := \"v{version}\""

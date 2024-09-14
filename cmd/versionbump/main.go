@@ -4,54 +4,165 @@ import (
 	"fmt"
 	"github.com/ptgoetz/go-versionbump/internal"
 	vbc "github.com/ptgoetz/go-versionbump/internal/config"
-	vbv "github.com/ptgoetz/go-versionbump/internal/version"
+	"github.com/ptgoetz/go-versionbump/internal/version"
 	"github.com/spf13/cobra"
-	"log"
+	"github.com/spf13/pflag"
 	"os"
 )
 
-var opts vbc.Options
-
 func main() {
-	var rootCmd = &cobra.Command{
-		Use:   "versionbump [bump-part]",
-		Short: "VersionBump is a tool for managing version bumps",
-		Long:  `VersionBump is a tool for managing version bumps with optional git integration.`,
-		Args:  cobra.MaximumNArgs(1),
-		Run: func(cmd *cobra.Command, args []string) {
-			if opts.ShowVersion {
-				fmt.Println(vbv.VersionBumpVersion)
-				os.Exit(0)
-			}
-
-			if len(args) > 0 {
-				opts.BumpPart = args[0]
-			}
-			if len(args) == 0 && opts.ResetVersion == "" {
-				fmt.Println("ERROR: no version part specified.")
-				cmd.Usage()
-				os.Exit(1)
-			}
-
-			vb, err := internal.NewVersionBump(opts)
-			if err != nil {
-				log.Fatal(err)
-			}
-			vb.Run()
-		},
-	}
-
-	rootCmd.Flags().BoolVarP(&opts.ShowVersion, "version", "V", false, "Show the version of Config and exit.")
-	rootCmd.Flags().StringVarP(&opts.ConfigPath, "config", "c", "versionbump.yaml", "The path to the configuration file")
-	rootCmd.Flags().BoolVar(&opts.DryRun, "dry-run", false, "Dry run. Don't change anything, just report what would be changed")
-	rootCmd.Flags().BoolVar(&opts.NoPrompt, "no-prompt", false, "Don't prompt the user for confirmation before making changes.")
-	rootCmd.Flags().BoolVarP(&opts.Quiet, "quiet", "q", false, "Don't print verbose output.")
-	rootCmd.Flags().StringVar(&opts.ResetVersion, "reset", "", "Reset the version to the specified value.")
-	rootCmd.Flags().BoolVar(&opts.NoGit, "no-git", false, "Don't perform any git operations.")
-	rootCmd.Flags().BoolVar(&opts.NoColor, "no-color", false, "Disable color output.")
-
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
 		os.Exit(1)
 	}
+}
+
+var opts vbc.Options
+
+var rootCmd = &cobra.Command{
+	Use:   "versionbump",
+	Short: `VersionBump is a command-line tool designed to automate version string management in projects.`,
+	Long:  `VersionBump is a command-line tool designed to automate version string management in projects.`,
+	RunE:  runRootCmd, // Use RunE for better error handling
+}
+
+var majorCmd = &cobra.Command{
+	Use:   "major",
+	Short: `Bump the major version number (e.g. 1.2.3 -> 2.0.0).`,
+	Long:  `Bump the major version number (e.g. 1.2.3 -> 2.0.0).`,
+	RunE:  bumpMajor, // Use RunE for better error handling
+}
+
+var minorCmd = &cobra.Command{
+	Use:   "minor",
+	Short: `Bump the minor version number (e.g. 1.2.3 -> 1.3.0).`,
+	Long:  `Bump the minor version number (e.g. 1.2.3 -> 1.3.0).`,
+	RunE:  bumpMinor, // Use RunE for better error handling
+}
+
+var patchCmd = &cobra.Command{
+	Use:   "patch",
+	Short: `Bump the patch version number (e.g. 1.2.3 -> 1.2.4).`,
+	Long:  `Bump the patch version number (e.g. 1.2.3 -> 1.2.4).`,
+	RunE:  bumpPatch, // Use RunE for better error handling
+}
+
+var configCmd = &cobra.Command{
+	Use:   "config",
+	Short: `Show the effective configuration of the project.`,
+	Long:  `Show the effective configuration of the project.`,
+	RunE:  runConfigCmd, // Use RunE for better error handling
+}
+
+var resetCmd = &cobra.Command{
+	Use:   "reset <version>",
+	Short: `Reset the project version to the specified value.`,
+	Long:  `Reset the project version to the specified value. Value can be any valid semantic version string.`,
+	Args:  cobra.ExactArgs(1),
+	RunE:  runResetCmd, // Use RunE for better error handling
+}
+
+var showCmd = &cobra.Command{
+	Use:   "show [version]",
+	Short: `Show potential versioning paths for the project version or a specific version.`,
+	Long:  `Show potential versioning paths for the project version or a specific version.`,
+	Args:  cobra.MaximumNArgs(1),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		vb, err := internal.NewVersionBump(opts)
+		if err != nil {
+			return err
+		}
+		versionStr := ""
+		if len(args) > 0 {
+			versionStr = args[0]
+		}
+
+		return vb.Show(versionStr)
+	},
+}
+
+func init() {
+	rootCmd.Flags().BoolVarP(&opts.ShowVersion, "version", "V", false, "Show the VersionBump version and exit.")
+
+	commonFlags := pflag.NewFlagSet("common", pflag.ExitOnError)
+	commonFlags.StringVarP(&opts.ConfigPath, "config", "c", "versionbump.yaml", "The path to the configuration file")
+	commonFlags.BoolVar(&opts.NoPrompt, "no-prompt", false, "Don't prompt the user for confirmation before making changes.")
+	commonFlags.BoolVarP(&opts.Quiet, "quiet", "q", false, "Don't print verbose output.")
+	commonFlags.BoolVar(&opts.NoGit, "no-git", false, "Don't perform any git operations.")
+	commonFlags.BoolVar(&opts.NoColor, "no-color", false, "Disable color output.")
+
+	configColorFlags := pflag.NewFlagSet("config-color", pflag.ExitOnError)
+	configColorFlags.StringVarP(&opts.ConfigPath, "config", "c", "versionbump.yaml", "The path to the configuration file")
+	configColorFlags.BoolVar(&opts.NoColor, "no-color", false, "Disable color output.")
+
+	commonFlags.AddFlagSet(configColorFlags)
+
+	showCmd.Flags().AddFlagSet(configColorFlags)
+	configCmd.Flags().AddFlagSet(configColorFlags)
+
+	majorCmd.Flags().AddFlagSet(commonFlags)
+	minorCmd.Flags().AddFlagSet(commonFlags)
+	patchCmd.Flags().AddFlagSet(commonFlags)
+	resetCmd.Flags().AddFlagSet(commonFlags)
+
+	rootCmd.AddCommand(majorCmd)
+	rootCmd.AddCommand(minorCmd)
+	rootCmd.AddCommand(patchCmd)
+	rootCmd.AddCommand(resetCmd)
+	rootCmd.AddCommand(showCmd)
+	rootCmd.AddCommand(configCmd)
+
+}
+
+func runRootCmd(cmd *cobra.Command, args []string) error {
+	if opts.ShowVersion {
+		fmt.Println(version.VersionBumpVersion)
+		return nil
+	}
+	return cmd.Help()
+}
+
+func bumpMajor(cmd *cobra.Command, args []string) error {
+	return runVersionBump(version.VersionMajorStr)
+}
+
+func bumpMinor(cmd *cobra.Command, args []string) error {
+	return runVersionBump(version.VersionMinorStr)
+}
+
+func bumpPatch(cmd *cobra.Command, args []string) error {
+	return runVersionBump(version.VersionPatchStr)
+}
+
+func runResetCmd(cmd *cobra.Command, args []string) error {
+	opts.ResetVersion = args[0]
+	vb, err := internal.NewVersionBump(opts)
+	if err != nil {
+		return err
+	}
+
+	vb.Run()
+	return nil
+}
+
+func runConfigCmd(cmd *cobra.Command, args []string) error {
+	vb, err := internal.NewVersionBump(opts)
+	if err != nil {
+		return err
+	}
+
+	return vb.ShowEffectiveConfig()
+}
+
+// runVersionBump contains the logic for executing the version bump process
+func runVersionBump(bumpPart string) error {
+	opts.BumpPart = bumpPart
+
+	vb, err := internal.NewVersionBump(opts)
+	if err != nil {
+		return err
+	}
+
+	// Run the version bump process
+	vb.Run()
+	return nil
 }
