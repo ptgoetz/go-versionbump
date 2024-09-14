@@ -153,10 +153,12 @@ git-sign: false          # Whether to sign the git commit/tag.
 
 files:                   # The files to update with the new version.
    - path: "version.go"   # The path to the file to update.
-     replace: "v{version}" # The search string to replace in the file.
+     replace: 
+      - "v{version}" # The search string to replace in the file.
 
    - path: "README.md"
-     replace: "Latest Version: {version}"
+     replace: 
+      - "Latest Version: {version}"
 ```
 
 - `version`: REQUIRED The current version of the project This must be a [Semantic Versioning](https://semver.org/) 
@@ -167,7 +169,7 @@ files:                   # The files to update with the new version.
 - `files`: (Required) A list of files to update with the new version number.
    - `path`: The path to the file. **Note**: Relative file paths are relative to the config file parent directory. 
              Absolute paths are used as-is.
-   - `replace`: The string to replace with the new version number. Use `{version}` as a placeholder.
+   - `replace`: A list of strings to replace with the new version number. Use `{version}` as a placeholder.
 
 **Important Note:**
 
@@ -200,10 +202,12 @@ git-sign: true            # Whether to sign the git commit/tag.
 
 files:                    # The files to update with the new version (i.e. "Tracked files").
   - path: "main.go"       # The path to the file to update.
-    replace: "v{version}" # The search string to replace in the file.
+    replace: 
+      - "v{version}" # The search string to replace in the file.
 
   - path: "README.md"
-    replace: "**Current Version:** v{version}"
+    replace: 
+      - "**Current Version:** v{version}"
 ```
 
 ### Default (Verbose) Output with Prompts

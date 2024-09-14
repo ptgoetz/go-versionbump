@@ -25,9 +25,11 @@ func TestNewVersionBump(t *testing.T) {
   git-tag: false
   files:
     - path: "version.go"
-      replace: "v{version}"
+      replace: 
+        - "v{version}"
     - path: "README.md"
-      replace: "Version: {version}"
+      replace: 
+        - "Version: {version}"
 `
 	if err := os.WriteFile(filePath, []byte(yamlContent), 0644); err != nil {
 		t.Fatalf("Failed to write to YAML config file: %v", err)

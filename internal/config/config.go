@@ -62,8 +62,8 @@ func (v Config) IsGitRequired() bool {
 
 // VersionedFile represents the file to be updated with the new version.
 type VersionedFile struct {
-	Path    string `yaml:"path"`
-	Replace string `yaml:"replace"`
+	Path    string   `yaml:"path"`
+	Replace []string `yaml:"replace"`
 }
 
 // LoadConfig loads the configuration from a YAML file
@@ -106,7 +106,7 @@ func LoadConfig(filePath string) (*Config, string, error) {
 
 	configPtr := &config
 	// include the config file as a file to update
-	configPtr.Files = append(configPtr.Files, VersionedFile{Path: configFile, Replace: "version: \"{version}\""})
+	configPtr.Files = append(configPtr.Files, VersionedFile{Path: configFile, Replace: []string{"version: \"{version}\""}})
 
 	return configPtr, root, nil
 }

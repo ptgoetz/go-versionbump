@@ -5,14 +5,17 @@ git-sign: true          # Whether to sign the git tag.
 
 files:                   # The files to update with the new version.
   - path: "internal/version/version.go"   # The path to the file to update.
-    replace: "v{version}" # The search string to replace in the file.
+    replace:
+      - "v{version}" # The search string to replace in the file.
 
   - path: "README.md"
-    replace: "**Latest Version:** v{version}"
-
-  # Rewrite download URLs in the README to point to the new version.
-  - path: "README.md"
-    replace: "/v{version}"
+    replace:
+      - "**Latest Version:** v{version}"
+      # Rewrite download URLs in the README to point to the new version.
+      - "/v{version}"
+      # Update the version in the usage example.
+      - "VersionBump v{version}"
 
   - path: "Makefile"
-    replace: "VERSION := \"v{version}\""
+    replace:
+      - "VERSION := \"v{version}\""

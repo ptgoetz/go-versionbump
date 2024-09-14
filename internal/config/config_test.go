@@ -24,9 +24,11 @@ git-tag: false
 git-sign: true
 files:
   - path: "version.go"
-    replace: "v{version}"
+    replace: 
+      - "v{version}"
   - path: "README.md"
-    replace: "Version: {version}"
+    replace: 
+      - "Version: {version}"
 `
 	if err := os.WriteFile(filePath, []byte(yamlContent), 0644); err != nil {
 		t.Fatalf("Failed to write to YAML config file: %v", err)
@@ -51,10 +53,10 @@ files:
 	if len(config.Files) != 3 {
 		t.Fatalf("Expected 2 files, but got %d", len(config.Files))
 	}
-	if config.Files[0].Path != "version.go" || config.Files[0].Replace != "v{version}" {
+	if config.Files[0].Path != "version.go" || config.Files[0].Replace[0] != "v{version}" {
 		t.Errorf("Unexpected file config for 'version.go': %+v", config.Files[0])
 	}
-	if config.Files[1].Path != "README.md" || config.Files[1].Replace != "Version: {version}" {
+	if config.Files[1].Path != "README.md" || config.Files[1].Replace[0] != "Version: {version}" {
 		t.Errorf("Unexpected file config for 'README.md': %+v", config.Files[1])
 	}
 

@@ -25,7 +25,7 @@ func NewVersionBump(options config.Options) (*VersionBump, error) {
 
 	cfg, parentDir, err := config.LoadConfig(options.ConfigPath)
 	if err != nil {
-		return nil, err
+		logFatal(options, fmt.Sprintf("Error loading configuration file: %v", err))
 	}
 
 	vb := &VersionBump{
@@ -358,21 +358,23 @@ func (vb *VersionBump) bumpPreflight() {
 
 	// log what changes will be made to each file
 	for _, file := range vb.Config.Files {
-		find := vbu.ReplaceInString(file.Replace, "{version}", vb.GetOldVersion())
-		replace := vbu.ReplaceInString(file.Replace, "{version}", vb.GetNewVersion())
+		for _, replace := range file.Replace {
+			find := vbu.ReplaceInString(replace, "{version}", vb.GetOldVersion())
+			replace := vbu.ReplaceInString(replace, "{version}", vb.GetNewVersion())
 
-		logVerbose(vb.Options, file.Path)
-		logVerbose(vb.Options, fmt.Sprintf("     Find: \"%s\"", find))
-		logVerbose(vb.Options, fmt.Sprintf("  Replace: \"%s\"", replace))
-		count, err := vbu.CountStringsInFile(path.Join(vb.ParentDir, file.Path), find)
-		if err != nil {
-			fmt.Println(fmt.Errorf("error getting replacement count: a%v", err))
-			os.Exit(1)
-		}
-		if count > 0 {
-			logVerbose(vb.Options, fmt.Sprintf("    Found %d replacement(s)", count))
-		} else {
-			logFatal(vb.Options, fmt.Sprintf("No replacements found in file: %s\n", file.Path))
+			logVerbose(vb.Options, file.Path)
+			logVerbose(vb.Options, fmt.Sprintf("     Find: \"%s\"", find))
+			logVerbose(vb.Options, fmt.Sprintf("  Replace: \"%s\"", replace))
+			count, err := vbu.CountStringsInFile(path.Join(vb.ParentDir, file.Path), find)
+			if err != nil {
+				fmt.Println(fmt.Errorf("error getting replacement count: a%v", err))
+				os.Exit(1)
+			}
+			if count > 0 {
+				logVerbose(vb.Options, fmt.Sprintf("    Found %d replacement(s)", count))
+			} else {
+				logFatal(vb.Options, fmt.Sprintf("No replacements found in file: %s\n", file.Path))
+			}
 		}
 	}
 }
@@ -381,21 +383,23 @@ func (vb *VersionBump) bumpPreflight() {
 func (vb *VersionBump) makeChanges() {
 	// at this point we have already checked the config and there are no errors
 	for _, file := range vb.Config.Files {
-		find := vbu.ReplaceInString(file.Replace, "{version}", vb.GetOldVersion())
-		replace := vbu.ReplaceInString(file.Replace, "{version}", vb.GetNewVersion())
+		for _, replace := range file.Replace {
+			find := vbu.ReplaceInString(replace, "{version}", vb.GetOldVersion())
+			replace := vbu.ReplaceInString(replace, "{version}", vb.GetNewVersion())
 
-		var resolvedPath string
-		if path.IsAbs(file.Path) {
-			resolvedPath = file.Path
-		} else {
-			resolvedPath = path.Join(vb.ParentDir, file.Path)
+			var resolvedPath string
+			if path.IsAbs(file.Path) {
+				resolvedPath = file.Path
+			} else {
+				resolvedPath = path.Join(vb.ParentDir, file.Path)
+			}
+			err := vbu.ReplaceInFile(resolvedPath, find, replace)
+			if err != nil {
+				fmt.Println(fmt.Errorf("error updating file %s: a%v", file.Path, err))
+				os.Exit(1)
+			}
+			logVerbose(vb.Options, fmt.Sprintf("Updated file: %s", file.Path))
 		}
-		err := vbu.ReplaceInFile(resolvedPath, find, replace)
-		if err != nil {
-			fmt.Println(fmt.Errorf("error updating file %s: a%v", file.Path, err))
-			os.Exit(1)
-		}
-		logVerbose(vb.Options, fmt.Sprintf("Updated file: %s", file.Path))
 	}
 
 }
