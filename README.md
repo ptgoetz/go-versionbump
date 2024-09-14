@@ -64,7 +64,7 @@ go install github.com/ptgoetz/go-versionbump/cmd/versionbump
 ```
 
 If you don't have Go installed and just want the binary executable, you can download a prebuilt binaries from  
-[here]([Download Binary](https://github.com/ptgoetz/go-versionbump/releases/tag/v0.2.0).
+[here](https://github.com/ptgoetz/go-versionbump/releases/tag/v0.2.0).
 
 ## Usage
 Run VersionBump without any arguments to see the available flags and commands:
