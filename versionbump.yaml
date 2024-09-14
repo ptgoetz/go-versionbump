@@ -1,4 +1,4 @@
-version: "0.2.0"         # The current version of the project.
+version: "0.3.0"         # The current version of the project.
 git-commit: true         # Whether to create a git commit for the version bump.
 git-tag: true            # Whether to create a git tag for the version bump.
 git-sign: true          # Whether to sign the git tag.
