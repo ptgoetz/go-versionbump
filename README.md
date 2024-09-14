@@ -335,11 +335,6 @@ files:
       replace: '**Current Version:** v{version}'
     - path: versionbump.yaml
       replace: 'version: "{version}"'
-
-Potential versioning paths for project version: 0.1.7
-0.1.7 ── bump ─┬─ major ─ 1.0.0
-               ├─ minor ─ 0.2.0
-               ╰─ patch ─ 0.1.8
 ```
 
 ## Failure Modes and Errors
@@ -366,7 +361,8 @@ a git repository).
   be normalized to `1.2.3`.
 - **Tracked Files**: VersionBump will check that all tracked files in the configuration file exist and are read/write. 
   If any files are missing or cannot be read, VersionBump will exit with an error.
-- **At Least One Replacement**: VersionBump will check that at least one replacement will be made in each tracked file. 
+- **At Least One Replacement**: VersionBump will check that at least one replacement will be made in each tracked file
+  replacement. 
   If no replacements would be made, VersionBump will exit with an error.
 
 ### Git Pre-Flight Checks

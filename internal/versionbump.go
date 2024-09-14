@@ -138,10 +138,7 @@ func (vb *VersionBump) ShowEffectiveConfig() error {
 		return err
 	}
 	printColorOpts(vb.Options, string(b), ColorBlue)
-	fmt.Println()
-
-	err = vb.Show("")
-	return err
+	return nil
 }
 
 func (vb *VersionBump) GitMetadata() (*config.GitMeta, error) {
