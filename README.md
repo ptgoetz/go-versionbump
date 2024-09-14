@@ -57,14 +57,40 @@ and prompt-less, you have use the `--no-prompt` and `--silent` flags.
 If anything goes wrong, VersionBump will not make any changes to your project and will exit with a non-zero error code.
 
 ## Installation
+
+### With Go
 When installed with `go install`, it provides a `versionbump` binary that can be run from the command line.
 
 ```shell
 go install github.com/ptgoetz/go-versionbump/cmd/versionbump
 ```
 
+### Without Go
 If you don't have Go installed and just want the binary executable, you can download a prebuilt binaries from  
 [here](https://github.com/ptgoetz/go-versionbump/releases/tag/v0.3.0).
+
+VersionBump binary distribution archives include the `README.md` and `versionbump[.exe]` files:
+
+```console
+$ unzip -l versionbump-v0.3.0-darwin-arm64.zip 
+Archive:  versionbump-v0.3.0-darwin-arm64.zip
+  Length      Date    Time    Name
+---------  ---------- -----   ----
+  6082130  09-13-2024 21:23   versionbump
+    16573  09-13-2024 21:22   README.md
+---------                     -------
+  6098703                     2 files
+
+$ unzip -l versionbump-v0.3.0-windows-arm64.zip 
+Archive:  versionbump-v0.3.0-windows-arm64.zip
+  Length      Date    Time    Name
+---------  ---------- -----   ----
+  6112256  09-13-2024 21:23   versionbump.exe
+    16573  09-13-2024 21:22   README.md
+---------                     -------
+  6128829                     2 files
+
+```
 
 ## Usage
 Run VersionBump without any arguments to see the available flags and commands:
