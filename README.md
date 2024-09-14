@@ -96,15 +96,15 @@ Use "versionbump [command] --help" for more information about a command.
 ```
 
 The commands `major`, `minor` `patch` and `reset` support the following flags:'
-- `--config`: Path to the configuration file (default: `./versionbump.yaml`).
-- `--no-prompt`: Do not prompt the user for confirmation before making changes.
-- `--no-git`: Do not commit or tag the changes in a Git repository.
-- `--no-color`: Disable colorized output.
-- `--quiet`: Disable verbose logging.
+- `-c`, `-config`: Path to the configuration file (default: `./versionbump.yaml`).
+- `-no-prompt`: Do not prompt the user for confirmation before making changes.
+- `-no-git`: Do not commit or tag the changes in a Git repository.
+- `-no-color`: Disable colorized output.
+- `-q`, `-quiet`: Disable verbose logging.
 
 The commands `config` and `show` support the following flags:
-- `--config`: Path to the configuration file (default: `./versionbump.yaml`).
-- `--no-color`: Disable colorized output.
+- `-c`, `-config`: Path to the configuration file (default: `./versionbump.yaml`).
+- `-no-color`: Disable colorized output.
 
 ## Configuration
 The configuration file (**Default:** `versionbump.yaml`) defines the version bump settings:
@@ -231,7 +231,7 @@ Tag 'v0.1.11' created with message: Release version 0.1.11
 ```
 ### Suppressing Prompts and Verbose Output
 ```console
-$ versionbump --no-prompt --quiet patch
+$ versionbump -no-prompt -quiet patch
 # No output
 
 $ echo $?
