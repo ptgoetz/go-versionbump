@@ -1,4 +1,4 @@
-# VersionBump
+# go-VersionBump
 
 ![VersionBump Gopher](assets//versionbump_gopher-250.png)
 
@@ -89,8 +89,16 @@ Archive:  versionbump-v0.3.0-windows-arm64.zip
     16573  09-13-2024 21:22   README.md
 ---------                     -------
   6128829                     2 files
+ 
+$ tar -ztvf versionbump-v0.3.0-linux-arm64.tgz
+-rwxr-xr-x  0 tgoetz staff 6103765 Sep 13 21:23 versionbump
+-rw-r--r--  0 tgoetz staff   16573 Sep 13 21:23 README.md
+
 
 ```
+
+When installing from a binary archive, you should place the `versionbump[.exe]` binary file in a directory in your 
+system path.
 
 ## Usage
 Run VersionBump without any arguments to see the available flags and commands:
