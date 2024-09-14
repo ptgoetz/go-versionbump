@@ -226,7 +226,7 @@ Tag 'v0.1.11' created with message: Release version 0.1.11
 
 ```
 ### Suppressing Prompts and Verbose Output
-```consdole
+```console
 $ versionbump --no-prompt --quiet patch
 # No output
 
