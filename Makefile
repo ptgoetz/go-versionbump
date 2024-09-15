@@ -7,6 +7,7 @@ GO_FILES := $(shell find . -name '*.go' | grep -v /vendor/)
 PKG := ./...
 INTEGRATION_TEST_DIR := ./test/integration
 DIST_DIR := dist
+DIST_FILES := $(wildcard $(DIST_DIR)/*)
 OS := $(shell go env GOOS)
 ARCH := $(shell go env GOARCH)
 BINARY_NAME := $(APP_NAME)-$(VERSION)-$(OS)-$(ARCH)
@@ -14,7 +15,7 @@ TARBALL := $(BINARY_NAME).tgz
 ZIPFILE := $(BINARY_NAME).zip
 
 # Commands
-.PHONY: all run build test test-all test-integration test-integration-verbose deps clean tidy lint format init-project dist dist-all
+.PHONY: all run build test test-all test-integration test-integration-verbose deps clean tidy lint format init-project dist sign-dist
 
 all: test-all build
 
@@ -69,19 +70,10 @@ init-project: ## Initialize the project by installing necessary tools
 	#go get -u github.com/spf13/cobra@latest
 	go mod tidy
 
-dist: clean ## Create a binary distribution for the current OS and architecture
-	@echo "Creating distribution..."
-	mkdir -p $(DIST_DIR)
-	GOOS=$(OS) GOARCH=$(ARCH) go build -o $(DIST_DIR)/$(APP_NAME) cmd/$(APP_NAME)/*.go
-	tar -czvf $(DIST_DIR)/$(TARBALL) -C $(DIST_DIR) $(APP_NAME)
-	zip -j $(DIST_DIR)/$(ZIPFILE) $(DIST_DIR)/$(APP_NAME)
-	rm $(DIST_DIR)/$(APP_NAME)
-	@echo "Distribution created: $(DIST_DIR)/$(TARBALL) and $(DIST_DIR)/$(ZIPFILE)"
-
-dist-all: clean ## Create binary distributions for common OS and architecture combinations
+dist: clean ## Create binary distributions for common OS and architecture combinations
 	@echo "Creating distributions for all supported OS/ARCH combinations..."
 	mkdir -p $(DIST_DIR)
-	for os in linux darwin windows; do \
+	@for os in linux darwin windows; do \
 		for arch in amd64 arm64; do \
 			EXT=""; \
 			if [ "$$os" = "windows" ]; then EXT=".exe"; fi; \
@@ -95,3 +87,9 @@ dist-all: clean ## Create binary distributions for common OS and architecture co
 	done
 	@echo "All distributions created in the $(DIST_DIR) directory."
 
+sign-dist: dist ## Sign the distribution files
+	@echo "Signing distribution files..."
+	@for file in $(DIST_FILES); do \
+		gpg --detach-sign --armor $$file; \
+	done
+	@echo "Done."
