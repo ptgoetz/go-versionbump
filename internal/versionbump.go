@@ -111,7 +111,7 @@ func (vb *VersionBump) Show(versionStr string) error {
 		padding,
 		patchVersion.String())
 
-	printColorOpts(vb.Options, tree, ColorBlue)
+	printColorOpts(vb.Options, tree, ColorLightBlue)
 	return nil
 }
 
@@ -137,7 +137,7 @@ func (vb *VersionBump) ShowEffectiveConfig() error {
 	if err != nil {
 		return err
 	}
-	printColorOpts(vb.Options, string(b), ColorBlue)
+	printColorOpts(vb.Options, string(b), ColorLightBlue)
 	return nil
 }
 
@@ -418,7 +418,7 @@ func promptUserConfirmation(prompt string) bool {
 
 	for {
 		// Print the prompt and read the user's input
-		printColor(fmt.Sprintf("%s [y/N]: ", prompt), ColorBlue)
+		printColor(fmt.Sprintf("%s [y/N]: ", prompt), ColorLightBlue)
 		input, err := reader.ReadString('\n')
 		if err != nil {
 			printColor("Error reading input. Please try again.", ColorYellow)
@@ -463,6 +463,7 @@ const (
 	ColorGreen     = "green"
 	ColorYellow    = "yellow"
 	ColorBlue      = "blue"
+	ColorLightBlue = "light-blue"
 	ColorMagenta   = "magenta"
 	ColorCyan      = "cyan"
 	ColorWhite     = "white"
@@ -484,6 +485,8 @@ func printColor(text string, color string) {
 		colorCode = "\033[33m"
 	case ColorBlue:
 		colorCode = "\033[34m"
+	case ColorLightBlue:
+		colorCode = "\033[38;5;117m" // Light blue using extended 256 color code
 	case ColorMagenta:
 		colorCode = "\033[35m"
 	case ColorCyan:
