@@ -100,11 +100,7 @@ func ValidateVersion(version string) bool {
 }
 
 // Subversion is similar to Version, but its string representation is reduced by removing trailing ".0"
-type Subversion struct {
-	major int
-	minor int
-	patch int
-}
+type Subversion Version
 
 // NewSubversion creates a new immutable Subversion instance
 func NewSubversion(major int, minor int, patch int) *Subversion {
