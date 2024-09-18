@@ -18,6 +18,7 @@ const (
 	VersionPatchStr = "patch"
 )
 
+// Version represents a semantic version
 type Version struct {
 	major int
 	minor int
