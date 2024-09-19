@@ -80,6 +80,34 @@ var showCmd = &cobra.Command{
 	},
 }
 
+var preReleaseCmd = &cobra.Command{
+	Use:   "prerelease",
+	Short: `Bump the pre-release version number (e.g. 1.2.3-alpha.1 -> 1.2.3-alpha.2).`,
+	Long:  `Bump the pre-release version number (e.g. 1.2.3-alpha.1 -> 1.2.3-alpha.2)`,
+	RunE:  bumpPreRelease, // Use RunE for better error handling
+}
+
+var preReleaseMajorCmd = &cobra.Command{
+	Use:   "major",
+	Short: `Bump the pre-release major version number (e.g. 1.2.3-alpha -> 1.2.3-alpha.1).`,
+	Long:  `ump the pre-release major version number (e.g. 1.2.3-alpha -> 1.2.3-alpha.1).`,
+	RunE:  bumpPreRelease, // Use RunE for better error handling
+}
+
+var preReleaseMinorCmd = &cobra.Command{
+	Use:   "minor",
+	Short: `Bump the pre-release minor version number (e.g. 1.2.3-alpha -> 1.2.3-alpha.0.1).`,
+	Long:  `ump the pre-release minor version number (e.g. 1.2.3-alpha -> 1.2.3-alpha.0.1).`,
+	RunE:  bumpPreRelease, // Use RunE for better error handling
+}
+
+var preReleasePatchCmd = &cobra.Command{
+	Use:   "patch",
+	Short: `Bump the pre-release patch version number (e.g. 1.2.3-alpha -> 1.2.3-alpha.0.0.1).`,
+	Long:  `ump the pre-release patch version number (e.g. 1.2.3-alpha -> 1.2.3-alpha.0.0.1).`,
+	RunE:  bumpPreRelease, // Use RunE for better error handling
+}
+
 func init() {
 	rootCmd.Flags().BoolVarP(&opts.ShowVersion, "version", "V", false, "Show the VersionBump version and exit.")
 
@@ -96,6 +124,19 @@ func init() {
 
 	commonFlags.AddFlagSet(configColorFlags)
 
+	prereleaserFlags := pflag.NewFlagSet("prelease", pflag.ExitOnError)
+	prereleaserFlags.AddFlagSet(commonFlags)
+	prereleaserFlags.StringVarP(&opts.PreReleaseLabel, "label", "l", "", "(REQUIRED) The pre-release label to use.")
+
+	preReleaseCmd.Flags().AddFlagSet(prereleaserFlags)
+	preReleaseMajorCmd.Flags().AddFlagSet(prereleaserFlags)
+	preReleaseMinorCmd.Flags().AddFlagSet(prereleaserFlags)
+	preReleasePatchCmd.Flags().AddFlagSet(prereleaserFlags)
+
+	preReleaseCmd.AddCommand(preReleaseMajorCmd)
+	preReleaseCmd.AddCommand(preReleaseMinorCmd)
+	preReleaseCmd.AddCommand(preReleasePatchCmd)
+
 	showCmd.Flags().AddFlagSet(configColorFlags)
 	configCmd.Flags().AddFlagSet(configColorFlags)
 
@@ -107,6 +148,7 @@ func init() {
 	rootCmd.AddCommand(majorCmd)
 	rootCmd.AddCommand(minorCmd)
 	rootCmd.AddCommand(patchCmd)
+	rootCmd.AddCommand(preReleaseCmd)
 	rootCmd.AddCommand(resetCmd)
 	rootCmd.AddCommand(showCmd)
 	rootCmd.AddCommand(configCmd)
@@ -131,6 +173,12 @@ func bumpMinor(cmd *cobra.Command, args []string) error {
 
 func bumpPatch(cmd *cobra.Command, args []string) error {
 	return runVersionBump(version.VersionPatchStr)
+}
+
+func bumpPreRelease(cmd *cobra.Command, args []string) error {
+	//return runVersionBump(version.VersionPatchStr)
+	cmd.Help()
+	return nil
 }
 
 func runResetCmd(cmd *cobra.Command, args []string) error {

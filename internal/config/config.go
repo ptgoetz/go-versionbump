@@ -38,14 +38,15 @@ type GitMeta struct {
 }
 
 type Options struct {
-	ConfigPath   string
-	Quiet        bool
-	NoPrompt     bool
-	ShowVersion  bool
-	ResetVersion string
-	NoGit        bool
-	NoColor      bool
-	BumpPart     string
+	ConfigPath      string
+	Quiet           bool
+	NoPrompt        bool
+	ShowVersion     bool
+	ResetVersion    string
+	NoGit           bool
+	NoColor         bool
+	BumpPart        string
+	PreReleaseLabel string
 }
 
 func (o Options) IsResetVersion() bool {
