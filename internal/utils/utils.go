@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"unicode"
 )
 
 // ReplaceInFile replaces all occurrences of the search string with the replace string in the file at the given path.
@@ -93,4 +94,34 @@ func PaddingString(length int, padChar string) string {
 		return ""
 	}
 	return strings.Repeat(padChar, length)
+}
+
+// IsAllAlphabetic returns true if the given string contains only alphabetic characters.
+func IsAllAlphabetic(s string) bool {
+	for _, char := range s {
+		// Check if the character is not a letter or is non-ASCII
+		if !unicode.IsLetter(char) || char > unicode.MaxASCII {
+			return false
+		}
+	}
+	return true
+}
+
+// IsAllAlphanumeric returns true if the given string contains only alphanumeric characters.
+func IsAllAlphanumeric(s string) bool {
+	for _, char := range s {
+		// Check if the character is not a letter, digit, or is non-ASCII
+		if !(unicode.IsLetter(char) || unicode.IsDigit(char)) || char > unicode.MaxASCII {
+			return false
+		}
+	}
+	return true
+}
+
+// StartsWithDigit returns true if the given string starts with a digit.
+func StartsWithDigit(s string) bool {
+	if len(s) == 0 {
+		return false
+	}
+	return unicode.IsDigit(rune(s[0]))
 }

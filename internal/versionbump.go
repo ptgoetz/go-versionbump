@@ -96,20 +96,24 @@ func (vb *VersionBump) Show(versionStr string) error {
 	minorVersion := curVersion.StringBump(vbv.VersionMinorStr)
 	patchVersion := curVersion.StringBump(vbv.VersionPatchStr)
 
-	padLen := len(curVersion.String()) - 2
+	padLen := len(curVersion.String())
 	padding := utils.PaddingString(padLen, " ")
 
 	tree := fmt.Sprintf(
-		`%s ── bump ─┬─ major ─ %s
-        %s    ├─ minor ─ %s
-        %s    ╰─ patch ─ %s
+		`
+%s ─┬─ major ─ %s
+  %s├─ minor ─ %s
+  %s├─ patch ─ %s
+  %s╰─ pre-release ─ %s
 `,
 		curVersion.String(),
 		majorVersion.String(),
 		padding,
 		minorVersion.String(),
 		padding,
-		patchVersion.String())
+		patchVersion.String(),
+		padding,
+		"foo")
 
 	printColorOpts(vb.Options, tree, ColorLightBlue)
 	return nil

@@ -129,6 +129,7 @@ func init() {
 	prereleaserFlags.StringVarP(&opts.PreReleaseLabel, "label", "l", "", "(REQUIRED) The pre-release label to use.")
 
 	preReleaseCmd.Flags().AddFlagSet(prereleaserFlags)
+	preReleaseCmd.MarkFlagRequired("label")
 	preReleaseMajorCmd.Flags().AddFlagSet(prereleaserFlags)
 	preReleaseMinorCmd.Flags().AddFlagSet(prereleaserFlags)
 	preReleasePatchCmd.Flags().AddFlagSet(prereleaserFlags)
@@ -176,8 +177,14 @@ func bumpPatch(cmd *cobra.Command, args []string) error {
 }
 
 func bumpPreRelease(cmd *cobra.Command, args []string) error {
-	//return runVersionBump(version.VersionPatchStr)
-	cmd.Help()
+	vb, err := internal.NewVersionBump(opts)
+	if err != nil {
+		return err
+	}
+	if !vb.Config.HasLabel(opts.PreReleaseLabel) {
+		return fmt.Errorf("label '%s' is not defined in the configuration", opts.PreReleaseLabel)
+	}
+	fmt.Printf("Bumping pre-release version label: %s\n", opts.PreReleaseLabel)
 	return nil
 }
 

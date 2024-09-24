@@ -68,3 +68,44 @@ func TestGetParentDirAbsolutePath(t *testing.T) {
 		t.Errorf("Expected parent directory %s, but got %s", expectedParentDir, parentDir)
 	}
 }
+
+func TestIsAllAlphabetic(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected bool
+	}{
+		{"alpha", true},
+		{"alpha1", false},
+		{"alpha-", false},
+		{"", true},
+	}
+
+	for _, test := range tests {
+		t.Run(test.input, func(t *testing.T) {
+			actual := IsAllAlphabetic(test.input)
+			if actual != test.expected {
+				t.Errorf("Expected %v, but got %v", test.expected, actual)
+			}
+		})
+	}
+}
+
+func TestStartsWithDigit(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected bool
+	}{
+		{"1alpha", true},
+		{"alpha1", false},
+		{"", false},
+	}
+
+	for _, test := range tests {
+		t.Run(test.input, func(t *testing.T) {
+			actual := StartsWithDigit(test.input)
+			if actual != test.expected {
+				t.Errorf("Expected %v, but got %v", test.expected, actual)
+			}
+		})
+	}
+}

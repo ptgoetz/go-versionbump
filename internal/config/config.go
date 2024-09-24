@@ -7,6 +7,7 @@ import (
 	"gopkg.in/yaml.v3"
 	"os"
 	"path"
+	"sort"
 )
 
 const (
@@ -61,6 +62,28 @@ func (vbm *GitMeta) String() string {
 // IsGitRequired returns true if any of the Git options are enabled.
 func (v Config) IsGitRequired() bool {
 	return v.GitCommit || v.GitTag
+}
+
+// HasLabel returns true if a given label is in the list of pre-release labels
+func (v Config) HasLabel(label string) bool {
+	for _, l := range v.PreReleaseLabels {
+		if l == label {
+			return true
+		}
+	}
+	return false
+}
+
+// GetSortedLabels returns a sorted slice of pre-release labels
+func (v Config) GetSortedLabels() []string {
+	// Make a copy of the input slice to avoid modifying the original
+	sortedStrings := make([]string, len(v.PreReleaseLabels))
+	copy(sortedStrings, v.PreReleaseLabels)
+
+	// Sort the strings lexically
+	sort.Strings(sortedStrings)
+
+	return sortedStrings
 }
 
 // VersionedFile represents the file to be updated with the new version.
