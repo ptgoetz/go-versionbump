@@ -159,6 +159,11 @@ func NewPrereleaseVersion(label string, major int, minor int, patch int) *PreRel
 // ParsePrereleaseVersion parses a version string and returns a new PreReleaseVersion instance.
 // It handles versions with 1, 2, or 3 parts. E.g., "1" becomes "1.0.0", "1.2" becomes "1.2.0".
 func ParsePrereleaseVersion(version string) (*PreReleaseVersion, error) {
+
+	if utils.IsAllAlphabetic(version) {
+		return NewPrereleaseVersion(version, 0, 0, 0), nil
+	}
+
 	vals := strings.Split(version, ".")
 	var major, minor, patch int
 	var err error
@@ -204,8 +209,6 @@ func ParsePrereleaseVersion(version string) (*PreReleaseVersion, error) {
 		if err != nil {
 			return nil, fmt.Errorf("invalid patch version: %s", vals[2])
 		}
-	default:
-		return nil, fmt.Errorf("invalid pre-release version string: %s", version)
 	}
 
 	return NewPrereleaseVersion(label, major, minor, patch), nil
@@ -225,8 +228,11 @@ func (v *PreReleaseVersion) String() string {
 	// alpha.0.0.0 -> alpha
 	if retval == "0" {
 		retval = fmt.Sprintf("%s", v.Label)
-	} else {
+	} else if v.Label != "" {
 		retval = fmt.Sprintf("%s.%s", v.Label, retval)
+	}
+	if v.Label != "" {
+		retval = fmt.Sprintf("%s", retval)
 	}
 	return retval
 }
