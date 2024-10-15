@@ -27,8 +27,10 @@ type Version struct {
 
 // PreReleaseVersion is similar to Version, but its string representation is reduced by removing trailing ".0"
 type PreReleaseVersion struct {
-	Version *Version
-	Label   string
+	Version    *Version
+	Label      string
+	Build      int
+	BuildLabel string
 }
 
 type SemVersion struct {
@@ -41,7 +43,8 @@ type SemVersion struct {
 // String returns the version string
 func (v *SemVersion) String() string {
 	version := v.Version.String()
-	if v.PreReleaseVersion != nil && v.PreReleaseVersion.Version.String() == "" {
+	preReleaseStr := v.PreReleaseVersion.String()
+	if v.PreReleaseVersion != nil && preReleaseStr != "" {
 		version += "-" + v.PreReleaseVersion.String()
 	}
 	if v.Build != 0 {
@@ -86,7 +89,7 @@ func ParseSemVersion(versionStr string) (*SemVersion, error) {
 	if err != nil {
 		return nil, err
 	}
-	preReleaseVersion, err := ParsePrereleaseVersion(preReleasePart)
+	preReleaseVersion, err := ParsePrereleaseVersion(preReleasePart, buildPart)
 	if err != nil {
 		return nil, err
 	}
@@ -148,20 +151,22 @@ func ValidateVersion(version string) bool {
 }
 
 // NewPrereleaseVersion creates a new immutable PreReleaseVersion instance
-func NewPrereleaseVersion(label string, major int, minor int, patch int) *PreReleaseVersion {
+func NewPrereleaseVersion(label string, major int, minor int, patch int, buildLabel string, buildValue int) *PreReleaseVersion {
 	version := NewVersion(major, minor, patch)
 	return &PreReleaseVersion{
-		Label:   label,
-		Version: version,
+		Label:      label,
+		Version:    version,
+		Build:      buildValue,
+		BuildLabel: buildLabel,
 	}
 }
 
 // ParsePrereleaseVersion parses a version string and returns a new PreReleaseVersion instance.
 // It handles versions with 1, 2, or 3 parts. E.g., "1" becomes "1.0.0", "1.2" becomes "1.2.0".
-func ParsePrereleaseVersion(version string) (*PreReleaseVersion, error) {
+func ParsePrereleaseVersion(version string, build string) (*PreReleaseVersion, error) {
 
-	if utils.IsAllAlphabetic(version) {
-		return NewPrereleaseVersion(version, 0, 0, 0), nil
+	if utils.IsAllAlphabetic(version) && build == "" {
+		return NewPrereleaseVersion(version, 0, 0, 0, "", 0), nil
 	}
 
 	vals := strings.Split(version, ".")
@@ -211,7 +216,22 @@ func ParsePrereleaseVersion(version string) (*PreReleaseVersion, error) {
 		}
 	}
 
-	return NewPrereleaseVersion(label, major, minor, patch), nil
+	buildLabel := ""
+	buildVal := 0
+	if build != "" {
+		vals := strings.Split(build, ".")
+
+		if !utils.StartsWithDigit(build) {
+			buildLabel = vals[0]
+			valStr := vals[1:]
+			buildVal, err = strconv.Atoi(valStr[0])
+			if err != nil {
+				return nil, fmt.Errorf("invalid build version: %s", valStr[0])
+			}
+		}
+	}
+
+	return NewPrereleaseVersion(label, major, minor, patch, buildLabel, buildVal), nil
 }
 
 // String returns the reduced version string by removing trailing ".0" parts
@@ -234,18 +254,22 @@ func (v *PreReleaseVersion) String() string {
 	if v.Label != "" {
 		retval = fmt.Sprintf("%s", retval)
 	}
+	if v.BuildLabel != "" && v.Build >= 0 {
+		retval = fmt.Sprintf("%s+%s.%d", retval, v.BuildLabel, v.Build)
+	}
 	return retval
 }
 
 // Bump returns a new PreReleaseVersion instance after incrementing the specified part
 func (v *PreReleaseVersion) Bump(versionPart int) *PreReleaseVersion {
 	switch versionPart {
+	// TODO: Implement bumping for prerelease and build versions
 	case VersionMajor:
-		return NewPrereleaseVersion(v.Label, v.Version.major+1, 0, 0)
+		return NewPrereleaseVersion(v.Label, v.Version.major+1, 0, 0, "", 0)
 	case VersionMinor:
-		return NewPrereleaseVersion(v.Label, v.Version.major, v.Version.minor+1, 0)
+		return NewPrereleaseVersion(v.Label, v.Version.major, v.Version.minor+1, 0, "", 0)
 	case VersionPatch:
-		return NewPrereleaseVersion(v.Label, v.Version.major, v.Version.minor, v.Version.patch+1)
+		return NewPrereleaseVersion(v.Label, v.Version.major, v.Version.minor, v.Version.patch+1, "", 0)
 	default:
 		panic(fmt.Sprintf("invalid version part: %d.\n", versionPart))
 	}

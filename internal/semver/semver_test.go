@@ -30,8 +30,9 @@ func TestParseSemVersion(t *testing.T) {
 				// Assert no error was returned
 				assert.NoError(t, err, "unexpected error for version %s", test.versionStr)
 
+				semVerStr := semVer.String()
 				// Assert the parsed version matches the expected output
-				assert.Equal(t, test.expected, semVer.String(), "expected %s, got %s", test.expected, semVer.String())
+				assert.Equal(t, test.expected, semVer.String(), "expected %s, got %s", test.expected, semVerStr)
 			}
 		})
 	}
@@ -49,7 +50,7 @@ func TestParsePrereleaseVersion(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.versionStr, func(t *testing.T) {
-			prereleaseVersion, err := ParsePrereleaseVersion(test.versionStr)
+			prereleaseVersion, err := ParsePrereleaseVersion(test.versionStr, "")
 
 			if test.shouldFail {
 				// Assert an error was returned
@@ -82,7 +83,7 @@ func TestBumpPreRelease(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		subv, err := ParsePrereleaseVersion(test.input)
+		subv, err := ParsePrereleaseVersion(test.input, "")
 		if err != nil {
 			t.Fatalf("Unexpected error for input %s: %v", test.input, err)
 		}
