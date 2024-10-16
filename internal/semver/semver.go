@@ -66,7 +66,7 @@ func ParseSemVersion(versionStr string) (*SemVersion, error) {
 	if !isPreRelease && !isBuild {
 		rootPart = versionStr
 	}
-	if isPreRelease && !isBuild {
+	if isPreRelease /* && !isBuild */ {
 		parts := strings.Split(versionStr, "-")
 		rootPart = parts[0]
 		preReleasePart = parts[1]
@@ -76,20 +76,18 @@ func ParseSemVersion(versionStr string) (*SemVersion, error) {
 		rootPart = parts[0]
 		buildPart = parts[1]
 	}
-	if isPreRelease && isBuild {
-		parts := strings.Split(versionStr, "-")
-		rootPart = parts[0]
-		parts = strings.Split(parts[1], "+")
-		preReleasePart = parts[0]
-		buildPart = parts[1]
-	}
+	//if isPreRelease && isBuild {
+	//	parts := strings.Split(versionStr, "-")
+	//	rootPart = parts[0]
+	//	preReleasePart = parts[0]
+	//}
 	fmt.Printf("rootPart: %s, preReleasePart: %s, buildPart: %s\n", rootPart, preReleasePart, buildPart)
 
 	version, err := ParseVersion(rootPart)
 	if err != nil {
 		return nil, err
 	}
-	preReleaseVersion, err := ParsePrereleaseVersion(preReleasePart, buildPart)
+	preReleaseVersion, err := ParsePrereleaseVersion(preReleasePart)
 	if err != nil {
 		return nil, err
 	}
@@ -163,9 +161,14 @@ func NewPrereleaseVersion(label string, major int, minor int, patch int, buildLa
 
 // ParsePrereleaseVersion parses a version string and returns a new PreReleaseVersion instance.
 // It handles versions with 1, 2, or 3 parts. E.g., "1" becomes "1.0.0", "1.2" becomes "1.2.0".
-func ParsePrereleaseVersion(version string, build string) (*PreReleaseVersion, error) {
+func ParsePrereleaseVersion(versionStr string) (*PreReleaseVersion, error) {
+	// alpha+build.1
+	// alpha.1
+	parts := strings.Split(versionStr, "+")
 
-	if utils.IsAllAlphabetic(version) && build == "" {
+	version := parts[0]
+
+	if utils.IsAllAlphabetic(version) && len(parts) == 1 {
 		return NewPrereleaseVersion(version, 0, 0, 0, "", 0), nil
 	}
 
@@ -218,7 +221,8 @@ func ParsePrereleaseVersion(version string, build string) (*PreReleaseVersion, e
 
 	buildLabel := ""
 	buildVal := 0
-	if build != "" {
+	if len(parts) > 1 {
+		build := parts[1]
 		vals := strings.Split(build, ".")
 
 		if !utils.StartsWithDigit(build) {
