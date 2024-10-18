@@ -11,11 +11,11 @@ const (
 	VersionMajor = iota
 	VersionMinor
 	VersionPatch
-	PrereleaseNext
-	PrereleaseMajor
-	PrereleaseMinor
-	PrereleasePatch
-	Build
+	PreReleaseNext
+	PreReleaseMajor
+	PreReleaseMinor
+	PreReleasePatch
+	PreReleaseBuild
 )
 
 // Version represents a semantic version
@@ -268,12 +268,14 @@ func (v *PreReleaseVersion) String() string {
 func (v *PreReleaseVersion) Bump(versionPart int) *PreReleaseVersion {
 	switch versionPart {
 	// TODO: Implement bumping for prerelease and build versions
-	case VersionMajor:
+	case PreReleaseMajor:
 		return NewPrereleaseVersion(v.Label, v.Version.major+1, 0, 0, "", 0)
-	case VersionMinor:
+	case PreReleaseMinor:
 		return NewPrereleaseVersion(v.Label, v.Version.major, v.Version.minor+1, 0, "", 0)
-	case VersionPatch:
+	case PreReleasePatch:
 		return NewPrereleaseVersion(v.Label, v.Version.major, v.Version.minor, v.Version.patch+1, "", 0)
+	case PreReleaseBuild:
+		return NewPrereleaseVersion(v.Label, v.Version.major, v.Version.minor, v.Version.patch /* TODO: don't hard-code */, "build", v.Build+1)
 	default:
 		panic(fmt.Sprintf("invalid version part: %d.\n", versionPart))
 	}

@@ -46,14 +46,15 @@ func TestBumpPreRelease(t *testing.T) {
 		bumpType int
 		expected string
 	}{
-		{"0.0.0", VersionMajor, "1"},
-		{"1.0.0", VersionMinor, "1.1"},
-		{"1.1.0", VersionPatch, "1.1.1"},
-		{"2.5.1", VersionMajor, "3"},
-		{"2.5.1", VersionMinor, "2.6"},
-		{"2.5.1", VersionPatch, "2.5.2"},
+		{"2.5.1", PreReleaseBuild, "2.5.1+build.1"},
+		{"0.0.0", PreReleaseMajor, "1"},
+		{"1.0.0", PreReleaseMinor, "1.1"},
+		{"1.1.0", PreReleasePatch, "1.1.1"},
+		{"2.5.1", PreReleaseMajor, "3"},
+		{"2.5.1", PreReleaseMinor, "2.6"},
+		{"2.5.1", PreReleasePatch, "2.5.2"},
 		// TODO: Add test cases for pre-release and build versions
-		//{"2.5.1", PrereleaseMajor, "2.5.2"},
+
 	}
 
 	for _, test := range tests {
