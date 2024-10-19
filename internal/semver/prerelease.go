@@ -86,6 +86,8 @@ func ParsePrereleaseVersion(versionStr string) (*PreReleaseVersion, error) {
 		}
 	}
 
+	// Build specific logic
+	// TODO: Move to build.go
 	buildLabel := ""
 	buildVal := 0
 	if len(parts) > 1 {
@@ -125,6 +127,7 @@ func (v *PreReleaseVersion) String() string {
 	if v.Label != "" {
 		retval = fmt.Sprintf("%s", retval)
 	}
+	// TODO: Move to build.go
 	if v.BuildLabel != "" && v.Build >= 0 {
 		retval = fmt.Sprintf("%s+%s.%d", retval, v.BuildLabel, v.Build)
 	}
@@ -142,7 +145,9 @@ func (v *PreReleaseVersion) Bump(versionPart int) *PreReleaseVersion {
 	case PreReleasePatch:
 		return NewPrereleaseVersion(v.Label, v.Version.major, v.Version.minor, v.Version.patch+1, "", 0)
 	case PreReleaseBuild:
+		// TODO: Move to build.go
 		return NewPrereleaseVersion(v.Label, v.Version.major, v.Version.minor, v.Version.patch /* TODO: don't hard-code */, "build", v.Build+1)
+	// TODO: PreReleaseNext
 	default:
 		panic(fmt.Sprintf("invalid version part: %d.\n", versionPart))
 	}
