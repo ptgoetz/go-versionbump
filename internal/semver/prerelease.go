@@ -9,20 +9,18 @@ import (
 
 // PreReleaseVersion is similar to Version, but its string representation is reduced by removing trailing ".0"
 type PreReleaseVersion struct {
-	Version    *Version
-	Label      string
-	Build      int
-	BuildLabel string
+	Version *Version
+	Label   string
+	Build   *Build
 }
 
 // NewPrereleaseVersion creates a new immutable PreReleaseVersion instance
-func NewPrereleaseVersion(label string, major int, minor int, patch int, buildLabel string, buildValue int) *PreReleaseVersion {
+func NewPrereleaseVersion(label string, major int, minor int, patch int, build *Build) *PreReleaseVersion {
 	version := NewVersion(major, minor, patch)
 	return &PreReleaseVersion{
-		Label:      label,
-		Version:    version,
-		Build:      buildValue,
-		BuildLabel: buildLabel,
+		Label:   label,
+		Version: version,
+		Build:   build,
 	}
 }
 
@@ -36,7 +34,7 @@ func ParsePrereleaseVersion(versionStr string) (*PreReleaseVersion, error) {
 	version := parts[0]
 
 	if utils.IsAllAlphabetic(version) && len(parts) == 1 {
-		return NewPrereleaseVersion(version, 0, 0, 0, "", 0), nil
+		return NewPrereleaseVersion(version, 0, 0, 0, nil), nil
 	}
 
 	vals := strings.Split(version, ".")
@@ -87,24 +85,17 @@ func ParsePrereleaseVersion(versionStr string) (*PreReleaseVersion, error) {
 	}
 
 	// Build specific logic
-	// TODO: Move to build.go
-	buildLabel := ""
-	buildVal := 0
+	var build *Build
 	if len(parts) > 1 {
-		build := parts[1]
-		vals := strings.Split(build, ".")
-
-		if !utils.StartsWithDigit(build) {
-			buildLabel = vals[0]
-			valStr := vals[1:]
-			buildVal, err = strconv.Atoi(valStr[0])
-			if err != nil {
-				return nil, fmt.Errorf("invalid build version: %s", valStr[0])
-			}
+		buildStr := parts[1]
+		build, err = ParseBuild(buildStr)
+		if err != nil {
+			return nil, err
 		}
+
 	}
 
-	return NewPrereleaseVersion(label, major, minor, patch, buildLabel, buildVal), nil
+	return NewPrereleaseVersion(label, major, minor, patch, build), nil
 }
 
 // String returns the reduced version string by removing trailing ".0" parts
@@ -128,8 +119,8 @@ func (v *PreReleaseVersion) String() string {
 		retval = fmt.Sprintf("%s", retval)
 	}
 	// TODO: Move to build.go
-	if v.BuildLabel != "" && v.Build >= 0 {
-		retval = fmt.Sprintf("%s+%s.%d", retval, v.BuildLabel, v.Build)
+	if v.Build != nil && v.Build.Index >= 0 {
+		retval = fmt.Sprintf("%s+%s.%d", retval, v.Build.Label, v.Build.Index)
 	}
 	return retval
 }
@@ -139,14 +130,17 @@ func (v *PreReleaseVersion) Bump(versionPart int) *PreReleaseVersion {
 	switch versionPart {
 	// TODO: Implement bumping for prerelease and build versions
 	case PreReleaseMajor:
-		return NewPrereleaseVersion(v.Label, v.Version.major+1, 0, 0, "", 0)
+		return NewPrereleaseVersion(v.Label, v.Version.major+1, 0, 0, nil)
 	case PreReleaseMinor:
-		return NewPrereleaseVersion(v.Label, v.Version.major, v.Version.minor+1, 0, "", 0)
+		return NewPrereleaseVersion(v.Label, v.Version.major, v.Version.minor+1, 0, nil)
 	case PreReleasePatch:
-		return NewPrereleaseVersion(v.Label, v.Version.major, v.Version.minor, v.Version.patch+1, "", 0)
+		return NewPrereleaseVersion(v.Label, v.Version.major, v.Version.minor, v.Version.patch+1, nil)
 	case PreReleaseBuild:
 		// TODO: Move to build.go
-		return NewPrereleaseVersion(v.Label, v.Version.major, v.Version.minor, v.Version.patch /* TODO: don't hard-code */, "build", v.Build+1)
+		if v.Build == nil {
+			v.Build = NewBuild("build", 1)
+		}
+		return NewPrereleaseVersion(v.Label, v.Version.major, v.Version.minor, v.Version.patch /* TODO: don't hard-code */, v.Build)
 	// TODO: PreReleaseNext
 	default:
 		panic(fmt.Sprintf("invalid version part: %d.\n", versionPart))
