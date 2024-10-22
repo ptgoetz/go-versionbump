@@ -8,8 +8,10 @@ func TestBuild(t *testing.T) {
 		bumpType int
 		expected string
 	}{
-		{"", PreReleaseBuild, "build.1"},
 		{"build.1", PreReleaseBuild, "build.2"},
+		{"", PreReleaseBuild, "build.1"},
+		{"", PreReleaseBuild, "build.1"},
+		{"foo.1", PreReleaseBuild, "foo.2"},
 	}
 	for _, test := range tests {
 		build, err := ParseBuild(test.input)

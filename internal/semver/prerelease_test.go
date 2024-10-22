@@ -16,6 +16,7 @@ func TestBumpPreRelease(t *testing.T) {
 		{"2.5.1", PreReleaseMajor, "3"},
 		{"2.5.1", PreReleaseMinor, "2.6"},
 		{"2.5.1", PreReleasePatch, "2.5.2"},
+		{"2.5.1+build.1", PreReleaseBuild, "2.5.1+build.2"},
 		// TODO: Add test cases for pre-release and build versions
 
 	}

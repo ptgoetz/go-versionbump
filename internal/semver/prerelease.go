@@ -138,8 +138,9 @@ func (v *PreReleaseVersion) Bump(versionPart int) *PreReleaseVersion {
 	case PreReleaseBuild:
 		// TODO: Move to build.go
 		if v.Build == nil {
-			v.Build = NewBuild("build", 1)
+			v.Build = NewBuild("build", 0)
 		}
+		v.Build = v.Build.Bump()
 		return NewPrereleaseVersion(v.Label, v.Version.major, v.Version.minor, v.Version.patch /* TODO: don't hard-code */, v.Build)
 	// TODO: PreReleaseNext
 	default:
