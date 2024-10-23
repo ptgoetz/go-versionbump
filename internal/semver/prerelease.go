@@ -3,6 +3,7 @@ package semver
 import (
 	"fmt"
 	"github.com/ptgoetz/go-versionbump/internal/utils"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -84,6 +85,8 @@ func ParsePrereleaseVersion(versionStr string) (*PreReleaseVersion, error) {
 		}
 	}
 
+	// Label specific logic
+
 	// Build specific logic
 	var build *Build
 	if len(parts) > 1 {
@@ -118,7 +121,6 @@ func (v *PreReleaseVersion) String() string {
 	if v.Label != "" {
 		retval = fmt.Sprintf("%s", retval)
 	}
-	// TODO: Move to build.go
 	if v.Build != nil && v.Build.Index >= 0 {
 		retval = fmt.Sprintf("%s+%s.%d", retval, v.Build.Label, v.Build.Index)
 	}
@@ -126,24 +128,31 @@ func (v *PreReleaseVersion) String() string {
 }
 
 // Bump returns a new PreReleaseVersion instance after incrementing the specified part
-func (v *PreReleaseVersion) Bump(versionPart int) *PreReleaseVersion {
+func (v *PreReleaseVersion) Bump(versionPart int, preReleaseLabels []string, buildLabel string) (*PreReleaseVersion, error) {
 	switch versionPart {
 	// TODO: Implement bumping for prerelease and build versions
 	case PreReleaseMajor:
-		return NewPrereleaseVersion(v.Label, v.Version.major+1, 0, 0, nil)
+		return NewPrereleaseVersion(v.Label, v.Version.major+1, 0, 0, nil), nil
 	case PreReleaseMinor:
-		return NewPrereleaseVersion(v.Label, v.Version.major, v.Version.minor+1, 0, nil)
+		return NewPrereleaseVersion(v.Label, v.Version.major, v.Version.minor+1, 0, nil), nil
 	case PreReleasePatch:
-		return NewPrereleaseVersion(v.Label, v.Version.major, v.Version.minor, v.Version.patch+1, nil)
+		return NewPrereleaseVersion(v.Label, v.Version.major, v.Version.minor, v.Version.patch+1, nil), nil
 	case PreReleaseBuild:
 		// TODO: Move to build.go
 		if v.Build == nil {
-			v.Build = NewBuild("build", 0)
+			v.Build = NewBuild(buildLabel, 0)
 		}
 		v.Build = v.Build.Bump()
-		return NewPrereleaseVersion(v.Label, v.Version.major, v.Version.minor, v.Version.patch /* TODO: don't hard-code */, v.Build)
-	// TODO: PreReleaseNext
+		return NewPrereleaseVersion(v.Label, v.Version.major, v.Version.minor, v.Version.patch, v.Build), nil
+	case PreReleaseNext:
+		// sort pre-release labels
+		sort.Strings(preReleaseLabels)
+		// find the index of the current label
+		idx := sort.SearchStrings(preReleaseLabels, v.Label)
+		fmt.Printf("Found label %s at index %d\n", v.Label, idx)
+
 	default:
 		panic(fmt.Sprintf("invalid version part: %d.\n", versionPart))
 	}
+	return nil, nil
 }

@@ -2,7 +2,6 @@ package semver
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
 )
 
@@ -18,10 +17,8 @@ const (
 )
 
 type SemVersion struct {
-	Version                *Version
-	PreReleaseVersionLabel string
-	PreReleaseVersion      *PreReleaseVersion
-	Build                  int
+	Version           *Version
+	PreReleaseVersion *PreReleaseVersion
 }
 
 // String returns the version string
@@ -31,10 +28,25 @@ func (v *SemVersion) String() string {
 	if v.PreReleaseVersion != nil && preReleaseStr != "" {
 		version += "-" + v.PreReleaseVersion.String()
 	}
-	if v.Build != 0 {
-		version += "+" + strconv.Itoa(v.Build)
-	}
 	return version
+}
+
+// Bump returns a new SemVersion instance after incrementing the specified part
+func (v *SemVersion) Bump(versionPart int, preReleaseLabels []string, buildLabel string) (*SemVersion, error) {
+	if versionPart >= VersionMajor && versionPart <= VersionPatch {
+		// bump the root version
+		v.Version = v.Version.Bump(versionPart)
+
+		// reset all pre-release versions
+		v.PreReleaseVersion = NewPrereleaseVersion("", 0, 0, 0, nil)
+	} else if versionPart >= PreReleaseNext && versionPart <= PreReleaseBuild {
+		v.PreReleaseVersion, _ = v.PreReleaseVersion.Bump(versionPart, preReleaseLabels, buildLabel)
+
+	} else {
+		return nil, fmt.Errorf("invalid version part: %d", versionPart)
+	}
+	return nil, nil
+
 }
 
 // ParseSemVersion parses a semantic version string and returns a new SemVersion instance
