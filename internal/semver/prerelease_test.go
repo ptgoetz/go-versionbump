@@ -62,6 +62,8 @@ func TestParsePrereleaseVersion(t *testing.T) {
 		shouldFail bool
 	}{
 		{"1.2.3", "1.2.3", false},
+		{"1.2", "1.2", false},
+		{"1", "1", false},
 		{"alpha", "alpha", false},
 		{"alpha.1", "alpha.1", false},
 		{"alpha+build.1", "alpha+build.1", false},
