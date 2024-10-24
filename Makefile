@@ -17,7 +17,7 @@ ZIPFILE := $(BINARY_NAME).zip
 # Commands
 .PHONY: all run build test test-all test-integration test-integration-verbose deps clean tidy lint format init-project dist sign-dist
 
-all: test-all build
+all: test build
 
 run: ## Run the application
 	@echo "Running $(APP_NAME)..."
@@ -46,6 +46,11 @@ test-integration-verbose: ## Run integration tests with verbose output
 
 test-all: test test-integration ## Run all tests (unit and integration)
 	@echo "Running all tests..."
+
+test-cover-serve: ## Run tests with coverage and serve the coverage report
+	@echo "Running tests with coverage..."
+	go test -coverprofile=coverage.out $(PKG)
+	go tool cover -html=coverage.out
 
 deps: ## Fetch and update project dependencies
 	@echo "Updating dependencies..."

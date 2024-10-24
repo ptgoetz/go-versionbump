@@ -129,6 +129,9 @@ func (v *PreReleaseVersion) String() string {
 
 // Bump returns a new PreReleaseVersion instance after incrementing the specified part
 func (v *PreReleaseVersion) Bump(versionPart int, preReleaseLabels []string, buildLabel string) (*PreReleaseVersion, error) {
+	if len(preReleaseLabels) == 0 {
+		panic("PreReleaseVersion.Bump(): preReleaseLabels cannot be empty")
+	}
 	switch versionPart {
 	// TODO: Implement bumping for prerelease and build versions
 	case PreReleaseMajor:
@@ -147,12 +150,29 @@ func (v *PreReleaseVersion) Bump(versionPart int, preReleaseLabels []string, bui
 	case PreReleaseNext:
 		// sort pre-release labels
 		sort.Strings(preReleaseLabels)
-		// find the index of the current label
-		idx := sort.SearchStrings(preReleaseLabels, v.Label)
-		fmt.Printf("Found label %s at index %d\n", v.Label, idx)
 
+		if v.Label == "" {
+			return NewPrereleaseVersion(preReleaseLabels[0], 0, 0, 0, nil), nil
+		}
+		// find the index of the current label
+		idx := indexOf(v.Label, preReleaseLabels)
+		if idx == -1 {
+			return nil, fmt.Errorf("label %s not found in preReleaseLabels", v.Label)
+		} else if idx == len(preReleaseLabels)-1 {
+			return nil, fmt.Errorf("cannot bump beyond the last label %s", v.Label)
+		} else {
+			return NewPrereleaseVersion(preReleaseLabels[idx+1], 0, 0, 0, nil), nil
+		}
 	default:
 		panic(fmt.Sprintf("invalid version part: %d.\n", versionPart))
 	}
-	return nil, nil
+}
+
+func indexOf(s string, arr []string) int {
+	for i, v := range arr {
+		if v == s {
+			return i
+		}
+	}
+	return -1
 }
