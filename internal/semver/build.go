@@ -23,7 +23,7 @@ func NewBuild(label string, index int) *Build {
 // ParseBuild parses a build version string and returns a new Build instance
 func ParseBuild(buildStr string) (*Build, error) {
 	if buildStr == "" {
-		return NewBuild("build", 0), nil
+		return nil, nil
 	}
 	// Build specific logic
 	// build.1
@@ -50,7 +50,11 @@ func ParseBuild(buildStr string) (*Build, error) {
 
 // String returns the build version string
 func (b *Build) String() string {
-	return fmt.Sprintf("%s.%d", b.Label, b.Index)
+	if b.Index > 0 {
+		return fmt.Sprintf("%s.%d", b.Label, b.Index)
+	} else {
+		return ""
+	}
 }
 
 func (b *Build) Bump() *Build {

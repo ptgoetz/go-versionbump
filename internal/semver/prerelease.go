@@ -12,16 +12,14 @@ import (
 type PreReleaseVersion struct {
 	Version *Version
 	Label   string
-	Build   *Build
 }
 
 // NewPrereleaseVersion creates a new immutable PreReleaseVersion instance
-func NewPrereleaseVersion(label string, major int, minor int, patch int, build *Build) *PreReleaseVersion {
+func NewPrereleaseVersion(label string, major int, minor int, patch int) *PreReleaseVersion {
 	version := NewVersion(major, minor, patch)
 	return &PreReleaseVersion{
 		Label:   label,
 		Version: version,
-		Build:   build,
 	}
 }
 
@@ -35,7 +33,7 @@ func ParsePrereleaseVersion(versionStr string) (*PreReleaseVersion, error) {
 	version := parts[0]
 
 	if utils.IsAllAlphabetic(version) && len(parts) == 1 {
-		return NewPrereleaseVersion(version, 0, 0, 0, nil), nil
+		return NewPrereleaseVersion(version, 0, 0, 0), nil
 	}
 
 	vals := strings.Split(version, ".")
@@ -85,20 +83,7 @@ func ParsePrereleaseVersion(versionStr string) (*PreReleaseVersion, error) {
 		}
 	}
 
-	// Label specific logic
-
-	// Build specific logic
-	var build *Build
-	if len(parts) > 1 {
-		buildStr := parts[1]
-		build, err = ParseBuild(buildStr)
-		if err != nil {
-			return nil, err
-		}
-
-	}
-
-	return NewPrereleaseVersion(label, major, minor, patch, build), nil
+	return NewPrereleaseVersion(label, major, minor, patch), nil
 }
 
 // String returns the reduced version string by removing trailing ".0" parts
@@ -121,38 +106,28 @@ func (v *PreReleaseVersion) String() string {
 	if v.Label != "" {
 		retval = fmt.Sprintf("%s", retval)
 	}
-	if v.Build != nil && v.Build.Index >= 0 {
-		retval = fmt.Sprintf("%s+%s.%d", retval, v.Build.Label, v.Build.Index)
-	}
 	return retval
 }
 
 // Bump returns a new PreReleaseVersion instance after incrementing the specified part
-func (v *PreReleaseVersion) Bump(versionPart int, preReleaseLabels []string, buildLabel string) (*PreReleaseVersion, error) {
+func (v *PreReleaseVersion) Bump(versionPart int, preReleaseLabels []string) (*PreReleaseVersion, error) {
 	if len(preReleaseLabels) == 0 {
 		panic("PreReleaseVersion.Bump(): preReleaseLabels cannot be empty")
 	}
 	switch versionPart {
 	// TODO: Implement bumping for prerelease and build versions
 	case prMajor:
-		return NewPrereleaseVersion(v.Label, v.Version.major+1, 0, 0, nil), nil
+		return NewPrereleaseVersion(v.Label, v.Version.major+1, 0, 0), nil
 	case prMinor:
-		return NewPrereleaseVersion(v.Label, v.Version.major, v.Version.minor+1, 0, nil), nil
+		return NewPrereleaseVersion(v.Label, v.Version.major, v.Version.minor+1, 0), nil
 	case prPatch:
-		return NewPrereleaseVersion(v.Label, v.Version.major, v.Version.minor, v.Version.patch+1, nil), nil
-	case prBuild:
-		// TODO: Move to build.go
-		if v.Build == nil {
-			v.Build = NewBuild(buildLabel, 0)
-		}
-		v.Build = v.Build.Bump()
-		return NewPrereleaseVersion(v.Label, v.Version.major, v.Version.minor, v.Version.patch, v.Build), nil
+		return NewPrereleaseVersion(v.Label, v.Version.major, v.Version.minor, v.Version.patch+1), nil
 	case prNext:
 		// sort pre-release labels
 		sort.Strings(preReleaseLabels)
 
 		if v.Label == "" {
-			return NewPrereleaseVersion(preReleaseLabels[0], 0, 0, 0, nil), nil
+			return NewPrereleaseVersion(preReleaseLabels[0], 0, 0, 0), nil
 		}
 		// find the index of the current label
 		idx := indexOf(v.Label, preReleaseLabels)
@@ -161,7 +136,7 @@ func (v *PreReleaseVersion) Bump(versionPart int, preReleaseLabels []string, bui
 		} else if idx == len(preReleaseLabels)-1 {
 			return nil, fmt.Errorf("cannot bump beyond the last label %s", v.Label)
 		} else {
-			return NewPrereleaseVersion(preReleaseLabels[idx+1], 0, 0, 0, nil), nil
+			return NewPrereleaseVersion(preReleaseLabels[idx+1], 0, 0, 0), nil
 		}
 	default:
 		panic(fmt.Sprintf("invalid version part: %d.\n", versionPart))

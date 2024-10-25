@@ -7,7 +7,6 @@ import (
 
 // TestBumpPreRelease ensures that bumping the version correctly returns a new subversion instance
 func TestBumpPreRelease(t *testing.T) {
-	buildLabel := "build"
 	preReleaseLabels := []string{"alpha", "beta", "rc"}
 	tests := []struct {
 		input      string
@@ -21,15 +20,15 @@ func TestBumpPreRelease(t *testing.T) {
 		{"2.5.1", prNext, "alpha", false},
 		{"alpha", prNext, "beta", false},
 		{"alpha", prMinor, "alpha.0.1", false},
-		{"2.5.1", prBuild, "2.5.1+build.1", false},
+		//{"2.5.1", prBuild, "2.5.1+build.1", false},
 		{"0.0.0", prMajor, "1", false},
 		{"1.0.0", prMinor, "1.1", false},
 		{"1.1.0", prPatch, "1.1.1", false},
 		{"2.5.1", prMajor, "3", false},
 		{"2.5.1", prMinor, "2.6", false},
 		{"2.5.1", prPatch, "2.5.2", false},
-		{"2.5.1+build.1", prBuild, "2.5.1+build.2", false},
-		{"2.5.1", prBuild, "2.5.1+build.1", false},
+		//{"2.5.1+build.1", prBuild, "2.5.1+build.2", false},
+		//{"2.5.1", prBuild, "2.5.1+build.1", false},
 	}
 
 	for _, test := range tests {
@@ -38,7 +37,7 @@ func TestBumpPreRelease(t *testing.T) {
 			t.Fatalf("Unexpected error for input %s: %v", test.input, err)
 		}
 
-		bumped, err := subv.Bump(test.bumpType, preReleaseLabels, buildLabel)
+		bumped, err := subv.Bump(test.bumpType, preReleaseLabels)
 
 		if test.shouldFail {
 			// Assert an error was returned
@@ -64,7 +63,8 @@ func TestParsePrereleaseVersion(t *testing.T) {
 		{"1", "1", false},
 		{"alpha", "alpha", false},
 		{"alpha.1", "alpha.1", false},
-		{"alpha+build.1", "alpha+build.1", false},
+		{"alpha.0.1", "alpha.0.1", false},
+		{"alpha.0.0.1", "alpha.0.0.1", false},
 	}
 
 	for _, test := range tests {

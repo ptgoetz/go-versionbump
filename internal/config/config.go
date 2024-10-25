@@ -19,7 +19,7 @@ const (
 // Config represents the version bump configuration.
 type Config struct {
 	Version               string          `yaml:"version"`
-	PreReleaseVersion     string          `yaml:"prerelease-version"`
+	BuildLabel            string          `yaml:"build-label"`
 	PreReleaseLabels      []string        `yaml:"prerelease-labels"`
 	GitCommit             bool            `yaml:"git-commit"`
 	GitCommitTemplate     string          `yaml:"git-commit-template"`

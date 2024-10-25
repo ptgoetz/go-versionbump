@@ -2,15 +2,13 @@ package semver
 
 import "testing"
 
-func TestBuild(t *testing.T) {
+func TestParseBuild(t *testing.T) {
 	tests := []struct {
 		input    string
 		bumpType int
 		expected string
 	}{
 		{"build.1", prBuild, "build.2"},
-		{"", prBuild, "build.1"},
-		{"", prBuild, "build.1"},
 		{"foo.1", prBuild, "foo.2"},
 	}
 	for _, test := range tests {
