@@ -134,20 +134,20 @@ func (v *PreReleaseVersion) Bump(versionPart int, preReleaseLabels []string, bui
 	}
 	switch versionPart {
 	// TODO: Implement bumping for prerelease and build versions
-	case PreReleaseMajor:
+	case prMajor:
 		return NewPrereleaseVersion(v.Label, v.Version.major+1, 0, 0, nil), nil
-	case PreReleaseMinor:
+	case prMinor:
 		return NewPrereleaseVersion(v.Label, v.Version.major, v.Version.minor+1, 0, nil), nil
-	case PreReleasePatch:
+	case prPatch:
 		return NewPrereleaseVersion(v.Label, v.Version.major, v.Version.minor, v.Version.patch+1, nil), nil
-	case PreReleaseBuild:
+	case prBuild:
 		// TODO: Move to build.go
 		if v.Build == nil {
 			v.Build = NewBuild(buildLabel, 0)
 		}
 		v.Build = v.Build.Bump()
 		return NewPrereleaseVersion(v.Label, v.Version.major, v.Version.minor, v.Version.patch, v.Build), nil
-	case PreReleaseNext:
+	case prNext:
 		// sort pre-release labels
 		sort.Strings(preReleaseLabels)
 

@@ -6,15 +6,51 @@ import (
 )
 
 const (
-	VersionMajor = iota
-	VersionMinor
-	VersionPatch
-	PreReleaseNext
-	PreReleaseMajor
-	PreReleaseMinor
-	PreReleasePatch
-	PreReleaseBuild
+	vMajor = iota
+	vMinor
+	vPatch
+	prNext
+	prMajor
+	prMinor
+	prPatch
+	prBuild
 )
+
+type VersionPart string
+
+const (
+	Major           VersionPart = "major"
+	Minor           VersionPart = "minor"
+	Patch           VersionPart = "patch"
+	PreReleaseNext  VersionPart = "prerelease-next"
+	PreReleaseMajor VersionPart = "prerelease-major"
+	PreReleaseMinor VersionPart = "prerelease-minor"
+	PreReleasePatch VersionPart = "prerelease-patch"
+	PreReleaseBuild VersionPart = "prerelease-build"
+)
+
+func versionPartInt(part VersionPart) int {
+	switch part {
+	case Major:
+		return vMajor
+	case Minor:
+		return vMinor
+	case Patch:
+		return vPatch
+	case PreReleaseNext:
+		return prNext
+	case PreReleaseMajor:
+		return prMajor
+	case PreReleaseMinor:
+		return prMinor
+	case PreReleasePatch:
+		return prPatch
+	case PreReleaseBuild:
+		return prBuild
+	default:
+		panic(fmt.Sprintf("invalid version part: %s", part))
+	}
+}
 
 type SemVersion struct {
 	Version           *Version
@@ -32,14 +68,15 @@ func (v *SemVersion) String() string {
 }
 
 // Bump returns a new SemVersion instance after incrementing the specified part
-func (v *SemVersion) Bump(versionPart int, preReleaseLabels []string, buildLabel string) (*SemVersion, error) {
-	if versionPart >= VersionMajor && versionPart <= VersionPatch {
+func (v *SemVersion) Bump(part VersionPart, preReleaseLabels []string, buildLabel string) (*SemVersion, error) {
+	versionPart := versionPartInt(part)
+	if versionPart >= vMajor && versionPart <= vPatch {
 		// bump the root version
 		v.Version = v.Version.Bump(versionPart)
 
 		// reset all pre-release versions
 		v.PreReleaseVersion = NewPrereleaseVersion("", 0, 0, 0, nil)
-	} else if versionPart >= PreReleaseNext && versionPart <= PreReleaseBuild {
+	} else if versionPart >= prNext && versionPart <= prBuild {
 		v.PreReleaseVersion, _ = v.PreReleaseVersion.Bump(versionPart, preReleaseLabels, buildLabel)
 
 	} else {
@@ -53,16 +90,13 @@ func (v *SemVersion) Bump(versionPart int, preReleaseLabels []string, buildLabel
 func ParseSemVersion(versionStr string) (*SemVersion, error) {
 	isPreRelease := strings.Index(versionStr, "-") != -1
 	isBuild := strings.Index(versionStr, "+") != -1
-	isPreReleaseBuild := isPreRelease && isBuild
-	fmt.Printf("isPreRelease: %v, isBuild: %v, isPreReleaseBuild: %v\n", isPreRelease, isBuild, isPreReleaseBuild)
 
 	var rootPart string
 	var preReleasePart string
-	var buildPart string
 	if !isPreRelease && !isBuild {
 		rootPart = versionStr
 	}
-	if isPreRelease /* && !isBuild */ {
+	if isPreRelease {
 		parts := strings.Split(versionStr, "-")
 		rootPart = parts[0]
 		preReleasePart = parts[1]
@@ -70,9 +104,7 @@ func ParseSemVersion(versionStr string) (*SemVersion, error) {
 	if !isPreRelease && isBuild {
 		parts := strings.Split(versionStr, "+")
 		rootPart = parts[0]
-		buildPart = parts[1]
 	}
-	fmt.Printf("rootPart: %s, preReleasePart: %s, buildPart: %s\n", rootPart, preReleasePart, buildPart)
 
 	version, err := ParseVersion(rootPart)
 	if err != nil {

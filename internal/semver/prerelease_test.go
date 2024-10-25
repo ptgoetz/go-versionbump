@@ -15,23 +15,21 @@ func TestBumpPreRelease(t *testing.T) {
 		expected   string
 		shouldFail bool
 	}{
-		{"foo", PreReleaseNext, "", true},
-		{"rc", PreReleaseNext, "", true},
-		{"beta", PreReleaseNext, "rc", false},
-		{"2.5.1", PreReleaseNext, "alpha", false},
-		{"alpha", PreReleaseNext, "beta", false},
-		{"alpha", PreReleaseMinor, "alpha.0.1", false},
-		{"2.5.1", PreReleaseBuild, "2.5.1+build.1", false},
-		{"0.0.0", PreReleaseMajor, "1", false},
-		{"1.0.0", PreReleaseMinor, "1.1", false},
-		{"1.1.0", PreReleasePatch, "1.1.1", false},
-		{"2.5.1", PreReleaseMajor, "3", false},
-		{"2.5.1", PreReleaseMinor, "2.6", false},
-		{"2.5.1", PreReleasePatch, "2.5.2", false},
-		{"2.5.1+build.1", PreReleaseBuild, "2.5.1+build.2", false},
-		{"2.5.1", PreReleaseBuild, "2.5.1+build.1", false},
-		// TODO: Add test cases for pre-release and build versions
-
+		{"foo", prNext, "", true},
+		{"rc", prNext, "", true},
+		{"beta", prNext, "rc", false},
+		{"2.5.1", prNext, "alpha", false},
+		{"alpha", prNext, "beta", false},
+		{"alpha", prMinor, "alpha.0.1", false},
+		{"2.5.1", prBuild, "2.5.1+build.1", false},
+		{"0.0.0", prMajor, "1", false},
+		{"1.0.0", prMinor, "1.1", false},
+		{"1.1.0", prPatch, "1.1.1", false},
+		{"2.5.1", prMajor, "3", false},
+		{"2.5.1", prMinor, "2.6", false},
+		{"2.5.1", prPatch, "2.5.2", false},
+		{"2.5.1+build.1", prBuild, "2.5.1+build.2", false},
+		{"2.5.1", prBuild, "2.5.1+build.1", false},
 	}
 
 	for _, test := range tests {
