@@ -107,8 +107,8 @@ func (v *SemVersion) Bump(part VersionPart, preReleaseLabels []string, buildLabe
 
 // ParseSemVersion parses a semantic version string and returns a new SemVersion instance
 func ParseSemVersion(versionStr string) (*SemVersion, error) {
-	isPreRelease := strings.Index(versionStr, "-") != -1
-	isBuild := strings.Index(versionStr, "+") != -1
+	isPreRelease := strings.Contains(versionStr, "-")
+	isBuild := strings.Contains(versionStr, "+")
 
 	var rootPart string
 	var preReleasePart string

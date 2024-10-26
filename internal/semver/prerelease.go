@@ -99,12 +99,12 @@ func (v *PreReleaseVersion) String() string {
 
 	// alpha.0.0.0 -> alpha
 	if retval == "0" {
-		retval = fmt.Sprintf("%s", v.Label)
+		retval = fmt.Sprint(v.Label)
 	} else if v.Label != "" {
 		retval = fmt.Sprintf("%s.%s", v.Label, retval)
 	}
 	if v.Label != "" {
-		retval = fmt.Sprintf("%s", retval)
+		retval = fmt.Sprint(retval)
 	}
 	return retval
 }

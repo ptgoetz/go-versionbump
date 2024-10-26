@@ -46,13 +46,6 @@ var patchCmd = &cobra.Command{
 	RunE:  bumpPatch, // Use RunE for better error handling
 }
 
-var preReleaseNextcCmd = &cobra.Command{
-	Use:   "patch",
-	Short: `Bump the patch version number (e.g. 1.2.3 -> 1.2.4).`,
-	Long:  `Bump the patch version number (e.g. 1.2.3 -> 1.2.4).`,
-	RunE:  bumpPatch, // Use RunE for better error handling
-}
-
 var configCmd = &cobra.Command{
 	Use:   "config",
 	Short: `Show the effective configuration of the project.`,
@@ -87,6 +80,13 @@ var showCmd = &cobra.Command{
 	},
 }
 
+var preReleaseNextCmd = &cobra.Command{
+	Use:   "pre-release-next",
+	Short: `Bump the next pre-release version label (e.g. 1.2.3-alpha -> 1.2.3-beta).`,
+	Long:  `Bump the patch version number (e.g. 1.2.3 -> 1.2.4).`,
+	RunE:  bumpPreReleaseNext, // Use RunE for better error handling
+}
+
 var preReleaseMajorCmd = &cobra.Command{
 	Use:   "prerelease-major",
 	Short: `Bump the pre-release major version number (e.g. 1.2.3-alpha -> 1.2.3-alpha.1).`,
@@ -108,6 +108,13 @@ var preReleasePatchCmd = &cobra.Command{
 	RunE:  bumpPreReleasePatch, // Use RunE for better error handling
 }
 
+var preReleaseBuildCmd = &cobra.Command{
+	Use:   "prerelease-build",
+	Short: `Bump the pre-release build version number (e.g. 1.2.3 -> 1.2.3+build.1).`,
+	Long:  `Bump the pre-release build version number (e.g. 1.2.3 -> 1.2.3+build.1).`,
+	RunE:  bumpPreReleaseBuild, // Use RunE for better error handling
+}
+
 func init() {
 	rootCmd.Flags().BoolVarP(&opts.ShowVersion, "version", "V", false, "Show the VersionBump version and exit.")
 
@@ -127,9 +134,11 @@ func init() {
 	prereleaserFlags := pflag.NewFlagSet("prelease", pflag.ExitOnError)
 	prereleaserFlags.AddFlagSet(commonFlags)
 
+	preReleaseNextCmd.Flags().AddFlagSet(prereleaserFlags)
 	preReleaseMajorCmd.Flags().AddFlagSet(prereleaserFlags)
 	preReleaseMinorCmd.Flags().AddFlagSet(prereleaserFlags)
 	preReleasePatchCmd.Flags().AddFlagSet(prereleaserFlags)
+	preReleaseBuildCmd.Flags().AddFlagSet(prereleaserFlags)
 
 	showCmd.Flags().AddFlagSet(configColorFlags)
 	configCmd.Flags().AddFlagSet(configColorFlags)
@@ -143,9 +152,11 @@ func init() {
 	rootCmd.AddCommand(minorCmd)
 	rootCmd.AddCommand(patchCmd)
 	rootCmd.AddCommand(resetCmd)
+	rootCmd.AddCommand(preReleaseNextCmd)
 	rootCmd.AddCommand(preReleaseMajorCmd)
 	rootCmd.AddCommand(preReleaseMinorCmd)
 	rootCmd.AddCommand(preReleasePatchCmd)
+	rootCmd.AddCommand(preReleaseBuildCmd)
 	rootCmd.AddCommand(showCmd)
 	rootCmd.AddCommand(configCmd)
 
