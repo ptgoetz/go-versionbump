@@ -379,8 +379,8 @@ func (vb *VersionBump) bumpPreflight() {
 	// log what changes will be made to each file
 	for _, file := range vb.Config.Files {
 		for _, replace := range file.Replace {
-			find := vbu.ReplaceInString(replace, "{Version}", vb.GetOldVersion())
-			replace := vbu.ReplaceInString(replace, "{Version}", vb.GetNewVersion())
+			find := vbu.ReplaceInString(replace, "{version}", vb.GetOldVersion())
+			replace := vbu.ReplaceInString(replace, "{version}", vb.GetNewVersion())
 
 			logVerbose(vb.Options, file.Path)
 			logVerbose(vb.Options, fmt.Sprintf("     Find: \"%s\"", find))

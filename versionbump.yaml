@@ -6,7 +6,7 @@ git-sign: true          # Whether to sign the git tag.
 files:                   # The files to update with the new version.
   - path: "internal/versionbump.go"   # The path to the file to update.
     replace:
-      - "const Version = \"{version}\"" # The search string to replace in the file.
+      - "\"{version}\"" # The search string to replace in the file.
 
   - path: "README.md"
     replace:
