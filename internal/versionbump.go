@@ -8,13 +8,16 @@ import (
 	"github.com/ptgoetz/go-versionbump/internal/semver"
 	"github.com/ptgoetz/go-versionbump/internal/utils"
 	vbu "github.com/ptgoetz/go-versionbump/internal/utils"
-	vbv "github.com/ptgoetz/go-versionbump/internal/version"
+	//vbv "github.com/ptgoetz/go-versionbump/internal/version"
 	"gopkg.in/yaml.v3"
 	"os"
 	"path"
 	"strings"
 )
 
+const version = "0.4.1"
+
+// VersionBump represents the version bump operation.
 type VersionBump struct {
 	Config    config.Config
 	Options   config.Options
@@ -39,24 +42,24 @@ func NewVersionBump(options config.Options) (*VersionBump, error) {
 }
 
 func (vb *VersionBump) GetOldVersion() string {
-	if !vbv.ValidateVersion(vb.Config.Version) {
+	if !semver.ValidateVersion(vb.Config.Version) {
 		logFatal(vb.Options, fmt.Sprintf("Failed to parse semantic version string for old version: %s", vb.Config.Version))
 	}
-	oldVersion, _ := vbv.ParseVersion(vb.Config.Version)
+	oldVersion, _ := semver.ParseSemVersion(vb.Config.Version)
 	return oldVersion.String()
 }
 
 func (vb *VersionBump) GetNewVersion() string {
 	if vb.Options.IsResetVersion() {
-		v, err := vbv.ParseVersion(vb.Options.ResetVersion)
+		v, err := semver.ParseSemVersion(vb.Options.ResetVersion)
 		if err != nil {
 			logFatal(vb.Options, fmt.Sprintf("Failed to parse semantic version string for reset version: %s", vb.Options.ResetVersion))
 		}
 		return v.String()
 	}
 	oldVersionStr := vb.GetOldVersion()
-	oldVersion, _ := vbv.ParseVersion(oldVersionStr)
-	newVersion := oldVersion.StringBump(vb.Options.BumpPart)
+	oldVersion, _ := semver.ParseSemVersion(oldVersionStr)
+	newVersion, _ := oldVersion.Bump(vb.Options.BumpPart, vb.Config.PreReleaseLabels, vb.Config.BuildLabel)
 	return newVersion.String()
 }
 
@@ -306,7 +309,7 @@ func (vb *VersionBump) gitPreFlight() {
 
 // preamble prints the version bump preamble.
 func (vb *VersionBump) preamble() {
-	logVerbose(vb.Options, vbv.VersionBumpVersion)
+	logVerbose(vb.Options, fmt.Sprintf("VersionBump %s", version))
 	logVerbose(vb.Options, fmt.Sprintf("Configuration file: %s", vb.Options.ConfigPath))
 	logVerbose(vb.Options, fmt.Sprintf("Project root directory: %s", vb.ParentDir))
 }

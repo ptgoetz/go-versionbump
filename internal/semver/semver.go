@@ -150,3 +150,8 @@ func ParseSemVersion(versionStr string) (*SemVersion, error) {
 		Build:             build,
 	}, nil
 }
+
+func ValidateSemVersion(versionStr string) bool {
+	_, err := ParseSemVersion(versionStr)
+	return err == nil
+}

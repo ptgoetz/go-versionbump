@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"github.com/ptgoetz/go-versionbump/internal/semver"
 	"github.com/ptgoetz/go-versionbump/internal/utils"
 	"github.com/ptgoetz/go-versionbump/internal/version"
 	"gopkg.in/yaml.v3"
@@ -46,7 +47,7 @@ type Options struct {
 	ResetVersion    string
 	NoGit           bool
 	NoColor         bool
-	BumpPart        string
+	BumpPart        semver.VersionPart
 	PreReleaseLabel string
 }
 

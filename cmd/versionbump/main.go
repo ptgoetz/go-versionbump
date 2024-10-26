@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/ptgoetz/go-versionbump/internal"
 	vbc "github.com/ptgoetz/go-versionbump/internal/config"
+	"github.com/ptgoetz/go-versionbump/internal/semver"
 	"github.com/ptgoetz/go-versionbump/internal/version"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -209,7 +210,7 @@ func runConfigCmd(cmd *cobra.Command, args []string) error {
 }
 
 // runVersionBump contains the logic for executing the version bump process
-func runVersionBump(bumpPart string) error {
+func runVersionBump(bumpPart semver.VersionPart) error {
 	opts.BumpPart = bumpPart
 
 	vb, err := internal.NewVersionBump(opts)
