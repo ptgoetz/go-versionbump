@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/ptgoetz/go-versionbump/internal/config"
 	"github.com/ptgoetz/go-versionbump/internal/git"
+	"github.com/ptgoetz/go-versionbump/internal/semver"
 	"github.com/ptgoetz/go-versionbump/internal/utils"
 	vbu "github.com/ptgoetz/go-versionbump/internal/utils"
 	vbv "github.com/ptgoetz/go-versionbump/internal/version"
@@ -79,7 +80,7 @@ func (vb *VersionBump) Show(versionStr string) error {
 		curVersionStr = vb.Config.Version
 		isProject = true
 	}
-	curVersion, err := vbv.ParseVersion(curVersionStr)
+	curVersion, err := semver.ParseSemVersion(curVersionStr)
 	if err != nil {
 		return err
 	}
@@ -92,19 +93,27 @@ func (vb *VersionBump) Show(versionStr string) error {
 			curVersion.String()))
 	}
 	// we now know we have a valid version
-	majorVersion := curVersion.StringBump(vbv.VersionMajorStr)
-	minorVersion := curVersion.StringBump(vbv.VersionMinorStr)
-	patchVersion := curVersion.StringBump(vbv.VersionPatchStr)
+	majorVersion, _ := curVersion.Bump(semver.Major, vb.Config.PreReleaseLabels, vb.Config.BuildLabel)
+	minorVersion, _ := curVersion.Bump(semver.Minor, vb.Config.PreReleaseLabels, vb.Config.BuildLabel)
+	patchVersion, _ := curVersion.Bump(semver.Patch, vb.Config.PreReleaseLabels, vb.Config.BuildLabel)
+	prNextVersion, _ := curVersion.Bump(semver.PreReleaseNext, vb.Config.PreReleaseLabels, vb.Config.BuildLabel)
+	prMajorVersion, _ := curVersion.Bump(semver.PreReleaseMajor, vb.Config.PreReleaseLabels, vb.Config.BuildLabel)
+	prMinorVersion, _ := curVersion.Bump(semver.PreReleaseMinor, vb.Config.PreReleaseLabels, vb.Config.BuildLabel)
+	prPatchVersion, _ := curVersion.Bump(semver.PreReleasePatch, vb.Config.PreReleaseLabels, vb.Config.BuildLabel)
+	prBuildVersion, _ := curVersion.Bump(semver.PreReleaseBuild, vb.Config.PreReleaseLabels, vb.Config.BuildLabel)
 
 	padLen := len(curVersion.String())
 	padding := utils.PaddingString(padLen, " ")
 
 	tree := fmt.Sprintf(
-		`
-%s ─┬─ major ─ %s
+		`%s ─┬─ major ─ %s
   %s├─ minor ─ %s
   %s├─ patch ─ %s
-  %s╰─ pre-release ─ %s
+  %s├─ prerelease-next ── %s
+  %s├─ prerelease-major ─ %s
+  %s├─ prerelease-minor ─ %s
+  %s├─ prerelease-patch ─ %s
+  %s╰─ prerelease-build ─ %s
 `,
 		curVersion.String(),
 		majorVersion.String(),
@@ -113,7 +122,15 @@ func (vb *VersionBump) Show(versionStr string) error {
 		padding,
 		patchVersion.String(),
 		padding,
-		"foo")
+		prNextVersion.String(),
+		padding,
+		prMajorVersion.String(),
+		padding,
+		prMinorVersion.String(),
+		padding,
+		prPatchVersion.String(),
+		padding,
+		prBuildVersion.String())
 
 	printColorOpts(vb.Options, tree, ColorLightBlue)
 	return nil
