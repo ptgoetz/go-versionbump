@@ -5,7 +5,6 @@ import (
 	"github.com/ptgoetz/go-versionbump/internal"
 	vbc "github.com/ptgoetz/go-versionbump/internal/config"
 	"github.com/ptgoetz/go-versionbump/internal/semver"
-	"github.com/ptgoetz/go-versionbump/internal/version"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"os"
@@ -81,32 +80,25 @@ var showCmd = &cobra.Command{
 	},
 }
 
-var preReleaseCmd = &cobra.Command{
-	Use:   "prerelease",
-	Short: `Bump the pre-release version number (e.g. 1.2.3-alpha.1 -> 1.2.3-alpha.2).`,
-	Long:  `Bump the pre-release version number (e.g. 1.2.3-alpha.1 -> 1.2.3-alpha.2)`,
-	RunE:  bumpPreRelease, // Use RunE for better error handling
-}
-
 var preReleaseMajorCmd = &cobra.Command{
 	Use:   "major",
 	Short: `Bump the pre-release major version number (e.g. 1.2.3-alpha -> 1.2.3-alpha.1).`,
 	Long:  `ump the pre-release major version number (e.g. 1.2.3-alpha -> 1.2.3-alpha.1).`,
-	RunE:  bumpPreRelease, // Use RunE for better error handling
+	RunE:  bumpPreReleaseMajor, // Use RunE for better error handling
 }
 
 var preReleaseMinorCmd = &cobra.Command{
 	Use:   "minor",
 	Short: `Bump the pre-release minor version number (e.g. 1.2.3-alpha -> 1.2.3-alpha.0.1).`,
 	Long:  `ump the pre-release minor version number (e.g. 1.2.3-alpha -> 1.2.3-alpha.0.1).`,
-	RunE:  bumpPreRelease, // Use RunE for better error handling
+	RunE:  bumpPreReleaseMinor, // Use RunE for better error handling
 }
 
 var preReleasePatchCmd = &cobra.Command{
 	Use:   "patch",
 	Short: `Bump the pre-release patch version number (e.g. 1.2.3-alpha -> 1.2.3-alpha.0.0.1).`,
 	Long:  `ump the pre-release patch version number (e.g. 1.2.3-alpha -> 1.2.3-alpha.0.0.1).`,
-	RunE:  bumpPreRelease, // Use RunE for better error handling
+	RunE:  bumpPreReleasePatch, // Use RunE for better error handling
 }
 
 func init() {
@@ -127,17 +119,10 @@ func init() {
 
 	prereleaserFlags := pflag.NewFlagSet("prelease", pflag.ExitOnError)
 	prereleaserFlags.AddFlagSet(commonFlags)
-	prereleaserFlags.StringVarP(&opts.PreReleaseLabel, "label", "l", "", "(REQUIRED) The pre-release label to use.")
 
-	preReleaseCmd.Flags().AddFlagSet(prereleaserFlags)
-	preReleaseCmd.MarkFlagRequired("label")
 	preReleaseMajorCmd.Flags().AddFlagSet(prereleaserFlags)
 	preReleaseMinorCmd.Flags().AddFlagSet(prereleaserFlags)
 	preReleasePatchCmd.Flags().AddFlagSet(prereleaserFlags)
-
-	preReleaseCmd.AddCommand(preReleaseMajorCmd)
-	preReleaseCmd.AddCommand(preReleaseMinorCmd)
-	preReleaseCmd.AddCommand(preReleasePatchCmd)
 
 	showCmd.Flags().AddFlagSet(configColorFlags)
 	configCmd.Flags().AddFlagSet(configColorFlags)
@@ -150,7 +135,6 @@ func init() {
 	rootCmd.AddCommand(majorCmd)
 	rootCmd.AddCommand(minorCmd)
 	rootCmd.AddCommand(patchCmd)
-	rootCmd.AddCommand(preReleaseCmd)
 	rootCmd.AddCommand(resetCmd)
 	rootCmd.AddCommand(showCmd)
 	rootCmd.AddCommand(configCmd)
@@ -159,34 +143,42 @@ func init() {
 
 func runRootCmd(cmd *cobra.Command, args []string) error {
 	if opts.ShowVersion {
-		fmt.Println(version.VersionBumpVersion)
+		fmt.Println(internal.Version)
 		return nil
 	}
 	return cmd.Help()
 }
 
 func bumpMajor(cmd *cobra.Command, args []string) error {
-	return runVersionBump(version.VersionMajorStr)
+	return runVersionBump(semver.Major)
 }
 
 func bumpMinor(cmd *cobra.Command, args []string) error {
-	return runVersionBump(version.VersionMinorStr)
+	return runVersionBump(semver.Minor)
 }
 
 func bumpPatch(cmd *cobra.Command, args []string) error {
-	return runVersionBump(version.VersionPatchStr)
+	return runVersionBump(semver.Patch)
 }
 
-func bumpPreRelease(cmd *cobra.Command, args []string) error {
-	vb, err := internal.NewVersionBump(opts)
-	if err != nil {
-		return err
-	}
-	if !vb.Config.HasLabel(opts.PreReleaseLabel) {
-		return fmt.Errorf("label '%s' is not defined in the configuration", opts.PreReleaseLabel)
-	}
-	fmt.Printf("Bumping pre-release version label: %s\n", opts.PreReleaseLabel)
-	return nil
+func bumpPreReleaseNext(cmd *cobra.Command, args []string) error {
+	return runVersionBump(semver.PreReleaseNext)
+}
+
+func bumpPreReleaseMajor(cmd *cobra.Command, args []string) error {
+	return runVersionBump(semver.PreReleaseMajor)
+}
+
+func bumpPreReleaseMinor(cmd *cobra.Command, args []string) error {
+	return runVersionBump(semver.PreReleaseMinor)
+}
+
+func bumpPreReleasePatch(cmd *cobra.Command, args []string) error {
+	return runVersionBump(semver.PreReleasePatch)
+}
+
+func bumpPreReleaseBuild(cmd *cobra.Command, args []string) error {
+	return runVersionBump(semver.PreReleaseBuild)
 }
 
 func runResetCmd(cmd *cobra.Command, args []string) error {

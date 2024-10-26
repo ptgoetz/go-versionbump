@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/ptgoetz/go-versionbump/internal/semver"
 	"github.com/ptgoetz/go-versionbump/internal/utils"
-	"github.com/ptgoetz/go-versionbump/internal/version"
 	"gopkg.in/yaml.v3"
 	"os"
 	"path"
@@ -40,15 +39,14 @@ type GitMeta struct {
 }
 
 type Options struct {
-	ConfigPath      string
-	Quiet           bool
-	NoPrompt        bool
-	ShowVersion     bool
-	ResetVersion    string
-	NoGit           bool
-	NoColor         bool
-	BumpPart        semver.VersionPart
-	PreReleaseLabel string
+	ConfigPath   string
+	Quiet        bool
+	NoPrompt     bool
+	ShowVersion  bool
+	ResetVersion string
+	NoGit        bool
+	NoColor      bool
+	BumpPart     semver.VersionPart
 }
 
 func (o Options) IsResetVersion() bool {
@@ -127,7 +125,7 @@ func LoadConfig(filePath string) (*Config, string, error) {
 		return nil, "", fmt.Errorf("version string is required")
 	}
 
-	if !version.ValidateVersion(config.Version) {
+	if !semver.ValidateVersion(config.Version) {
 		return nil, "", fmt.Errorf("invalid version string: %s", config.Version)
 	}
 

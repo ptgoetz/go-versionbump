@@ -8,16 +8,15 @@ import (
 	"github.com/ptgoetz/go-versionbump/internal/semver"
 	"github.com/ptgoetz/go-versionbump/internal/utils"
 	vbu "github.com/ptgoetz/go-versionbump/internal/utils"
-	//vbv "github.com/ptgoetz/go-versionbump/internal/version"
 	"gopkg.in/yaml.v3"
 	"os"
 	"path"
 	"strings"
 )
 
-const version = "0.4.1"
+const Version = "0.4.1"
 
-// VersionBump represents the version bump operation.
+// VersionBump represents the Version bump operation.
 type VersionBump struct {
 	Config    config.Config
 	Options   config.Options
@@ -29,7 +28,7 @@ func NewVersionBump(options config.Options) (*VersionBump, error) {
 
 	cfg, parentDir, err := config.LoadConfig(options.ConfigPath)
 	if err != nil {
-		logFatal(options, fmt.Sprintf("Error loading configuration file: %v", err))
+		return nil, fmt.Errorf("error loading configuration file: %v", err)
 	}
 
 	vb := &VersionBump{
@@ -43,7 +42,7 @@ func NewVersionBump(options config.Options) (*VersionBump, error) {
 
 func (vb *VersionBump) GetOldVersion() string {
 	if !semver.ValidateVersion(vb.Config.Version) {
-		logFatal(vb.Options, fmt.Sprintf("Failed to parse semantic version string for old version: %s", vb.Config.Version))
+		logFatal(vb.Options, fmt.Sprintf("Failed to parse semantic Version string for old Version: %s", vb.Config.Version))
 	}
 	oldVersion, _ := semver.ParseSemVersion(vb.Config.Version)
 	return oldVersion.String()
@@ -53,7 +52,7 @@ func (vb *VersionBump) GetNewVersion() string {
 	if vb.Options.IsResetVersion() {
 		v, err := semver.ParseSemVersion(vb.Options.ResetVersion)
 		if err != nil {
-			logFatal(vb.Options, fmt.Sprintf("Failed to parse semantic version string for reset version: %s", vb.Options.ResetVersion))
+			logFatal(vb.Options, fmt.Sprintf("Failed to parse semantic Version string for reset Version: %s", vb.Options.ResetVersion))
 		}
 		return v.String()
 	}
@@ -89,13 +88,13 @@ func (vb *VersionBump) Show(versionStr string) error {
 	}
 
 	if !isProject {
-		logVerbose(vb.Options, fmt.Sprintf("Potential versioning paths for version: %s",
+		logVerbose(vb.Options, fmt.Sprintf("Potential versioning paths for Version: %s",
 			curVersion.String()))
 	} else {
-		logVerbose(vb.Options, fmt.Sprintf("Potential versioning paths for project version: %s",
+		logVerbose(vb.Options, fmt.Sprintf("Potential versioning paths for project Version: %s",
 			curVersion.String()))
 	}
-	// we now know we have a valid version
+	// we now know we have a valid Version
 	majorVersion, _ := curVersion.Bump(semver.Major, vb.Config.PreReleaseLabels, vb.Config.BuildLabel)
 	minorVersion, _ := curVersion.Bump(semver.Minor, vb.Config.PreReleaseLabels, vb.Config.BuildLabel)
 	patchVersion, _ := curVersion.Bump(semver.Patch, vb.Config.PreReleaseLabels, vb.Config.BuildLabel)
@@ -215,7 +214,7 @@ func (vb *VersionBump) gitPreFlight() {
 				"VersionBump requires Git to be installed and available in the system PATH in order †o perform Giit "+
 				"operations")
 		} else {
-			logVerbose(vb.Options, fmt.Sprintf("Git version: %s", strings.TrimSpace(version)[12:]))
+			logVerbose(vb.Options, fmt.Sprintf("Git Version: %s", strings.TrimSpace(version)[12:]))
 		}
 	}
 
@@ -270,7 +269,7 @@ func (vb *VersionBump) gitPreFlight() {
 		}
 		if tagExists {
 			logFatal(vb.Options, fmt.Sprintf("Tag '%s' already exists in the git repository. "+
-				"Please bump to a different version or remove the existing tag.\n", gitMeta.TagName))
+				"Please bump to a different Version or remove the existing tag.\n", gitMeta.TagName))
 		}
 	}
 
@@ -307,9 +306,9 @@ func (vb *VersionBump) gitPreFlight() {
 
 }
 
-// preamble prints the version bump preamble.
+// preamble prints the Version bump preamble.
 func (vb *VersionBump) preamble() {
-	logVerbose(vb.Options, fmt.Sprintf("VersionBump %s", version))
+	logVerbose(vb.Options, fmt.Sprintf("VersionBump %s", Version))
 	logVerbose(vb.Options, fmt.Sprintf("Configuration file: %s", vb.Options.ConfigPath))
 	logVerbose(vb.Options, fmt.Sprintf("Project root directory: %s", vb.ParentDir))
 }
@@ -368,20 +367,20 @@ func (vb *VersionBump) gitCommit() {
 	}
 }
 
-// bumpPreflight performs a pre-flight check for the version bump operation.
+// bumpPreflight performs a pre-flight check for the Version bump operation.
 func (vb *VersionBump) bumpPreflight() {
 	if !vb.Options.IsResetVersion() {
-		logVerbose(vb.Options, fmt.Sprintf("Bumping version part: %s", vb.Options.BumpPart))
+		logVerbose(vb.Options, fmt.Sprintf("Bumping Version part: %s", vb.Options.BumpPart))
 	} else {
-		logVerbose(vb.Options, fmt.Sprintf("Resetting version to: %s", vb.GetNewVersion()))
+		logVerbose(vb.Options, fmt.Sprintf("Resetting Version to: %s", vb.GetNewVersion()))
 	}
-	logVerbose(vb.Options, fmt.Sprintf("Will bump version %s --> %s", vb.GetOldVersion(), vb.GetNewVersion()))
+	logVerbose(vb.Options, fmt.Sprintf("Will bump Version %s --> %s", vb.GetOldVersion(), vb.GetNewVersion()))
 
 	// log what changes will be made to each file
 	for _, file := range vb.Config.Files {
 		for _, replace := range file.Replace {
-			find := vbu.ReplaceInString(replace, "{version}", vb.GetOldVersion())
-			replace := vbu.ReplaceInString(replace, "{version}", vb.GetNewVersion())
+			find := vbu.ReplaceInString(replace, "{Version}", vb.GetOldVersion())
+			replace := vbu.ReplaceInString(replace, "{Version}", vb.GetNewVersion())
 
 			logVerbose(vb.Options, file.Path)
 			logVerbose(vb.Options, fmt.Sprintf("     Find: \"%s\"", find))
@@ -400,13 +399,13 @@ func (vb *VersionBump) bumpPreflight() {
 	}
 }
 
-// makeChanges updates the version in the files.
+// makeChanges updates the Version in the files.
 func (vb *VersionBump) makeChanges() {
 	// at this point we have already checked the config and there are no errors
 	for _, file := range vb.Config.Files {
 		for _, replace := range file.Replace {
-			find := vbu.ReplaceInString(replace, "{version}", vb.GetOldVersion())
-			replace := vbu.ReplaceInString(replace, "{version}", vb.GetNewVersion())
+			find := vbu.ReplaceInString(replace, "{Version}", vb.GetOldVersion())
+			replace := vbu.ReplaceInString(replace, "{Version}", vb.GetNewVersion())
 
 			var resolvedPath string
 			if path.IsAbs(file.Path) {
