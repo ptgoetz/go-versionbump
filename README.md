@@ -69,6 +69,22 @@ is **opinionated** about how it does so. The Semantic Versioning specification a
 and build versioning options. VersionBump tries to keep it simple, yet flexible. It supports customizable pre-release 
 labels and build labels. In general, VersionBump is more strict in terms of pre-release and build versioning.
 
+### Sample VersionBump Version Strings
+A VersionBump version string can be as simple as `1.2.3` or as complex as `1.2.3-alpha.4.5.6+build.7`. The following are
+valid VersionBump version strings:
+- `1.2.3`
+- `1.2.3-alpha`
+- `1.2.3-alpha.1`
+- `1.2.3-alpha.0.1`
+- `1.2.3-alpha.0.0.1`
+- `1.2.3+build.1`
+- `1.2.3-alpha+build.1`
+- `1.2.3-alpha.1+build.1`
+- `1.2.3-alpha.0.1+build.1`
+- `1.2.3-alpha.0.0.1+build.1`
+
+You can preview the potential versioning paths for a given version string using the `show` command described below.
+
 ## Installation
 
 ### With Go
@@ -168,10 +184,16 @@ git-commit: false        # Whether to create a git commit for the version bump.
 git-tag: false           # Whether to create a git tag for the version bump.
 git-sign: false          # Whether to sign the git commit/tag.
 
+build-label: "build"     # The build label applied to build-level pre-release versions.
+prerelease-labels:       # The pre-release labels to cycle through (will be sorted lexically).
+  - "alpha"
+  - "beta"
+  - "rc"
+
 files:                   # The files to update with the new version.
-   - path: "version.go"   # The path to the file to update.
+   - path: "version.go"  # The path to the file to update.
      replace: 
-      - "v{version}" # The search string to replace in the file.
+      - "v{version}"     # The search string to replace in the file.
 
    - path: "README.md"
      replace: 
