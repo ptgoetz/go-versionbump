@@ -86,6 +86,7 @@ func ParentDirAbsolutePath(relativePath string) (string, error) {
 	return parentDir, nil
 }
 
+// PaddingString returns a string of the specified length filled with the given padding character.
 func PaddingString(length int, padChar string) string {
 	if len(padChar) != 1 {
 		panic("padChar must be a single character")
