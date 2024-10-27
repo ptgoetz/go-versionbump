@@ -2,11 +2,12 @@ package config
 
 import (
 	"fmt"
+	"github.com/ptgoetz/go-versionbump/internal/semver"
 	"github.com/ptgoetz/go-versionbump/internal/utils"
-	"github.com/ptgoetz/go-versionbump/internal/version"
 	"gopkg.in/yaml.v3"
 	"os"
 	"path"
+	"sort"
 )
 
 const (
@@ -18,6 +19,8 @@ const (
 // Config represents the version bump configuration.
 type Config struct {
 	Version               string          `yaml:"version"`
+	BuildLabel            string          `yaml:"build-label"`
+	PreReleaseLabels      []string        `yaml:"prerelease-labels"`
 	GitCommit             bool            `yaml:"git-commit"`
 	GitCommitTemplate     string          `yaml:"git-commit-template"`
 	GitSign               bool            `yaml:"git-sign"`
@@ -43,7 +46,7 @@ type Options struct {
 	ResetVersion string
 	NoGit        bool
 	NoColor      bool
-	BumpPart     string
+	BumpPart     semver.VersionPart
 }
 
 func (o Options) IsResetVersion() bool {
@@ -58,6 +61,28 @@ func (vbm *GitMeta) String() string {
 // IsGitRequired returns true if any of the Git options are enabled.
 func (v Config) IsGitRequired() bool {
 	return v.GitCommit || v.GitTag
+}
+
+// HasLabel returns true if a given label is in the list of pre-release labels
+func (v Config) HasLabel(label string) bool {
+	for _, l := range v.PreReleaseLabels {
+		if l == label {
+			return true
+		}
+	}
+	return false
+}
+
+// GetSortedLabels returns a sorted slice of pre-release labels
+func (v Config) GetSortedLabels() []string {
+	// Make a copy of the input slice to avoid modifying the original
+	sortedStrings := make([]string, len(v.PreReleaseLabels))
+	copy(sortedStrings, v.PreReleaseLabels)
+
+	// Sort the strings lexically
+	sort.Strings(sortedStrings)
+
+	return sortedStrings
 }
 
 // VersionedFile represents the file to be updated with the new version.
@@ -100,13 +125,23 @@ func LoadConfig(filePath string) (*Config, string, error) {
 		return nil, "", fmt.Errorf("version string is required")
 	}
 
-	if !version.ValidateVersion(config.Version) {
+	if !semver.ValidateVersion(config.Version) {
 		return nil, "", fmt.Errorf("invalid version string: %s", config.Version)
 	}
 
 	configPtr := &config
 	// include the config file as a file to update
 	configPtr.Files = append(configPtr.Files, VersionedFile{Path: configFile, Replace: []string{"version: \"{version}\""}})
+
+	// set the default build label if not provided
+	if config.BuildLabel == "" {
+		configPtr.BuildLabel = "build"
+	}
+
+	// set the default pre-release labels if not provided
+	if len(config.PreReleaseLabels) < 1 {
+		configPtr.PreReleaseLabels = []string{"alpha", "beta", "rc"}
+	}
 
 	return configPtr, root, nil
 }

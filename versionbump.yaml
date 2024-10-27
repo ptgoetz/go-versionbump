@@ -4,9 +4,9 @@ git-tag: true            # Whether to create a git tag for the version bump.
 git-sign: true          # Whether to sign the git tag.
 
 files:                   # The files to update with the new version.
-  - path: "internal/version/version.go"   # The path to the file to update.
+  - path: "internal/versionbump.go"   # The path to the file to update.
     replace:
-      - "v{version}" # The search string to replace in the file.
+      - "\"{version}\"" # The search string to replace in the file.
 
   - path: "README.md"
     replace:

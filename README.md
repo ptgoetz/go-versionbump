@@ -2,7 +2,7 @@
 
 ![VersionBump Gopher](assets/versionbump_gopher-250.png)
 
-**Latest Version:** v0.4.1 ([Install](go-versionbump?tab=readme-ov-file#installation))
+**Latest Version:** v0.4.1 ([Install](https://github.com/ptgoetz/go-versionbump?tab=readme-ov-file#installation))
 
 VersionBump is a powerful command-line tool designed to streamline the process of version management in your projects. 
 By automating version bumping, VersionBump ensures that your project’s version numbers are always up-to-date across all 
@@ -10,6 +10,7 @@ relevant files, reducing the risk of human error and saving you valuable time.
 
 ## Key Features
 
+- **Semantic Versioning**: Ensures that version numbers are always compliant with the Semantic Versioning specification.
 - **Automated Version Bumping**: Automatically updates version numbers in specified files, ensuring consistency and 
   accuracy.
 - **Git Integration**: Seamlessly integrates with Git to commit and tag changes, making version control effortless.
@@ -56,13 +57,25 @@ and prompt-less, you have use the `--no-prompt` and `--silent` flags.
 
 If anything goes wrong, VersionBump will not make any changes to your project and will exit with a non-zero error code.
 
+## Is VersionBump Fully Semantic Versioning Compliant?
+Yes and no.
+
+### Yes
+VersionBump will ensure that version numbers it creates/updates are always Semantic Versioning compliant. 
+
+### No
+While VersionBump will ensure that the version numbers it creates/updates are always Semantic Versioning compliant, it
+is **opinionated** about how it does so. The Semantic Versioning specification allows for a wide range of pre-release
+and build versioning options. VersionBump tries to keep it simple, yet flexible. It supports customizable pre-release 
+labels and build labels. In general, VersionBump is more strict in terms of pre-release and build versioning.
+
 ## Installation
 
 ### With Go
 When installed with `go install`, it provides a `versionbump` binary that can be run from the command line.
 
 ```shell
-go install github.com/ptgoetz/go-versionbump/cmd/versionbump
+go install github.com/ptgoetz/go-versionbump/cmd/versionbump@latest
 ```
 
 ### Without Go
@@ -113,23 +126,27 @@ Usage:
   versionbump [command]
 
 Available Commands:
-  completion  Generate the autocompletion script for the specified shell
-  config      Show the effective configuration of the project.
-  help        Help about any command
-  major       Bump the major version number (e.g. 1.2.3 -> 2.0.0).
-  minor       Bump the minor version number (e.g. 1.2.3 -> 1.3.0).
-  patch       Bump the patch version number (e.g. 1.2.3 -> 1.2.4).
-  reset       Reset the project version to the specified value.
-  show        Show potential versioning paths for the project version or a specific version.
+  completion       Generate the autocompletion script for the specified shell
+  config           Show the effective configuration of the project.
+  help             Help about any command
+  major            Bump the major version number (e.g. 1.2.3 -> 2.0.0).
+  minor            Bump the minor version number (e.g. 1.2.3 -> 1.3.0).
+  patch            Bump the patch version number (e.g. 1.2.3 -> 1.2.4).
+  pre-release-next Bump the next pre-release version label (e.g. 1.2.3-alpha -> 1.2.3-beta).
+  prerelease-build Bump the pre-release build version number (e.g. 1.2.3-alpha -> 1.2.3-alpha+build.1).
+  prerelease-major Bump the pre-release major version number (e.g. 1.2.3-alpha -> 1.2.3-alpha.1).
+  prerelease-minor Bump the pre-release minor version number (e.g. 1.2.3-alpha -> 1.2.3-alpha.0.1).
+  prerelease-patch Bump the pre-release patch version number (e.g. 1.2.3-alpha -> 1.2.3-alpha.0.0.1).
+  reset            Reset the project version to the specified value.
+  show             Show potential versioning paths for the project version or a specific version.
 
 Flags:
   -h, --help      help for versionbump
-  -V, --version   Show the version of Config and exit.
+  -V, --version   Show the VersionBump version and exit.
 
-Use "versionbump [command] --help" for more information about a command.
 ```
 
-The commands `major`, `minor` `patch` and `reset` support the following flags:'
+The commands `major`, `minor` `patch`, `reset`, `prerelease-next`, `prerelease-major`, `prerelease-minor`, `prerelease-patch` and `prerelease-build` support the following flags:'
 - `-c`, `-config`: Path to the configuration file (default: `./versionbump.yaml`).
 - `-no-prompt`: Do not prompt the user for confirmation before making changes.
 - `-no-git`: Do not commit or tag the changes in a Git repository.
@@ -162,10 +179,15 @@ files:                   # The files to update with the new version.
 ```
 
 - `version`: REQUIRED The current version of the project This must be a [Semantic Versioning](https://semver.org/) 
-             `major.minor.patch` string.
+             `major.minor.patch-prerelease+build` string.
 - `git-commit`: (Optional) Whether to `git commit` the changes.
 - `git-tag`: (Optional) Whether to tag the commit (implies `git-commit`).
 - `git-sign`: (Optional) Whether to sign the commit/tag with GPG.
+- `prerelease-labels`: (Optional) A list of pre-release labels to use for pre-release version bumps. These will be 
+sorted lexically/aphabetically. When the `prerelease-next` bump part is used, it will advance to the next label (e.g. 
+`alpha -> beta`, `beta -> rc`, etc.). Attempting to advance past the last label will produce an error (default: 
+[`alpha`, `beta`, `rc`]).
+- `build-label`: (Optional) The build label to append to the version number (default: `build`).
 - `files`: (Required) A list of files to update with the new version number.
    - `path`: The path to the file. **Note**: Relative file paths are relative to the config file parent directory. 
              Absolute paths are used as-is.
@@ -217,7 +239,7 @@ and perform an initial commit before continuing.
 
 ```console
 $ versionbump patch
-VersionBump v0.4.1
+VersionBump v0.5.0
 Configuration file: versionbump.yaml
 Project root directory: /Users/tgoetz/Projects/ptgoetz/test-project
 Checking git configuration...
@@ -296,19 +318,30 @@ M       versionbump.yaml
 Without parameters, the `show` command will display the potential versioning paths for the project version:
 ```console
 $ versionbump show
-Potential versioning paths for project version: 0.1.7
-0.1.7 ── bump ─┬─ major ─ 1.0.0
-               ├─ minor ─ 0.2.0
-               ╰─ patch ─ 0.1.8
+Potential versioning paths for project Version: 0.4.1
+0.4.1 ─┬─ major ─ 1.0.0
+       ├─ minor ─ 0.5.0
+       ├─ patch ─ 0.4.2
+       ├─ prerelease-next ── 0.4.1-alpha
+       ├─ prerelease-major ─ 0.4.1-1
+       ├─ prerelease-minor ─ 0.4.1-0.1
+       ├─ prerelease-patch ─ 0.4.1-0.0.1
+       ╰─ prerelease-build ─ 0.4.1+build.1
+
 ```
 
 You can also specify any version identifier to see the potential versioning paths:
 ```console
-versionbump show 1.2.3 
-Potential versioning paths for version: 1.2.3
-1.2.3 ── bump ─┬─ major ─ 2.0.0
-               ├─ minor ─ 1.3.0
-               ╰─ patch ─ 1.2.4
+versionbump show 0.4.1-alpha
+Potential versioning paths for Version: 0.4.1-alpha
+0.4.1-alpha ─┬─ major ─ 1.0.0
+             ├─ minor ─ 0.5.0
+             ├─ patch ─ 0.4.2
+             ├─ prerelease-next ── 0.4.1-beta
+             ├─ prerelease-major ─ 0.4.1-alpha.1
+             ├─ prerelease-minor ─ 0.4.1-alpha.0.1
+             ├─ prerelease-patch ─ 0.4.1-alpha.0.0.1
+             ╰─ prerelease-build ─ 0.4.1-alpha+build.1
 ```
 
 ### Config Command
@@ -319,9 +352,14 @@ configuration settings that are not explicitly set in the configuration file.
 ```console
 $ versionbump config
 Config file: versionbump.yaml
-Project root: /Users/tgoetz/Projects/ptgoetz/test-project
+Project root: /Users/tgoetz/Projects/ptgoetz/go-versionbump
 Effective Configuration YAML:
-version: 0.1.7
+version: 0.5.0
+build-label: build
+prerelease-labels:
+    - alpha
+    - beta
+    - rc
 git-commit: true
 git-commit-template: Bump version {old} --> {new}
 git-sign: true
@@ -329,12 +367,20 @@ git-tag: true
 git-tag-template: v{new}
 git-tag-message-template: Release version {new}
 files:
-    - path: main.go
-      replace: v{version}
+    - path: internal/versionbump.go
+      replace:
+        - '"{version}"'
     - path: README.md
-      replace: '**Current Version:** v{version}'
+      replace:
+        - '**Latest Version:** v{version}'
+        - /v{version}
+        - VersionBump v{version}
+    - path: Makefile
+      replace:
+        - VERSION := "v{version}"
     - path: versionbump.yaml
-      replace: 'version: "{version}"'
+      replace:
+        - 'version: "{version}"'
 ```
 
 ## Failure Modes and Errors
