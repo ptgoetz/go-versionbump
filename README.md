@@ -65,7 +65,7 @@ VersionBump will ensure that version numbers it creates/updates are always Seman
 
 ### No
 While VersionBump will ensure that the version numbers it creates/updates are always Semantic Versioning compliant, it
-is __**opinionated**__ about how it does so. The Semantic Versioning specification allows for a wide range of pre-release
+is **opinionated** about how it does so. The Semantic Versioning specification allows for a wide range of pre-release
 and build versioning options. VersionBump tries to keep it simple, yet flexible. It supports customizable pre-release 
 labels and build labels. In general, VersionBump is more strict in terms of pre-release and build versioning.
 
