@@ -96,7 +96,7 @@ go install github.com/ptgoetz/go-versionbump/cmd/versionbump@latest
 
 ### Without Go
 If you don't have Go installed and just want the binary executable, you can download a prebuilt binaries from  
-[here](https://github.com/ptgoetz/go-versionbump/releases/tag/v0.4.1).
+[here](https://github.com/ptgoetz/go-versionbump/releases/tag/v0.5.0).
 
 VersionBump binary distribution archives include the `README.md` and `versionbump[.exe]` files:
 
@@ -261,7 +261,7 @@ and perform an initial commit before continuing.
 
 ```console
 $ versionbump patch
-VersionBump v0.4.1
+VersionBump v0.5.0
 Configuration file: versionbump.yaml
 Project root directory: /Users/tgoetz/Projects/ptgoetz/test-project
 Checking git configuration...
