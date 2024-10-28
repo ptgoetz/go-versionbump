@@ -14,7 +14,7 @@ import (
 	"strings"
 )
 
-const Version = "0.4.1"
+const Version = "0.5.0"
 
 // VersionBump represents the Version bump operation.
 type VersionBump struct {
