@@ -404,8 +404,8 @@ func (vb *VersionBump) makeChanges() {
 	// at this point we have already checked the config and there are no errors
 	for _, file := range vb.Config.Files {
 		for _, replace := range file.Replace {
-			find := vbu.ReplaceInString(replace, "{Version}", vb.GetOldVersion())
-			replace := vbu.ReplaceInString(replace, "{Version}", vb.GetNewVersion())
+			find := vbu.ReplaceInString(replace, "{version}", vb.GetOldVersion())
+			replace := vbu.ReplaceInString(replace, "{version}", vb.GetNewVersion())
 
 			var resolvedPath string
 			if path.IsAbs(file.Path) {
