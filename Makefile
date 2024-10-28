@@ -34,7 +34,7 @@ build: ## Build the project and output distribution binaries
 
 test: ## Run unit tests
 	@echo "Running unit tests..."
-	go test $(PKG)
+	go test $(PKG) --cover
 
 test-integration: ## Run integration tests
 	@echo "Running integration tests..."
