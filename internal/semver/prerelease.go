@@ -109,6 +109,40 @@ func (v *PreReleaseVersion) String() string {
 	return retval
 }
 
+// Compare compares two PreReleaseVersion instances.
+// Returns -1 if v is less than other, 1 if v is greater than other, and 0 if they are equal.
+func (v *PreReleaseVersion) Compare(other *PreReleaseVersion) int {
+	if v.Label != other.Label {
+		if v.Label < other.Label {
+			return -1
+		}
+		return 1
+	}
+
+	if v.Version.major != other.Version.major {
+		if v.Version.major < other.Version.major {
+			return -1
+		}
+		return 1
+	}
+
+	if v.Version.minor != other.Version.minor {
+		if v.Version.minor < other.Version.minor {
+			return -1
+		}
+		return 1
+	}
+
+	if v.Version.patch != other.Version.patch {
+		if v.Version.patch < other.Version.patch {
+			return -1
+		}
+		return 1
+	}
+
+	return 0
+}
+
 // Bump returns a new PreReleaseVersion instance after incrementing the specified part
 func (v *PreReleaseVersion) Bump(versionPart int, preReleaseLabels []string) (*PreReleaseVersion, error) {
 	if len(preReleaseLabels) == 0 {

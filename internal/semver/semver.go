@@ -105,6 +105,55 @@ func (v *SemVersion) Bump(part VersionPart, preReleaseLabels []string, buildLabe
 
 }
 
+// Compare compares two SemVersion instances.
+// Returns -1 if v is less than other, 1 if v is greater than other, and 0 if they are equal.
+func (v *SemVersion) Compare(other *SemVersion) int {
+	if v.Version.major != other.Version.major {
+		if v.Version.major < other.Version.major {
+			return -1
+		}
+		return 1
+	}
+
+	if v.Version.minor != other.Version.minor {
+		if v.Version.minor < other.Version.minor {
+			return -1
+		}
+		return 1
+	}
+
+	if v.Version.patch != other.Version.patch {
+		if v.Version.patch < other.Version.patch {
+			return -1
+		}
+		return 1
+	}
+
+	if v.PreReleaseVersion != nil && other.PreReleaseVersion != nil {
+		preReleaseComparison := v.PreReleaseVersion.Compare(other.PreReleaseVersion)
+		if preReleaseComparison != 0 {
+			return preReleaseComparison
+		}
+	} else if v.PreReleaseVersion != nil {
+		return -1
+	} else if other.PreReleaseVersion != nil {
+		return 1
+	}
+
+	if v.Build != nil && other.Build != nil {
+		buildComparison := v.Build.Compare(other.Build)
+		if buildComparison != 0 {
+			return buildComparison
+		}
+	} else if v.Build != nil {
+		return 1
+	} else if other.Build != nil {
+		return -1
+	}
+
+	return 0
+}
+
 // ParseSemVersion parses a semantic version string and returns a new SemVersion instance
 func ParseSemVersion(versionStr string) (*SemVersion, error) {
 	isPreRelease := strings.Contains(versionStr, "-")
