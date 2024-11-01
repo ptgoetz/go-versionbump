@@ -61,6 +61,13 @@ var resetCmd = &cobra.Command{
 	RunE:  runResetCmd, // Use RunE for better error handling
 }
 
+var initCmd = &cobra.Command{
+	Use:   "init",
+	Short: `Initialize a new versionbump configuration file.`,
+	Long:  `Initialize a new versionbump configuration file.`,
+	RunE:  runInitCmd, // Use RunE for better error handling
+}
+
 var showCmd = &cobra.Command{
 	Use:   "show [version]",
 	Short: `Show potential versioning paths for the project version or a specific version.`,
@@ -159,6 +166,7 @@ func init() {
 	rootCmd.AddCommand(preReleaseBuildCmd)
 	rootCmd.AddCommand(showCmd)
 	rootCmd.AddCommand(configCmd)
+	rootCmd.AddCommand(initCmd)
 
 }
 
@@ -211,6 +219,10 @@ func runResetCmd(cmd *cobra.Command, args []string) error {
 
 	vb.Run()
 	return nil
+}
+
+func runInitCmd(cmd *cobra.Command, args []string) error {
+	return internal.InitVersionBumpProject()
 }
 
 func runConfigCmd(cmd *cobra.Command, args []string) error {

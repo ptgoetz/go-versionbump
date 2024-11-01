@@ -8,10 +8,11 @@ import (
 	"github.com/ptgoetz/go-versionbump/internal/semver"
 	"github.com/ptgoetz/go-versionbump/internal/utils"
 	vbu "github.com/ptgoetz/go-versionbump/internal/utils"
-	"gopkg.in/yaml.v3"
+	"gopkg.in/yaml.v2"
 	"os"
 	"path"
 	"strings"
+	"text/template"
 )
 
 const Version = "0.5.1"
@@ -161,6 +162,39 @@ func (vb *VersionBump) ShowEffectiveConfig() error {
 		return err
 	}
 	printColorOpts(vb.Options, string(b), ColorLightBlue)
+	return nil
+}
+
+func InitVersionBumpProject() error {
+	// check to see if a configuration file already exists
+	//if utils.FileExists("versionbump.yaml") {
+	//	return fmt.Errorf("configuration file already exists: %s", "versionbump.yaml")
+	//}
+
+	conf := config.Config{
+		Version:   "0.0.0",
+		GitSign:   false,
+		GitCommit: false,
+		GitTag:    false,
+		//Files:                 []config.File{"VERSION"},
+		GitTagTemplate:        config.DefaultGitTagTemplate,
+		GitTagMessageTemplate: config.DefaultGitTagMessageTemplate,
+		GitCommitTemplate:     config.DefaultGitCommitTemplate,
+		BuildLabel:            "build",
+		PreReleaseLabels:      []string{"alpha", "beta", "rc"},
+	}
+
+	//
+	tmpl, err := template.New("yaml").Parse(config.DefaultConfigTemplate)
+	if err != nil {
+		panic(err)
+	}
+
+	err = tmpl.Execute(os.Stdout, conf)
+	if err != nil {
+		panic(err)
+	}
+	//
 	return nil
 }
 

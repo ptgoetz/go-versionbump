@@ -30,6 +30,12 @@ type Config struct {
 	Files                 []VersionedFile `yaml:"files"`
 }
 
+// VersionedFile represents the file to be updated with the new version.
+type VersionedFile struct {
+	Path    string   `yaml:"path"`
+	Replace []string `yaml:"replace"`
+}
+
 type GitMeta struct {
 	OldVersion    string
 	NewVersion    string
@@ -83,12 +89,6 @@ func (v Config) GetSortedLabels() []string {
 	sort.Strings(sortedStrings)
 
 	return sortedStrings
-}
-
-// VersionedFile represents the file to be updated with the new version.
-type VersionedFile struct {
-	Path    string   `yaml:"path"`
-	Replace []string `yaml:"replace"`
 }
 
 // LoadConfig loads the configuration from a YAML file
