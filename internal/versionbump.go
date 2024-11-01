@@ -270,7 +270,7 @@ func (vb *VersionBump) gitPreFlight() {
 			logFatal(vb.Options, "The project root is not a Git repository, but Git options are enabled in the "+
 				"configuration file.")
 		}
-		if promptUserConfirmation("The project directory is not a git repository.\nDo you want to initialize a git repository in the project directory?") {
+		if promptUserConfirm("The project directory is not a git repository.\nDo you want to initialize a git repository in the project directory?") {
 			err := git.InitializeGitRepo(vb.ParentDir)
 			if err != nil {
 				logFatal(vb.Options, fmt.Sprintf("Unable to initialize Git repository: %v\n", err))
@@ -377,7 +377,7 @@ func (vb *VersionBump) gitCommit() {
 			gitMeta.CommitMessage,
 			gitMeta.TagMessage,
 			gitMeta.TagName))
-		proceed := promptUserConfirmation("Do you want to commit the changes to the git repository?")
+		proceed := promptUserConfirm("Do you want to commit the changes to the git repository?")
 		if !proceed {
 			os.Exit(1)
 		}
@@ -468,16 +468,16 @@ func (vb *VersionBump) makeChanges() {
 // promptProceedWithChanges prompts the user to proceed with the changes.
 func (vb *VersionBump) promptProceedWithChanges() bool {
 	if !vb.Options.NoPrompt {
-		if !promptUserConfirmation("Proceed with the changes?") {
+		if !promptUserConfirm("Proceed with the changes?") {
 			os.Exit(0)
 		}
 	}
 	return true
 }
 
-// promptUserConfirmation prompts the user with the given prompt string and expects 'y' or 'n' input.
+// promptUserConfirm prompts the user with the given prompt string and expects 'y' or 'n' input.
 // It returns true for 'y' and false for 'n'.
-func promptUserConfirmation(prompt string) bool {
+func promptUserConfirm(prompt string) bool {
 	reader := bufio.NewReader(os.Stdin)
 
 	for {
@@ -504,6 +504,28 @@ func promptUserConfirmation(prompt string) bool {
 		} else {
 			printColor("Invalid input. Please enter 'y' or 'n'.", ColorYellow)
 		}
+	}
+}
+
+// promptUserForValue prompts the user for a value with the given prompt string.
+// It returns the default value if the user input is empty.
+func promptUserForValue(prompt string, defaultValue string) string {
+	reader := bufio.NewReader(os.Stdin)
+	for {
+		// Print the prompt and read the user's input
+		printColor(fmt.Sprintf("%s [%s]: ", prompt, defaultValue), ColorLightBlue)
+		input, err := reader.ReadString('\n')
+		if err != nil {
+			printColor("Error reading input. Please try again.", ColorYellow)
+			continue
+		}
+
+		// Trim the input and return the default value if the input is empty
+		input = strings.TrimSpace(input)
+		if input == "" {
+			return defaultValue
+		}
+		return input
 	}
 }
 
