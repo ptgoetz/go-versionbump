@@ -53,6 +53,14 @@ type Options struct {
 	NoGit        bool
 	NoColor      bool
 	BumpPart     semver.VersionPart
+	InitOpts     InitOptions
+}
+
+type InitOptions struct {
+	File           string
+	NoInteractive  bool
+	InitialVersion string
+	ScanDirectory  bool
 }
 
 func (o Options) IsResetVersion() bool {

@@ -138,6 +138,11 @@ func init() {
 
 	commonFlags.AddFlagSet(configColorFlags)
 
+	initFlags := pflag.NewFlagSet("init", pflag.ExitOnError)
+	initFlags.StringVarP(&opts.InitOpts.File, "file", "f", "versionbump.yaml", "The name of the configuration file to create.")
+	initFlags.BoolVar(&opts.InitOpts.NoInteractive, "no-interactive", false, "Don't prompt for interactive input.")
+	initCmd.Flags().AddFlagSet(initFlags)
+
 	prereleaserFlags := pflag.NewFlagSet("prelease", pflag.ExitOnError)
 	prereleaserFlags.AddFlagSet(commonFlags)
 
@@ -222,7 +227,7 @@ func runResetCmd(cmd *cobra.Command, args []string) error {
 }
 
 func runInitCmd(cmd *cobra.Command, args []string) error {
-	return internal.InitVersionBumpProject()
+	return internal.InitVersionBumpProject(opts)
 }
 
 func runConfigCmd(cmd *cobra.Command, args []string) error {

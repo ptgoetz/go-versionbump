@@ -165,11 +165,11 @@ func (vb *VersionBump) ShowEffectiveConfig() error {
 	return nil
 }
 
-func InitVersionBumpProject() error {
+func InitVersionBumpProject(opts config.Options) error {
 	// check to see if a configuration file already exists
-	//if utils.FileExists("versionbump.yaml") {
-	//	return fmt.Errorf("configuration file already exists: %s", "versionbump.yaml")
-	//}
+	if utils.FileExists(opts.InitOpts.File) {
+		return fmt.Errorf("configuration file already exists: %s", opts.InitOpts.File)
+	}
 
 	conf := config.Config{
 		Version:   "0.0.0",
@@ -190,7 +190,14 @@ func InitVersionBumpProject() error {
 		panic(err)
 	}
 
-	err = tmpl.Execute(os.Stdout, conf)
+	// create the configuration file
+	f, err := os.Create(opts.InitOpts.File)
+	defer f.Close()
+	if err != nil {
+		return err
+	}
+
+	err = tmpl.Execute(f, conf)
 	if err != nil {
 		panic(err)
 	}
