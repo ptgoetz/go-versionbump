@@ -171,7 +171,7 @@ func InitVersionBumpProject(opts config.Options) error {
 		return fmt.Errorf("configuration file already exists: %s", opts.InitOpts.File)
 	}
 
-	conf := config.Config{
+	conf := &config.Config{
 		Version:   "0.0.0",
 		GitSign:   false,
 		GitCommit: false,
@@ -184,6 +184,9 @@ func InitVersionBumpProject(opts config.Options) error {
 		PreReleaseLabels:      []string{"alpha", "beta", "rc"},
 	}
 
+	initVersionStr := promptUserForValue("Enter the initial version", "0.0.0", semver.ValidateSemVersion)
+	conf.Version = initVersionStr
+
 	//
 	tmpl, err := template.New("yaml").Parse(config.DefaultConfigTemplate)
 	if err != nil {
@@ -192,10 +195,10 @@ func InitVersionBumpProject(opts config.Options) error {
 
 	// create the configuration file
 	f, err := os.Create(opts.InitOpts.File)
-	defer f.Close()
 	if err != nil {
 		return err
 	}
+	defer f.Close()
 
 	err = tmpl.Execute(f, conf)
 	if err != nil {
@@ -509,7 +512,8 @@ func promptUserConfirm(prompt string) bool {
 
 // promptUserForValue prompts the user for a value with the given prompt string.
 // It returns the default value if the user input is empty.
-func promptUserForValue(prompt string, defaultValue string) string {
+// The validator function is used to validate the user input.
+func promptUserForValue(prompt string, defaultValue string, validator func(string) bool) string {
 	reader := bufio.NewReader(os.Stdin)
 	for {
 		// Print the prompt and read the user's input
@@ -520,12 +524,18 @@ func promptUserForValue(prompt string, defaultValue string) string {
 			continue
 		}
 
-		// Trim the input and return the default value if the input is empty
+		// Trim the input
 		input = strings.TrimSpace(input)
 		if input == "" {
 			return defaultValue
 		}
-		return input
+
+		// Validate the input
+		if validator(input) {
+			return input
+		} else {
+			printColor("Invalid input. Please try again.\n", ColorYellow)
+		}
 	}
 }
 
