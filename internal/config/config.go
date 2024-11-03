@@ -133,7 +133,7 @@ func LoadConfig(filePath string) (*Config, string, error) {
 		return nil, "", fmt.Errorf("version string is required")
 	}
 
-	if !semver.ValidateVersion(config.Version) {
+	if !semver.ValidateSemVersion(config.Version) {
 		return nil, "", fmt.Errorf("invalid version string: %s", config.Version)
 	}
 
