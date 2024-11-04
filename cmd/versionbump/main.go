@@ -61,6 +61,13 @@ var resetCmd = &cobra.Command{
 	RunE:  runResetCmd, // Use RunE for better error handling
 }
 
+var initCmd = &cobra.Command{
+	Use:   "init",
+	Short: `Initialize a new versionbump configuration file.`,
+	Long:  `Initialize a new versionbump configuration file.`,
+	RunE:  runInitCmd, // Use RunE for better error handling
+}
+
 var showCmd = &cobra.Command{
 	Use:   "show [version]",
 	Short: `Show potential versioning paths for the project version or a specific version.`,
@@ -81,7 +88,7 @@ var showCmd = &cobra.Command{
 }
 
 var preReleaseNextCmd = &cobra.Command{
-	Use:   "pre-release-next",
+	Use:   "prerelease-next",
 	Short: `Bump the next pre-release version label (e.g. 1.2.3-alpha -> 1.2.3-beta).`,
 	Long:  `Bump the patch version number (e.g. 1.2.3 -> 1.2.4).`,
 	RunE:  bumpPreReleaseNext, // Use RunE for better error handling
@@ -131,6 +138,11 @@ func init() {
 
 	commonFlags.AddFlagSet(configColorFlags)
 
+	initFlags := pflag.NewFlagSet("init", pflag.ExitOnError)
+	initFlags.StringVarP(&opts.InitOpts.File, "file", "f", "versionbump.yaml", "The name of the configuration file to create.")
+	initFlags.BoolVar(&opts.InitOpts.NoInteractive, "no-interactive", false, "Don't prompt for interactive input.")
+	initCmd.Flags().AddFlagSet(initFlags)
+
 	prereleaserFlags := pflag.NewFlagSet("prelease", pflag.ExitOnError)
 	prereleaserFlags.AddFlagSet(commonFlags)
 
@@ -159,6 +171,7 @@ func init() {
 	rootCmd.AddCommand(preReleaseBuildCmd)
 	rootCmd.AddCommand(showCmd)
 	rootCmd.AddCommand(configCmd)
+	rootCmd.AddCommand(initCmd)
 
 }
 
@@ -211,6 +224,10 @@ func runResetCmd(cmd *cobra.Command, args []string) error {
 
 	vb.Run()
 	return nil
+}
+
+func runInitCmd(cmd *cobra.Command, args []string) error {
+	return internal.InitVersionBumpProject(opts)
 }
 
 func runConfigCmd(cmd *cobra.Command, args []string) error {

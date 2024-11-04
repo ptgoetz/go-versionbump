@@ -94,7 +94,7 @@ dist: clean ## Create binary distributions for common OS and architecture combin
 
 sign-dist: dist ## Sign the distribution files
 	@echo "Signing distribution files..."
-	@for file in $(DIST_FILES); do \
-		gpg --detach-sign --armor $$file; \
+	for file in $(wildcard ./dist/*); do \
+		gpg --detach-sign --armor "$$file"; \
 	done
 	@echo "Done."

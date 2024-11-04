@@ -109,13 +109,54 @@ func (v *PreReleaseVersion) String() string {
 	return retval
 }
 
+// Compare compares two PreReleaseVersion instances.
+// Returns -1 if v is less than other, 1 if v is greater than other, and 0 if they are equal.
+func (v *PreReleaseVersion) Compare(other *PreReleaseVersion) int {
+	if v.Label != other.Label {
+		if v.Label < other.Label {
+			return -1
+		}
+		return 1
+	}
+
+	if v.Version.major != other.Version.major {
+		if v.Version.major < other.Version.major {
+			return -1
+		}
+		return 1
+	}
+
+	if v.Version.minor != other.Version.minor {
+		if v.Version.minor < other.Version.minor {
+			return -1
+		}
+		return 1
+	}
+
+	if v.Version.patch != other.Version.patch {
+		if v.Version.patch < other.Version.patch {
+			return -1
+		}
+		return 1
+	}
+
+	return 0
+}
+
 // Bump returns a new PreReleaseVersion instance after incrementing the specified part
 func (v *PreReleaseVersion) Bump(versionPart int, preReleaseLabels []string) (*PreReleaseVersion, error) {
 	if len(preReleaseLabels) == 0 {
 		panic("PreReleaseVersion.Bump(): preReleaseLabels cannot be empty")
 	}
+	// sort pre-release labels
+	sort.Strings(preReleaseLabels)
+	// if the label is empty, this is the first pre-release version, so return the first label
+	if v.Label == "" {
+		v.Label = preReleaseLabels[0]
+		return NewPrereleaseVersion(preReleaseLabels[0], 0, 0, 0), nil
+	}
+
 	switch versionPart {
-	// TODO: Implement bumping for prerelease and build versions
 	case prMajor:
 		return NewPrereleaseVersion(v.Label, v.Version.major+1, 0, 0), nil
 	case prMinor:
@@ -123,12 +164,6 @@ func (v *PreReleaseVersion) Bump(versionPart int, preReleaseLabels []string) (*P
 	case prPatch:
 		return NewPrereleaseVersion(v.Label, v.Version.major, v.Version.minor, v.Version.patch+1), nil
 	case prNext:
-		// sort pre-release labels
-		sort.Strings(preReleaseLabels)
-
-		if v.Label == "" {
-			return NewPrereleaseVersion(preReleaseLabels[0], 0, 0, 0), nil
-		}
 		// find the index of the current label
 		idx := indexOf(v.Label, preReleaseLabels)
 		if idx == -1 {

@@ -126,3 +126,11 @@ func StartsWithDigit(s string) bool {
 	}
 	return unicode.IsDigit(rune(s[0]))
 }
+
+func FileExists(filename string) bool {
+	info, err := os.Stat(filename)
+	if os.IsNotExist(err) {
+		return false
+	}
+	return !info.IsDir()
+}

@@ -57,6 +57,26 @@ func (b *Build) String() string {
 	}
 }
 
+// Compare compares two Build instances.
+// Returns -1 if b is less than other, 1 if b is greater than other, and 0 if they are equal.
+func (b *Build) Compare(other *Build) int {
+	if b.Label != other.Label {
+		if b.Label < other.Label {
+			return -1
+		}
+		return 1
+	}
+
+	if b.Index != other.Index {
+		if b.Index < other.Index {
+			return -1
+		}
+		return 1
+	}
+
+	return 0
+}
+
 func (b *Build) Bump() *Build {
 	return NewBuild(b.Label, b.Index+1)
 }
