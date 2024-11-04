@@ -88,7 +88,7 @@ var showCmd = &cobra.Command{
 }
 
 var preReleaseNextCmd = &cobra.Command{
-	Use:   "pre-release-next",
+	Use:   "prerelease-next",
 	Short: `Bump the next pre-release version label (e.g. 1.2.3-alpha -> 1.2.3-beta).`,
 	Long:  `Bump the patch version number (e.g. 1.2.3 -> 1.2.4).`,
 	RunE:  bumpPreReleaseNext, // Use RunE for better error handling
