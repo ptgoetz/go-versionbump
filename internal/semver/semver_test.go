@@ -57,6 +57,7 @@ func TestSemVersion_Bump(t *testing.T) {
 		{"0.0.1", Minor, "0.1.0", false},
 		{"0.1.0", Major, "1.0.0", false},
 		{"1.0.0", PreReleaseNext, "1.0.0-alpha", false},
+		{"1.0.0", PreReleaseMajor, "1.0.0-alpha", false},
 		{"1.0.0-alpha", PreReleaseBuild, "1.0.0-alpha+ptgoetz.1", false},
 		{"1.0.0-alpha+ptgoetz.1", PreReleaseBuild, "1.0.0-alpha+ptgoetz.2", false},
 		{"1.0.0-alpha+ptgoetz.1", PreReleaseNext, "1.0.0-beta", false},

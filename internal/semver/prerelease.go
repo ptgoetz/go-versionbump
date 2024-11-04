@@ -148,8 +148,15 @@ func (v *PreReleaseVersion) Bump(versionPart int, preReleaseLabels []string) (*P
 	if len(preReleaseLabels) == 0 {
 		panic("PreReleaseVersion.Bump(): preReleaseLabels cannot be empty")
 	}
+	// sort pre-release labels
+	sort.Strings(preReleaseLabels)
+	// if the label is empty, this is the first pre-release version, so return the first label
+	if v.Label == "" {
+		v.Label = preReleaseLabels[0]
+		return NewPrereleaseVersion(preReleaseLabels[0], 0, 0, 0), nil
+	}
+
 	switch versionPart {
-	// TODO: Implement bumping for prerelease and build versions
 	case prMajor:
 		return NewPrereleaseVersion(v.Label, v.Version.major+1, 0, 0), nil
 	case prMinor:
@@ -157,12 +164,6 @@ func (v *PreReleaseVersion) Bump(versionPart int, preReleaseLabels []string) (*P
 	case prPatch:
 		return NewPrereleaseVersion(v.Label, v.Version.major, v.Version.minor, v.Version.patch+1), nil
 	case prNext:
-		// sort pre-release labels
-		sort.Strings(preReleaseLabels)
-
-		if v.Label == "" {
-			return NewPrereleaseVersion(preReleaseLabels[0], 0, 0, 0), nil
-		}
 		// find the index of the current label
 		idx := indexOf(v.Label, preReleaseLabels)
 		if idx == -1 {

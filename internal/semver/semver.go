@@ -2,6 +2,7 @@ package semver
 
 import (
 	"fmt"
+	"github.com/ptgoetz/go-versionbump/internal/utils"
 	"strings"
 )
 
@@ -70,7 +71,9 @@ func (v *SemVersion) String() string {
 	return version
 }
 
-// Bump returns a new SemVersion instance after incrementing the specified part
+// Bump returns a new SemVersion instance after incrementing the specified part.
+// If the part is a pre-release part, preReleaseLabels must be provided. If the part is a build part, buildLabel must
+// be provided. If the part is a root version part, preReleaseLabels and buildLabel are ignored.
 func (v *SemVersion) Bump(part VersionPart, preReleaseLabels []string, buildLabel string) (*SemVersion, error) {
 	var version *Version
 	var preReleaseVersion *PreReleaseVersion
@@ -200,7 +203,30 @@ func ParseSemVersion(versionStr string) (*SemVersion, error) {
 	}, nil
 }
 
+// ValidateSemVersion checks if the provided version string is a valid semantic version
 func ValidateSemVersion(versionStr string) bool {
 	_, err := ParseSemVersion(versionStr)
 	return err == nil
+}
+
+// ValidatePreReleaseLabels checks if the provided pre-release labels are valid
+func ValidatePreReleaseLabels(preReleaseLabels []string) bool {
+	for _, label := range preReleaseLabels {
+		if !utils.IsAllAlphabetic(label) {
+			return false
+		}
+	}
+	return true
+}
+
+// ValidateBuildLabel checks if the provided pre-release labels are valid
+func ValidateBuildLabel(buildLabel string) bool {
+	return utils.IsAllAlphanumeric(buildLabel)
+}
+
+// ValidatePreReleaseLabelsString checks if the provided pre-release labels string is valid.
+// The labels must be comma-separated.
+func ValidatePreReleaseLabelsString(preReleaseLabels string) bool {
+	labels := strings.Split(preReleaseLabels, ",")
+	return ValidatePreReleaseLabels(labels)
 }

@@ -42,7 +42,7 @@ func NewVersionBump(options config.Options) (*VersionBump, error) {
 }
 
 func (vb *VersionBump) GetOldVersion() string {
-	if !semver.ValidateVersion(vb.Config.Version) {
+	if !semver.ValidateSemVersion(vb.Config.Version) {
 		logFatal(vb.Options, fmt.Sprintf("Failed to parse semantic Version string for old Version: %s", vb.Config.Version))
 	}
 	oldVersion, _ := semver.ParseSemVersion(vb.Config.Version)
@@ -184,6 +184,21 @@ func InitVersionBumpProject(opts config.Options) error {
 		PreReleaseLabels:      []string{"alpha", "beta", "rc"},
 	}
 
+	// prompt the user for pre-release labels
+	prLabels := promptUserForValue(
+		"Enter pre-release labels (comma-separated)",
+		strings.Join(conf.PreReleaseLabels, ","),
+		semver.ValidatePreReleaseLabelsString)
+	conf.PreReleaseLabels = strings.Split(prLabels, ",")
+
+	// prompt the user for build label
+	buildLabel := promptUserForValue(
+		"Enter build label",
+		conf.BuildLabel,
+		semver.ValidateBuildLabel)
+	conf.BuildLabel = buildLabel
+
+	// prompt the user for the initial version
 	initVersionStr := promptUserForValue("Enter the initial version", "0.0.0", semver.ValidateSemVersion)
 	conf.Version = initVersionStr
 
