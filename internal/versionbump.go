@@ -74,6 +74,10 @@ func (vb *VersionBump) Run() {
 	}
 }
 
+func (vb *VersionBump) ShowVersion() {
+	fmt.Println(vb.Config.Version)
+}
+
 func (vb *VersionBump) Show(versionStr string) error {
 	var curVersionStr string
 	isProject := false

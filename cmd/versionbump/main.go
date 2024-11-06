@@ -87,6 +87,20 @@ var showCmd = &cobra.Command{
 	},
 }
 
+var showVersionCmd = &cobra.Command{
+	Use:   "show-version",
+	Short: `Show the current project version.`,
+	Long:  `Show the current project version.`,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		vb, err := internal.NewVersionBump(opts)
+		if err != nil {
+			return err
+		}
+		vb.ShowVersion()
+		return nil
+	},
+}
+
 var preReleaseNextCmd = &cobra.Command{
 	Use:   "prerelease-next",
 	Short: `Bump the next pre-release version label (e.g. 1.2.3-alpha -> 1.2.3-beta).`,
@@ -153,6 +167,7 @@ func init() {
 	preReleaseBuildCmd.Flags().AddFlagSet(prereleaserFlags)
 
 	showCmd.Flags().AddFlagSet(configColorFlags)
+	showVersionCmd.Flags().AddFlagSet(commonFlags)
 	configCmd.Flags().AddFlagSet(configColorFlags)
 
 	majorCmd.Flags().AddFlagSet(commonFlags)
@@ -170,6 +185,7 @@ func init() {
 	rootCmd.AddCommand(preReleasePatchCmd)
 	rootCmd.AddCommand(preReleaseBuildCmd)
 	rootCmd.AddCommand(showCmd)
+	rootCmd.AddCommand(showVersionCmd)
 	rootCmd.AddCommand(configCmd)
 	rootCmd.AddCommand(initCmd)
 
