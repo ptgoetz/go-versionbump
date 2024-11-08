@@ -101,6 +101,33 @@ var showVersionCmd = &cobra.Command{
 	},
 }
 
+var showLatestCmd = &cobra.Command{
+	Use:   "latest",
+	Short: `Show the latest project release version based on git tags.`,
+	Long:  `Show the latest project release version based on git tags.`,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		vb, err := internal.NewVersionBump(opts)
+		if err != nil {
+			return err
+		}
+		return vb.LatestVersion()
+	},
+}
+
+var gitTagHistoryCmd = &cobra.Command{
+	Use:   "history",
+	Short: `Show the sorted version history based on git tags.`,
+	Long:  `Show the sorted version history based on git tags.`,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		vb, err := internal.NewVersionBump(opts)
+		if err != nil {
+			return err
+		}
+		err = vb.GitTagHistory()
+		return err
+	},
+}
+
 var preReleaseNextCmd = &cobra.Command{
 	Use:   "prerelease-next",
 	Short: `Bump the next pre-release version label (e.g. 1.2.3-alpha -> 1.2.3-beta).`,
@@ -168,6 +195,7 @@ func init() {
 
 	showCmd.Flags().AddFlagSet(configColorFlags)
 	showVersionCmd.Flags().AddFlagSet(commonFlags)
+	showLatestCmd.Flags().AddFlagSet(commonFlags)
 	configCmd.Flags().AddFlagSet(configColorFlags)
 
 	majorCmd.Flags().AddFlagSet(commonFlags)
@@ -186,9 +214,10 @@ func init() {
 	rootCmd.AddCommand(preReleaseBuildCmd)
 	rootCmd.AddCommand(showCmd)
 	rootCmd.AddCommand(showVersionCmd)
+	rootCmd.AddCommand(showLatestCmd)
 	rootCmd.AddCommand(configCmd)
 	rootCmd.AddCommand(initCmd)
-
+	rootCmd.AddCommand(gitTagHistoryCmd)
 }
 
 func runRootCmd(cmd *cobra.Command, args []string) error {

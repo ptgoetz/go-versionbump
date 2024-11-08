@@ -143,6 +143,53 @@ func (vb *VersionBump) Show(versionStr string) error {
 	return nil
 }
 
+func (vb *VersionBump) GitTagHistory() error {
+	if vb.Options.NoGit {
+		return nil
+	}
+	logVerbose(vb.Options, "Version History:")
+	versions, err := vb.GetSortedVersions()
+	if err != nil {
+		return err
+	}
+	for _, version := range versions {
+		logVerbose(vb.Options, fmt.Sprintf("  - %s", version.String()))
+	}
+	return nil
+}
+
+func (vb *VersionBump) LatestVersion() error {
+	versions, err := vb.GetSortedVersions()
+	if err != nil {
+		return err
+	}
+	if len(versions) == 0 {
+		return fmt.Errorf("no versions found")
+	}
+	fmt.Println(versions[0].String())
+	return nil
+}
+
+func (vb *VersionBump) GetSortedVersions() ([]*semver.SemVersion, error) {
+	tags, err := git.GetTags(vb.ParentDir)
+	if err != nil {
+		return nil, err
+	}
+	versions := make([]*semver.SemVersion, 0)
+	for _, tag := range tags {
+		// TODO: get the tag prefix from the git configuration
+		v, err := semver.ParseSemVersion(tag[1:])
+		if err == nil {
+			versions = append(versions, v)
+		} else {
+			logVerbose(vb.Options, fmt.Sprintf("Error parsing tag: %s", tag))
+		}
+
+	}
+	semver.SortVersions(versions)
+	return versions, nil
+}
+
 func (vb *VersionBump) ShowEffectiveConfig() error {
 	logVerbose(vb.Options, fmt.Sprintf("Config file: %s", vb.Options.ConfigPath))
 	logVerbose(vb.Options, fmt.Sprintf("Project root: %s", vb.ParentDir))

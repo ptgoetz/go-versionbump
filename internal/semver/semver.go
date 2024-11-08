@@ -3,6 +3,7 @@ package semver
 import (
 	"fmt"
 	"github.com/ptgoetz/go-versionbump/internal/utils"
+	"sort"
 	"strings"
 )
 
@@ -229,4 +230,10 @@ func ValidateBuildLabel(buildLabel string) bool {
 func ValidatePreReleaseLabelsString(preReleaseLabels string) bool {
 	labels := strings.Split(preReleaseLabels, ",")
 	return ValidatePreReleaseLabels(labels)
+}
+
+func SortVersions(versions []*SemVersion) {
+	sort.Slice(versions, func(i, j int) bool {
+		return versions[i].Compare(versions[j]) > 0
+	})
 }
