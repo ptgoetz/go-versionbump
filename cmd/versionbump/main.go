@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/ptgoetz/go-versionbump/internal"
 	vbc "github.com/ptgoetz/go-versionbump/internal/config"
-	"github.com/ptgoetz/go-versionbump/internal/semver"
+	"github.com/ptgoetz/go-versionbump/pkg/semver"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"os"

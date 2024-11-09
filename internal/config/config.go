@@ -2,8 +2,8 @@ package config
 
 import (
 	"fmt"
-	"github.com/ptgoetz/go-versionbump/internal/semver"
 	"github.com/ptgoetz/go-versionbump/internal/utils"
+	"github.com/ptgoetz/go-versionbump/pkg/semver"
 	"gopkg.in/yaml.v3"
 	"os"
 	"path"
