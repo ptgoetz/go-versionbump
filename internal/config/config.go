@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	DefaultGitCommitTemplate     = "Bump version {old} --> {new}"
+	DefaultGitCommitTemplate     = "bump version {old} --> {new}"
 	DefaultGitTagTemplate        = "v{new}"
 	DefaultGitTagMessageTemplate = "Release version {new}"
 )

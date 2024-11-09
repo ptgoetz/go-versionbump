@@ -13,13 +13,13 @@ type Version struct {
 	patch int
 }
 
-// NewVersion creates a new immutable Version instance
-func NewVersion(major int, minor int, patch int) *Version {
+// newVersion creates a new immutable Version instance
+func newVersion(major int, minor int, patch int) *Version {
 	return &Version{major: major, minor: minor, patch: patch}
 }
 
-// ParseVersion parses a version string and returns a new Version instance
-func ParseVersion(version string) (*Version, error) {
+// parseVersion parses a version string and returns a new Version instance
+func parseVersion(version string) (*Version, error) {
 	vals := strings.Split(version, ".")
 	if len(vals) != 3 {
 		return nil, fmt.Errorf("invalid semantic version string: %s", version)
@@ -36,7 +36,7 @@ func ParseVersion(version string) (*Version, error) {
 	if err != nil {
 		return nil, err
 	}
-	return NewVersion(major, minor, patch), nil
+	return newVersion(major, minor, patch), nil
 }
 
 // String returns the version string
@@ -44,22 +44,16 @@ func (v *Version) String() string {
 	return fmt.Sprintf("%d.%d.%d", v.major, v.minor, v.patch)
 }
 
-// Bump returns a new Version instance after incrementing the specified part
-func (v *Version) Bump(versionPart int) *Version {
+// bump returns a new Version instance after incrementing the specified part
+func (v *Version) bump(versionPart int) *Version {
 	switch versionPart {
 	case vMajor:
-		return NewVersion(v.major+1, 0, 0)
+		return newVersion(v.major+1, 0, 0)
 	case vMinor:
-		return NewVersion(v.major, v.minor+1, 0)
+		return newVersion(v.major, v.minor+1, 0)
 	case vPatch:
-		return NewVersion(v.major, v.minor, v.patch+1)
+		return newVersion(v.major, v.minor, v.patch+1)
 	default:
 		panic(fmt.Sprintf("invalid version part: %d.\n", versionPart))
 	}
-}
-
-// ValidateVersion checks if the provided version string is a valid semantic version
-func ValidateVersion(version string) bool {
-	_, err := ParseVersion(version)
-	return err == nil
 }

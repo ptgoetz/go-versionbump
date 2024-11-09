@@ -27,22 +27,22 @@ var rootCmd = &cobra.Command{
 
 var majorCmd = &cobra.Command{
 	Use:   "major",
-	Short: `Bump the major version number (e.g. 1.2.3 -> 2.0.0).`,
-	Long:  `Bump the major version number (e.g. 1.2.3 -> 2.0.0).`,
+	Short: `bump the major version number (e.g. 1.2.3 -> 2.0.0).`,
+	Long:  `bump the major version number (e.g. 1.2.3 -> 2.0.0).`,
 	RunE:  bumpMajor, // Use RunE for better error handling
 }
 
 var minorCmd = &cobra.Command{
 	Use:   "minor",
-	Short: `Bump the minor version number (e.g. 1.2.3 -> 1.3.0).`,
-	Long:  `Bump the minor version number (e.g. 1.2.3 -> 1.3.0).`,
+	Short: `bump the minor version number (e.g. 1.2.3 -> 1.3.0).`,
+	Long:  `bump the minor version number (e.g. 1.2.3 -> 1.3.0).`,
 	RunE:  bumpMinor, // Use RunE for better error handling
 }
 
 var patchCmd = &cobra.Command{
 	Use:   "patch",
-	Short: `Bump the patch version number (e.g. 1.2.3 -> 1.2.4).`,
-	Long:  `Bump the patch version number (e.g. 1.2.3 -> 1.2.4).`,
+	Short: `bump the patch version number (e.g. 1.2.3 -> 1.2.4).`,
+	Long:  `bump the patch version number (e.g. 1.2.3 -> 1.2.4).`,
 	RunE:  bumpPatch, // Use RunE for better error handling
 }
 
@@ -130,36 +130,36 @@ var gitTagHistoryCmd = &cobra.Command{
 
 var preReleaseNextCmd = &cobra.Command{
 	Use:   "prerelease",
-	Short: `Bump the next pre-release version label (e.g. 1.2.3-alpha -> 1.2.3-beta).`,
-	Long:  `Bump the patch version number (e.g. 1.2.3 -> 1.2.4).`,
+	Short: `bump the next pre-release version label (e.g. 1.2.3-alpha -> 1.2.3-beta).`,
+	Long:  `bump the patch version number (e.g. 1.2.3 -> 1.2.4).`,
 	RunE:  bumpPreReleaseNext, // Use RunE for better error handling
 }
 
 var preReleaseMajorCmd = &cobra.Command{
 	Use:   "prerelease-major",
-	Short: `Bump the pre-release major version number (e.g. 1.2.3-alpha -> 1.2.3-alpha.1).`,
+	Short: `bump the pre-release major version number (e.g. 1.2.3-alpha -> 1.2.3-alpha.1).`,
 	Long:  `ump the pre-release major version number (e.g. 1.2.3-alpha -> 1.2.3-alpha.1).`,
 	RunE:  bumpPreReleaseMajor, // Use RunE for better error handling
 }
 
 var preReleaseMinorCmd = &cobra.Command{
 	Use:   "prerelease-minor",
-	Short: `Bump the pre-release minor version number (e.g. 1.2.3-alpha -> 1.2.3-alpha.0.1).`,
+	Short: `bump the pre-release minor version number (e.g. 1.2.3-alpha -> 1.2.3-alpha.0.1).`,
 	Long:  `ump the pre-release minor version number (e.g. 1.2.3-alpha -> 1.2.3-alpha.0.1).`,
 	RunE:  bumpPreReleaseMinor, // Use RunE for better error handling
 }
 
 var preReleasePatchCmd = &cobra.Command{
 	Use:   "prerelease-patch",
-	Short: `Bump the pre-release patch version number (e.g. 1.2.3-alpha -> 1.2.3-alpha.0.0.1).`,
+	Short: `bump the pre-release patch version number (e.g. 1.2.3-alpha -> 1.2.3-alpha.0.0.1).`,
 	Long:  `ump the pre-release patch version number (e.g. 1.2.3-alpha -> 1.2.3-alpha.0.0.1).`,
 	RunE:  bumpPreReleasePatch, // Use RunE for better error handling
 }
 
 var preReleaseBuildCmd = &cobra.Command{
 	Use:   "prerelease-build",
-	Short: `Bump the pre-release build version number (e.g. 1.2.3 -> 1.2.3+build.1).`,
-	Long:  `Bump the pre-release build version number (e.g. 1.2.3 -> 1.2.3+build.1).`,
+	Short: `bump the pre-release build version number (e.g. 1.2.3 -> 1.2.3+build.1).`,
+	Long:  `bump the pre-release build version number (e.g. 1.2.3 -> 1.2.3+build.1).`,
 	RunE:  bumpPreReleaseBuild, // Use RunE for better error handling
 }
 

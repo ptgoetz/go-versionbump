@@ -86,12 +86,12 @@ func (v *SemVersion) Bump(part VersionPart, preReleaseLabels []string, buildLabe
 	versionPart := versionPartInt(part)
 	if versionPart >= vMajor && versionPart <= vPatch {
 		// bump the root version
-		version = v.Version.Bump(versionPart)
+		version = v.Version.bump(versionPart)
 
 		// reset all pre-release versions
 		preReleaseVersion = NewPrereleaseVersion("", 0, 0, 0)
 	} else if versionPart >= prNext && versionPart <= prPatch {
-		version = NewVersion(v.Version.major, v.Version.minor, v.Version.patch)
+		version = newVersion(v.Version.major, v.Version.minor, v.Version.patch)
 		preReleaseVersion, err = v.PreReleaseVersion.Bump(versionPart, preReleaseLabels)
 		if err != nil {
 			fmt.Printf("Error: %v\n", err)
@@ -99,7 +99,7 @@ func (v *SemVersion) Bump(part VersionPart, preReleaseLabels []string, buildLabe
 		}
 
 	} else if versionPart == prBuild {
-		version = NewVersion(v.Version.major, v.Version.minor, v.Version.patch)
+		version = newVersion(v.Version.major, v.Version.minor, v.Version.patch)
 		preReleaseVersion = NewPrereleaseVersion(v.PreReleaseVersion.Label, v.PreReleaseVersion.Version.major, v.PreReleaseVersion.Version.minor, v.PreReleaseVersion.Version.patch)
 		if v.Build != nil {
 			build = v.Build.Bump()
@@ -192,7 +192,7 @@ func ParseSemVersion(versionStr string) (*SemVersion, error) {
 		preReleasePart = parts[1]
 	}
 
-	version, err := ParseVersion(rootPart)
+	version, err := parseVersion(rootPart)
 	if err != nil {
 		return nil, err
 	}

@@ -16,7 +16,7 @@ type PreReleaseVersion struct {
 
 // NewPrereleaseVersion creates a new immutable PreReleaseVersion instance
 func NewPrereleaseVersion(label string, major int, minor int, patch int) *PreReleaseVersion {
-	version := NewVersion(major, minor, patch)
+	version := newVersion(major, minor, patch)
 	return &PreReleaseVersion{
 		Label:   label,
 		Version: version,
@@ -146,7 +146,7 @@ func (v *PreReleaseVersion) Compare(other *PreReleaseVersion) int {
 // Bump returns a new PreReleaseVersion instance after incrementing the specified part
 func (v *PreReleaseVersion) Bump(versionPart int, preReleaseLabels []string) (*PreReleaseVersion, error) {
 	if len(preReleaseLabels) == 0 {
-		panic("PreReleaseVersion.Bump(): preReleaseLabels cannot be empty")
+		panic("PreReleaseVersion.bump(): preReleaseLabels cannot be empty")
 	}
 	// sort pre-release labels
 	sort.Strings(preReleaseLabels)
