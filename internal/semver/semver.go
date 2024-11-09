@@ -62,6 +62,9 @@ type SemVersion struct {
 
 // String returns the version string
 func (v *SemVersion) String() string {
+	if v == nil {
+		return ""
+	}
 	version := v.Version.String()
 	if v.PreReleaseVersion != nil && v.PreReleaseVersion.String() != "" {
 		version += "-" + v.PreReleaseVersion.String()
@@ -79,6 +82,7 @@ func (v *SemVersion) Bump(part VersionPart, preReleaseLabels []string, buildLabe
 	var version *Version
 	var preReleaseVersion *PreReleaseVersion
 	var build *Build
+	var err error
 	versionPart := versionPartInt(part)
 	if versionPart >= vMajor && versionPart <= vPatch {
 		// bump the root version
@@ -88,7 +92,11 @@ func (v *SemVersion) Bump(part VersionPart, preReleaseLabels []string, buildLabe
 		preReleaseVersion = NewPrereleaseVersion("", 0, 0, 0)
 	} else if versionPart >= prNext && versionPart <= prPatch {
 		version = NewVersion(v.Version.major, v.Version.minor, v.Version.patch)
-		preReleaseVersion, _ = v.PreReleaseVersion.Bump(versionPart, preReleaseLabels)
+		preReleaseVersion, err = v.PreReleaseVersion.Bump(versionPart, preReleaseLabels)
+		if err != nil {
+			fmt.Printf("Error: %v\n", err)
+			return nil, err
+		}
 
 	} else if versionPart == prBuild {
 		version = NewVersion(v.Version.major, v.Version.minor, v.Version.patch)

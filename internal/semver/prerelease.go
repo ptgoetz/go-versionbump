@@ -151,27 +151,38 @@ func (v *PreReleaseVersion) Bump(versionPart int, preReleaseLabels []string) (*P
 	// sort pre-release labels
 	sort.Strings(preReleaseLabels)
 	// if the label is empty, this is the first pre-release version, so return the first label
+	label := v.Label
 	if v.Label == "" {
-		v.Label = preReleaseLabels[0]
-		return NewPrereleaseVersion(preReleaseLabels[0], 0, 0, 0), nil
+		label = preReleaseLabels[0]
+		//return NewPrereleaseVersion(preReleaseLabels[0], 0, 0, 0), nil
 	}
 
 	switch versionPart {
 	case prMajor:
-		return NewPrereleaseVersion(v.Label, v.Version.major+1, 0, 0), nil
+		if v.Label == "" {
+			return NewPrereleaseVersion(label, v.Version.major, 0, 0), nil
+		} else {
+			return NewPrereleaseVersion(label, v.Version.major+1, 0, 0), nil
+		}
+
 	case prMinor:
-		return NewPrereleaseVersion(v.Label, v.Version.major, v.Version.minor+1, 0), nil
+		return NewPrereleaseVersion(label, v.Version.major, v.Version.minor+1, 0), nil
 	case prPatch:
-		return NewPrereleaseVersion(v.Label, v.Version.major, v.Version.minor, v.Version.patch+1), nil
+		return NewPrereleaseVersion(label, v.Version.major, v.Version.minor, v.Version.patch+1), nil
 	case prNext:
 		// find the index of the current label
-		idx := indexOf(v.Label, preReleaseLabels)
+		idx := indexOf(label, preReleaseLabels)
+		// if the version being bumped has no label, return the first label
+		offset := 1
+		if v.Label == "" {
+			offset = 0
+		}
 		if idx == -1 {
-			return nil, fmt.Errorf("label %s not found in preReleaseLabels", v.Label)
+			return nil, fmt.Errorf("label %s not found in preReleaseLabels: %v", v.Label, preReleaseLabels)
 		} else if idx == len(preReleaseLabels)-1 {
 			return nil, fmt.Errorf("cannot bump beyond the last label %s", v.Label)
 		} else {
-			return NewPrereleaseVersion(preReleaseLabels[idx+1], 0, 0, 0), nil
+			return NewPrereleaseVersion(preReleaseLabels[idx+offset], 0, 0, 0), nil
 		}
 	default:
 		panic(fmt.Sprintf("invalid version part: %d.\n", versionPart))

@@ -78,6 +78,14 @@ func (vb *VersionBump) ShowVersion() {
 	fmt.Println(vb.Config.Version)
 }
 
+func checkBumpError(v *semver.SemVersion, err error) string {
+	if err != nil {
+		return "Not Possible"
+	} else {
+		return v.String()
+	}
+}
+
 func (vb *VersionBump) Show(versionStr string) error {
 	var curVersionStr string
 	isProject := false
@@ -100,14 +108,26 @@ func (vb *VersionBump) Show(versionStr string) error {
 			curVersion.String()))
 	}
 	// we now know we have a valid Version
-	majorVersion, _ := curVersion.Bump(semver.Major, vb.Config.PreReleaseLabels, vb.Config.BuildLabel)
+	majorVersion, err := curVersion.Bump(semver.Major, vb.Config.PreReleaseLabels, vb.Config.BuildLabel)
+	majorVersionStr := checkBumpError(majorVersion, err)
 	minorVersion, _ := curVersion.Bump(semver.Minor, vb.Config.PreReleaseLabels, vb.Config.BuildLabel)
+	minorVersionStr := checkBumpError(minorVersion, err)
 	patchVersion, _ := curVersion.Bump(semver.Patch, vb.Config.PreReleaseLabels, vb.Config.BuildLabel)
+	patchVersionStr := checkBumpError(patchVersion, err)
 	prNextVersion, _ := curVersion.Bump(semver.PreReleaseNext, vb.Config.PreReleaseLabels, vb.Config.BuildLabel)
+	prNextVersionStr := checkBumpError(prNextVersion, err)
 	prMajorVersion, _ := curVersion.Bump(semver.PreReleaseMajor, vb.Config.PreReleaseLabels, vb.Config.BuildLabel)
+	prMajorVersionStr := checkBumpError(prMajorVersion, err)
 	prMinorVersion, _ := curVersion.Bump(semver.PreReleaseMinor, vb.Config.PreReleaseLabels, vb.Config.BuildLabel)
+	prMinorVersionStr := checkBumpError(prMinorVersion, err)
 	prPatchVersion, _ := curVersion.Bump(semver.PreReleasePatch, vb.Config.PreReleaseLabels, vb.Config.BuildLabel)
+	prPatchVersionStr := checkBumpError(prPatchVersion, err)
 	prBuildVersion, _ := curVersion.Bump(semver.PreReleaseBuild, vb.Config.PreReleaseLabels, vb.Config.BuildLabel)
+	prBuildVersionStr := checkBumpError(prBuildVersion, err)
+
+	if prNextVersionStr == "" {
+		prNextVersionStr = "ERROR_NO_PATH"
+	}
 
 	padLen := len(curVersion.String())
 	padding := utils.PaddingString(padLen, " ")
@@ -116,28 +136,28 @@ func (vb *VersionBump) Show(versionStr string) error {
 		`%s ─┬─ major ─ %s
   %s├─ minor ─ %s
   %s├─ patch ─ %s
-  %s├─ prerelease-next ── %s
+  %s├─ prerelease ─ %s
   %s├─ prerelease-major ─ %s
   %s├─ prerelease-minor ─ %s
   %s├─ prerelease-patch ─ %s
   %s╰─ prerelease-build ─ %s
 `,
 		curVersion.String(),
-		majorVersion.String(),
+		majorVersionStr,
 		padding,
-		minorVersion.String(),
+		minorVersionStr,
 		padding,
-		patchVersion.String(),
+		patchVersionStr,
 		padding,
-		prNextVersion.String(),
+		prNextVersionStr,
 		padding,
-		prMajorVersion.String(),
+		prMajorVersionStr,
 		padding,
-		prMinorVersion.String(),
+		prMinorVersionStr,
 		padding,
-		prPatchVersion.String(),
+		prPatchVersionStr,
 		padding,
-		prBuildVersion.String())
+		prBuildVersionStr)
 
 	printColorOpts(vb.Options, tree, ColorLightBlue)
 	return nil

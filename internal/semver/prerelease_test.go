@@ -21,11 +21,11 @@ func TestBumpPreRelease(t *testing.T) {
 		{"alpha", prNext, "beta", false},
 		{"alpha", prMinor, "alpha.0.1", false},
 		{"0.0.0", prMajor, "alpha", false},
-		{"1.0.0", prMinor, "alpha", false},
-		{"1.1.0", prPatch, "alpha", false},
-		{"2.5.1", prMajor, "alpha", false},
-		{"2.5.1", prMinor, "alpha", false},
-		{"2.5.1", prPatch, "alpha", false},
+		{"1.0.0", prMinor, "alpha.1.1", false},
+		{"1.1.0", prPatch, "alpha.1.1.1", false},
+		{"2.5.1", prMajor, "alpha.2", false},
+		{"2.5.1", prMinor, "alpha.2.6", false},
+		{"2.5.1", prPatch, "alpha.2.5.2", false},
 	}
 
 	for _, test := range tests {
