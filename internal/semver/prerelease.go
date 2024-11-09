@@ -154,7 +154,6 @@ func (v *PreReleaseVersion) Bump(versionPart int, preReleaseLabels []string) (*P
 	label := v.Label
 	if v.Label == "" {
 		label = preReleaseLabels[0]
-		//return NewPrereleaseVersion(preReleaseLabels[0], 0, 0, 0), nil
 	}
 
 	switch versionPart {

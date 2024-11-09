@@ -197,8 +197,12 @@ func (vb *VersionBump) GetSortedVersions() ([]*semver.SemVersion, error) {
 	}
 	versions := make([]*semver.SemVersion, 0)
 	for _, tag := range tags {
-		// TODO: get the tag prefix from the git configuration
-		v, err := semver.ParseSemVersion(tag[1:])
+		vStr, err := ExtractVersion(vb.Config.GitTagTemplate, tag)
+		if err != nil {
+			logVerbose(vb.Options, fmt.Sprintf("Error extracting version from tag: %s", err.Error()))
+			continue
+		}
+		v, err := semver.ParseSemVersion(vStr)
 		if err == nil {
 			versions = append(versions, v)
 		} else {
@@ -210,13 +214,32 @@ func (vb *VersionBump) GetSortedVersions() ([]*semver.SemVersion, error) {
 	return versions, nil
 }
 
+func ExtractVersion(template, value string) (string, error) {
+	version := "{new}"
+	idx := strings.Index(template, version)
+	idx2 := idx + len(version)
+	right := template[idx2:]
+	left := template[:idx]
+	if !strings.Contains(value, left) || !strings.Contains(value, right) {
+		return "", fmt.Errorf("value '%s' does not match template '%s'", value, template)
+	}
+
+	proposed := value[idx : len(value)-len(right)]
+	newValue := strings.ReplaceAll(template, version, proposed)
+	if len(newValue) != len(value) {
+		return "", fmt.Errorf("value '%s' does not match template '%s'", value, template)
+	}
+
+	return proposed, nil
+}
+
 func (vb *VersionBump) ShowEffectiveConfig() error {
 	logVerbose(vb.Options, fmt.Sprintf("Config file: %s", vb.Options.ConfigPath))
 	logVerbose(vb.Options, fmt.Sprintf("Project root: %s", vb.ParentDir))
 	logVerbose(vb.Options, "Effective Configuration YAML:")
 
 	conf := &vb.Config
-
+	// TODO: we should be loading the default configuration and merging it with the user configuration
 	// set defaults if not overridden
 	if conf.GitCommitTemplate == "" {
 		conf.GitCommitTemplate = config.DefaultGitCommitTemplate

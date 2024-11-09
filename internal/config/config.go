@@ -151,5 +151,16 @@ func LoadConfig(filePath string) (*Config, string, error) {
 		configPtr.PreReleaseLabels = []string{"alpha", "beta", "rc"}
 	}
 
+	// set defaults if not overridden
+	if config.GitTagTemplate == "" {
+		configPtr.GitTagTemplate = DefaultGitTagTemplate
+	}
+	if config.GitCommitTemplate == "" {
+		configPtr.GitCommitTemplate = DefaultGitCommitTemplate
+	}
+
+	if config.GitTagMessageTemplate == "" {
+		configPtr.GitTagMessageTemplate = DefaultGitTagMessageTemplate
+	}
 	return configPtr, root, nil
 }
