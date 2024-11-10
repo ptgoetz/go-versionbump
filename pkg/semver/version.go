@@ -58,14 +58,17 @@ func (v *Version) bump(versionPart int) *Version {
 	}
 }
 
+// Major returns the major version part
 func (v *Version) Major() int {
 	return v.major
 }
 
+// Minor returns the minor version part
 func (v *Version) Minor() int {
 	return v.minor
 }
 
+// Patch returns the patch version part
 func (v *Version) Patch() int {
 	return v.patch
 }

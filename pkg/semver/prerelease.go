@@ -27,10 +27,7 @@ func newPrereleaseVersion(label string, major int, minor int, patch int) *PreRel
 // parsePrereleaseVersion parses a rootVersion string and returns a new PreReleaseVersion instance.
 // It handles versions with 1, 2, or 3 parts. E.g., "1" becomes "1.0.0", "1.2" becomes "1.2.0".
 func parsePrereleaseVersion(versionStr string) (*PreReleaseVersion, error) {
-	// alpha+BuildVersion.1
-	// alpha.1
 	parts := strings.Split(versionStr, "+")
-
 	version := parts[0]
 
 	if utils.IsAllAlphabetic(version) && len(parts) == 1 {
@@ -93,8 +90,8 @@ func (v *PreReleaseVersion) Label() string {
 }
 
 // Version returns the pre-release Version
-func (v *PreReleaseVersion) Version() Version {
-	return *v.version
+func (v *PreReleaseVersion) Version() *Version {
+	return v.version
 }
 
 // String returns the reduced rootVersion string by removing trailing ".0" parts

@@ -16,8 +16,8 @@ func TestParseSemVersion(t *testing.T) {
 		{"1.2.3", "1.2.3", false},
 		{"1.0.0-alpha", "1.0.0-alpha", false},
 		{"1.0.0-alpha.1", "1.0.0-alpha.1", false},
-		{"1.0.0-alpha+BuildVersion.1", "1.0.0-alpha+BuildVersion.1", false},
-		{"1.0.0+BuildVersion.1", "1.0.0+BuildVersion.1", false},
+		{"1.0.0-alpha+build.1", "1.0.0-alpha+build.1", false},
+		{"1.0.0+build.1", "1.0.0+build.1", false},
 		{"2.0", "", true},     // Should fail as it's not a valid semantic rootVersion
 		{"", "", true},        // Empty rootVersion string should fail
 		{"1.2.3.4", "", true}, // Invalid semver format
@@ -106,9 +106,9 @@ func TestSemVersion_Compare(t *testing.T) {
 		{"1.0.0-alpha", "1.0.0-beta", -1},
 		{"1.0.0-beta", "1.0.0-alpha", 1},
 		{"1.0.0-alpha", "1.0.0-alpha", 0},
-		{"1.0.0-alpha+BuildVersion.1", "1.0.0-alpha+BuildVersion.2", -1},
-		{"1.0.0-alpha+BuildVersion.2", "1.0.0-alpha+BuildVersion.1", 1},
-		{"1.0.0-alpha+BuildVersion.1", "1.0.0-alpha+BuildVersion.1", 0},
+		{"1.0.0-alpha+build.1", "1.0.0-alpha+build.2", -1},
+		{"1.0.0-alpha+build.2", "1.0.0-alpha+build.1", 1},
+		{"1.0.0-alpha+build.1", "1.0.0-alpha+build.1", 0},
 	}
 
 	for _, test := range tests {
@@ -123,4 +123,18 @@ func TestSemVersion_Compare(t *testing.T) {
 			assert.Equal(t, test.expected, result, "expected %d, got %d", test.expected, result)
 		})
 	}
+}
+
+func TestAccessors(t *testing.T) {
+	v, err := ParseSemVersion("1.2.3-alpha.4.5.6+build.1")
+	assert.NoError(t, err, "unexpected error for version string  '%s'", "1.2.3-alpha.4.5.6+build.1")
+	assert.Equal(t, 1, v.RootVersion().Major(), "expected major version to be 1")
+	assert.Equal(t, 2, v.RootVersion().Minor(), "expected minor version to be 2")
+	assert.Equal(t, 3, v.RootVersion().Patch(), "expected major version to be 3")
+	assert.Equal(t, "alpha", v.PreReleaseVersion().Label(), "expected pre-release label to be 'alpha'")
+	assert.Equal(t, 4, v.PreReleaseVersion().Version().Major(), "expected pre-release major version to be 4")
+	assert.Equal(t, 5, v.PreReleaseVersion().Version().Minor(), "expected pre-release minor version to be 5")
+	assert.Equal(t, 6, v.PreReleaseVersion().Version().Patch(), "expected pre-release patch version to be 6")
+	assert.Equal(t, "build.1", v.BuildVersion().String(), "expected build version to be 'build.1'")
+	assert.Equal(t, 1, v.BuildVersion().Number(), "expected build number to be 1")
 }

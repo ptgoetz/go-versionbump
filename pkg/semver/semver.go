@@ -31,7 +31,7 @@ const (
 	PreReleaseMajor VersionPart = "prerelease-major"
 	PreReleaseMinor VersionPart = "prerelease-minor"
 	PreReleasePatch VersionPart = "prerelease-patch"
-	PreReleaseBuild VersionPart = "prerelease-BuildVersion"
+	PreReleaseBuild VersionPart = "prerelease-build"
 )
 
 func versionPartInt(part VersionPart) int {
@@ -65,18 +65,18 @@ type SemanticVersion struct {
 }
 
 // RootVersion returns the root version part of the SemanticVersion
-func (v *SemanticVersion) RootVersion() Version {
-	return *v.rootVersion
+func (v *SemanticVersion) RootVersion() *Version {
+	return v.rootVersion
 }
 
 // PreReleaseVersion returns the pre-release version part of the SemanticVersion
-func (v *SemanticVersion) PreReleaseVersion() PreReleaseVersion {
-	return *v.preReleaseVersion
+func (v *SemanticVersion) PreReleaseVersion() *PreReleaseVersion {
+	return v.preReleaseVersion
 }
 
 // BuildVersion returns the BuildVersion part of the SemanticVersion
-func (v *SemanticVersion) BuildVersion() BuildVersion {
-	return *v.buildVersion
+func (v *SemanticVersion) BuildVersion() *BuildVersion {
+	return v.buildVersion
 }
 
 // String returns the string representation of the SemanticVersion instance
@@ -231,7 +231,7 @@ func ParseSemVersion(versionStr string) (*SemanticVersion, error) {
 	}, nil
 }
 
-// ValidateSemVersion checks if the provided rootVersion string is a valid semantic rootVersion
+// ValidateSemVersion checks if the provided string is a valid semantic version
 func ValidateSemVersion(versionStr string) bool {
 	_, err := ParseSemVersion(versionStr)
 	return err == nil

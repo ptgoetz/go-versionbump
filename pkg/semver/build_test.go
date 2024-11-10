@@ -8,7 +8,7 @@ func TestParseBuild(t *testing.T) {
 		bumpType int
 		expected string
 	}{
-		{"BuildVersion.1", prBuild, "BuildVersion.2"},
+		{"build.1", prBuild, "build.2"},
 		{"foo.1", prBuild, "foo.2"},
 	}
 	for _, test := range tests {

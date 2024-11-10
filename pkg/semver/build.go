@@ -20,10 +20,12 @@ func newBuild(label string, index int) *BuildVersion {
 	}
 }
 
+// Number returns the BuildVersion number
 func (b *BuildVersion) Number() int {
 	return b.number
 }
 
+// Label returns the BuildVersion label
 func (b *BuildVersion) Label() string {
 	return b.label
 }
@@ -37,18 +39,18 @@ func parseBuild(buildStr string) (*BuildVersion, error) {
 	// BuildVersion.1
 	vals := strings.Split(buildStr, ".")
 	if len(vals) != 2 {
-		return nil, fmt.Errorf("invalid BuildVersion rootVersion: %s", buildStr)
+		return nil, fmt.Errorf("invalid build version: %s", buildStr)
 	}
 	if vals[1] == "" {
-		return nil, fmt.Errorf("invalid BuildVersion rootVersion, BuildVersion rootVersion is required: %s", buildStr)
+		return nil, fmt.Errorf("invalid build version, build number is required: %s", buildStr)
 	}
-	// BuildVersion label must be alphabetic
+	// build label must be alphabetic
 	if !utils.IsAllAlphabetic(vals[0]) {
-		return nil, fmt.Errorf("invalid BuildVersion rootVersion, BuildVersion label must not contain digits: %s", buildStr)
+		return nil, fmt.Errorf("invalid build version, build label must not contain digits: %s", buildStr)
 	}
 	buildNum, err := strconv.Atoi(vals[1])
 	if err != nil {
-		return nil, fmt.Errorf("invalid BuildVersion rootVersion, BuildVersion number must be an integer: %s", buildStr)
+		return nil, fmt.Errorf("invalid build version, build number must be an integer: %s", buildStr)
 	}
 	return &BuildVersion{
 		number: buildNum,
