@@ -78,9 +78,10 @@ func (vb *VersionBump) ShowVersion() {
 	fmt.Println(vb.Config.Version)
 }
 
-func checkBumpError(v *semver.SemanticVersion, err error) string {
+func checkBumpError(vb *VersionBump, v *semver.SemanticVersion, err error) string {
 	if err != nil {
-		return "Not Possible"
+		logWarning(vb.Options, err.Error())
+		return "❌"
 	} else {
 		return v.String()
 	}
@@ -109,24 +110,24 @@ func (vb *VersionBump) Show(versionStr string) error {
 	}
 	// we now know we have a valid version
 	majorVersion, err := curVersion.Bump(semver.Major, vb.Config.PreReleaseLabels, vb.Config.BuildLabel)
-	majorVersionStr := checkBumpError(majorVersion, err)
-	minorVersion, _ := curVersion.Bump(semver.Minor, vb.Config.PreReleaseLabels, vb.Config.BuildLabel)
-	minorVersionStr := checkBumpError(minorVersion, err)
-	patchVersion, _ := curVersion.Bump(semver.Patch, vb.Config.PreReleaseLabels, vb.Config.BuildLabel)
-	patchVersionStr := checkBumpError(patchVersion, err)
-	prNextVersion, _ := curVersion.Bump(semver.PreRelease, vb.Config.PreReleaseLabels, vb.Config.BuildLabel)
-	prNextVersionStr := checkBumpError(prNextVersion, err)
-	prMajorVersion, _ := curVersion.Bump(semver.PreReleaseMajor, vb.Config.PreReleaseLabels, vb.Config.BuildLabel)
-	prMajorVersionStr := checkBumpError(prMajorVersion, err)
-	prMinorVersion, _ := curVersion.Bump(semver.PreReleaseMinor, vb.Config.PreReleaseLabels, vb.Config.BuildLabel)
-	prMinorVersionStr := checkBumpError(prMinorVersion, err)
-	prPatchVersion, _ := curVersion.Bump(semver.PreReleasePatch, vb.Config.PreReleaseLabels, vb.Config.BuildLabel)
-	prPatchVersionStr := checkBumpError(prPatchVersion, err)
-	prBuildVersion, _ := curVersion.Bump(semver.PreReleaseBuild, vb.Config.PreReleaseLabels, vb.Config.BuildLabel)
-	prBuildVersionStr := checkBumpError(prBuildVersion, err)
+	majorVersionStr := checkBumpError(vb, majorVersion, err)
+	minorVersion, err := curVersion.Bump(semver.Minor, vb.Config.PreReleaseLabels, vb.Config.BuildLabel)
+	minorVersionStr := checkBumpError(vb, minorVersion, err)
+	patchVersion, err := curVersion.Bump(semver.Patch, vb.Config.PreReleaseLabels, vb.Config.BuildLabel)
+	patchVersionStr := checkBumpError(vb, patchVersion, err)
+	prNextVersion, err := curVersion.Bump(semver.PreRelease, vb.Config.PreReleaseLabels, vb.Config.BuildLabel)
+	prNextVersionStr := checkBumpError(vb, prNextVersion, err)
+	prMajorVersion, err := curVersion.Bump(semver.PreReleaseMajor, vb.Config.PreReleaseLabels, vb.Config.BuildLabel)
+	prMajorVersionStr := checkBumpError(vb, prMajorVersion, err)
+	prMinorVersion, err := curVersion.Bump(semver.PreReleaseMinor, vb.Config.PreReleaseLabels, vb.Config.BuildLabel)
+	prMinorVersionStr := checkBumpError(vb, prMinorVersion, err)
+	prPatchVersion, err := curVersion.Bump(semver.PreReleasePatch, vb.Config.PreReleaseLabels, vb.Config.BuildLabel)
+	prPatchVersionStr := checkBumpError(vb, prPatchVersion, err)
+	prBuildVersion, err := curVersion.Bump(semver.PreReleaseBuild, vb.Config.PreReleaseLabels, vb.Config.BuildLabel)
+	prBuildVersionStr := checkBumpError(vb, prBuildVersion, err)
 
 	if prNextVersionStr == "" {
-		prNextVersionStr = "ERROR_NO_PATH"
+		prNextVersionStr = "❌"
 	}
 
 	padLen := len(curVersion.String())

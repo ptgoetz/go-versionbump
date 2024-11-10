@@ -113,7 +113,6 @@ func (v *SemanticVersion) Bump(part VersionPart, preReleaseLabels []string, buil
 		version = newVersion(v.rootVersion.major, v.rootVersion.minor, v.rootVersion.patch)
 		preReleaseVersion, err = v.preReleaseVersion.bump(versionPart, preReleaseLabels)
 		if err != nil {
-			fmt.Printf("Error: %v\n", err)
 			return nil, err
 		}
 
