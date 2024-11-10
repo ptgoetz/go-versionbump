@@ -9,6 +9,7 @@ import (
 )
 
 // PreReleaseVersion is similar to Version, but its string representation is reduced by removing trailing ".0"
+// All PreReleaseVersion instances have an associated `label`.
 type PreReleaseVersion struct {
 	version *Version
 	label   string
@@ -86,10 +87,12 @@ func parsePrereleaseVersion(versionStr string) (*PreReleaseVersion, error) {
 	return newPrereleaseVersion(label, major, minor, patch), nil
 }
 
+// Label returns the pre-release label
 func (v *PreReleaseVersion) Label() string {
 	return v.label
 }
 
+// Version returns the pre-release Version
 func (v *PreReleaseVersion) Version() Version {
 	return *v.version
 }

@@ -54,25 +54,29 @@ func versionPartInt(part VersionPart) int {
 	}
 }
 
+// SemanticVersion represents a parsed and validated semantic version
 type SemanticVersion struct {
 	rootVersion       *Version
 	preReleaseVersion *PreReleaseVersion
 	buildVersion      *BuildVersion
 }
 
+// RootVersion returns the root version part of the SemanticVersion
 func (v *SemanticVersion) RootVersion() Version {
 	return *v.rootVersion
 }
 
+// PreReleaseVersion returns the pre-release version part of the SemanticVersion
 func (v *SemanticVersion) PreReleaseVersion() PreReleaseVersion {
 	return *v.preReleaseVersion
 }
 
+// BuildVersion returns the BuildVersion part of the SemanticVersion
 func (v *SemanticVersion) BuildVersion() BuildVersion {
 	return *v.buildVersion
 }
 
-// String returns the rootVersion string
+// String returns the string representation of the SemanticVersion instance
 func (v *SemanticVersion) String() string {
 	if v == nil {
 		return ""
@@ -252,6 +256,7 @@ func ValidatePreReleaseLabelsString(preReleaseLabels string) bool {
 	return ValidatePreReleaseLabels(labels)
 }
 
+// SortVersions sorts a slice of SemanticVersion instances in descending order (latest to oldest)
 func SortVersions(versions []*SemanticVersion) {
 	sort.Slice(versions, func(i, j int) bool {
 		return versions[i].Compare(versions[j]) > 0
