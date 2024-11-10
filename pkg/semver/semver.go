@@ -1,3 +1,6 @@
+// Package `semver` provides utilities for parsing, validating, and manipulating semantic versions.
+// It supports operations such as version comparison, version bumping, and sorting of versions.
+// The package also includes support for pre-release and build metadata as defined in the Semantic Versioning 2.0.0 specification.
 package semver
 
 import (
@@ -92,8 +95,8 @@ func (v *SemanticVersion) String() string {
 }
 
 // Bump returns a new SemanticVersion instance after incrementing the specified part.
-// If the part is a pre-release part, preReleaseLabels must be provided. If the part is a BuildVersion part, buildLabel must
-// be provided. If the part is a root rootVersion part, preReleaseLabels and buildLabel are ignored.
+// If the part is a pre-release part, `preReleaseLabels` must be provided. If the part is a build version part,
+// `buildLabel` `must  be provided. If the part is a root rootVersion part, preReleaseLabels and buildLabel are ignored.
 func (v *SemanticVersion) Bump(part VersionPart, preReleaseLabels []string, buildLabel string) (*SemanticVersion, error) {
 	var version *Version
 	var preReleaseVersion *PreReleaseVersion
