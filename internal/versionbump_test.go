@@ -24,12 +24,12 @@ func TestNewVersionBump(t *testing.T) {
   git-commit: true
   git-tag: false
   files:
-    - path: "Version.go"
+    - path: "version.go"
       replace: 
-        - "v{Version}"
+        - "v{version}"
     - path: "README.md"
       replace: 
-        - "Version: {Version}"
+        - "version: {version}"
 `
 	if err := os.WriteFile(filePath, []byte(yamlContent), 0644); err != nil {
 		t.Fatalf("Failed to write to YAML config file: %v", err)
@@ -53,7 +53,7 @@ func TestGitMetadata(t *testing.T) {
 			Version:               "1.0.0",
 			GitCommitTemplate:     "Commit {old} to {new}",
 			GitTagTemplate:        "v{new}",
-			GitTagMessageTemplate: "Tagging Version {new}",
+			GitTagMessageTemplate: "Tagging version {new}",
 		},
 		Options: config.Options{
 			BumpPart: "patch",
@@ -64,5 +64,5 @@ func TestGitMetadata(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "Commit 1.0.0 to 1.0.1", gitMeta.CommitMessage)
 	assert.Equal(t, "v1.0.1", gitMeta.TagName)
-	assert.Equal(t, "Tagging Version 1.0.1", gitMeta.TagMessage)
+	assert.Equal(t, "Tagging version 1.0.1", gitMeta.TagMessage)
 }

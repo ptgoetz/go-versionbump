@@ -64,6 +64,8 @@ tidy: ## Tidy up go.mod and remove unused dependencies
 lint: ## Lint the Go source files
 	@echo "Linting..."
 	golangci-lint run
+	goo vet ./...
+
 
 format: ## Format all Go source files
 	@echo "Formatting Go source files..."

@@ -29,12 +29,12 @@ func TestBumpPreRelease(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		subv, err := ParsePrereleaseVersion(test.input)
+		subv, err := parsePrereleaseVersion(test.input)
 		if err != nil {
 			t.Fatalf("Unexpected error for input %s: %v", test.input, err)
 		}
 
-		bumped, err := subv.Bump(test.bumpType, preReleaseLabels)
+		bumped, err := subv.bump(test.bumpType, preReleaseLabels)
 
 		if test.shouldFail {
 			// Assert an error was returned
@@ -66,7 +66,7 @@ func TestParsePrereleaseVersion(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.versionStr, func(t *testing.T) {
-			semVer, err := ParsePrereleaseVersion(test.versionStr)
+			semVer, err := parsePrereleaseVersion(test.versionStr)
 
 			if test.shouldFail {
 				// Assert an error was returned

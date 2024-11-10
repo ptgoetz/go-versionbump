@@ -28,7 +28,7 @@ files:
       - "v{version}"
   - path: "README.md"
     replace: 
-      - "Version: {version}"
+      - "version: {version}"
 `
 	if err := os.WriteFile(filePath, []byte(yamlContent), 0644); err != nil {
 		t.Fatalf("Failed to write to YAML config file: %v", err)
@@ -56,7 +56,7 @@ files:
 	if config.Files[0].Path != "version.go" || config.Files[0].Replace[0] != "v{version}" {
 		t.Errorf("Unexpected file config for 'version.go': %+v", config.Files[0])
 	}
-	if config.Files[1].Path != "README.md" || config.Files[1].Replace[0] != "Version: {version}" {
+	if config.Files[1].Path != "README.md" || config.Files[1].Replace[0] != "version: {version}" {
 		t.Errorf("Unexpected file config for 'README.md': %+v", config.Files[1])
 	}
 
@@ -98,7 +98,7 @@ files:
   - path: "version.go"
     replace: "v{version}"
   - path: "README.md"
-    replace: "Version: {version"
+    replace: "version: {version"
 `
 	if err := os.WriteFile(filePath, []byte(invalidYamlContent), 0644); err != nil {
 		t.Fatalf("Failed to write to YAML config file: %v", err)

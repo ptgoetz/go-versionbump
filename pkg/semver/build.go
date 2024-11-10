@@ -7,25 +7,25 @@ import (
 	"strings"
 )
 
-type Build struct {
-	Index int
-	Label string
+type build struct {
+	index int
+	label string
 }
 
-// NewBuild creates a new Build instance
-func NewBuild(label string, index int) *Build {
-	return &Build{
-		Index: index,
-		Label: label,
+// newBuild creates a new build instance
+func newBuild(label string, index int) *build {
+	return &build{
+		index: index,
+		label: label,
 	}
 }
 
-// ParseBuild parses a build version string and returns a new Build instance
-func ParseBuild(buildStr string) (*Build, error) {
+// parseBuild parses a build version string and returns a new build instance
+func parseBuild(buildStr string) (*build, error) {
 	if buildStr == "" {
 		return nil, nil
 	}
-	// Build specific logic
+	// build specific logic
 	// build.1
 	vals := strings.Split(buildStr, ".")
 	if len(vals) != 2 {
@@ -42,33 +42,33 @@ func ParseBuild(buildStr string) (*Build, error) {
 	if err != nil {
 		return nil, fmt.Errorf("invalid build version, build number must be an integer: %s", buildStr)
 	}
-	return &Build{
-		Index: buildNum,
-		Label: vals[0],
+	return &build{
+		index: buildNum,
+		label: vals[0],
 	}, nil
 }
 
 // String returns the build version string
-func (b *Build) String() string {
-	if b.Index > 0 {
-		return fmt.Sprintf("%s.%d", b.Label, b.Index)
+func (b *build) String() string {
+	if b.index > 0 {
+		return fmt.Sprintf("%s.%d", b.label, b.index)
 	} else {
 		return ""
 	}
 }
 
-// Compare compares two Build instances.
+// Compare compares two build instances.
 // Returns -1 if b is less than other, 1 if b is greater than other, and 0 if they are equal.
-func (b *Build) Compare(other *Build) int {
-	if b.Label != other.Label {
-		if b.Label < other.Label {
+func (b *build) Compare(other *build) int {
+	if b.label != other.label {
+		if b.label < other.label {
 			return -1
 		}
 		return 1
 	}
 
-	if b.Index != other.Index {
-		if b.Index < other.Index {
+	if b.index != other.index {
+		if b.index < other.index {
 			return -1
 		}
 		return 1
@@ -77,6 +77,6 @@ func (b *Build) Compare(other *Build) int {
 	return 0
 }
 
-func (b *Build) Bump() *Build {
-	return NewBuild(b.Label, b.Index+1)
+func (b *build) bump() *build {
+	return newBuild(b.label, b.index+1)
 }

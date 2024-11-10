@@ -8,24 +8,24 @@ import (
 	"strings"
 )
 
-// PreReleaseVersion is similar to Version, but its string representation is reduced by removing trailing ".0"
-type PreReleaseVersion struct {
-	Version *Version
-	Label   string
+// preReleaseVersion is similar to Version, but its string representation is reduced by removing trailing ".0"
+type preReleaseVersion struct {
+	version *Version
+	label   string
 }
 
-// NewPrereleaseVersion creates a new immutable PreReleaseVersion instance
-func NewPrereleaseVersion(label string, major int, minor int, patch int) *PreReleaseVersion {
+// newPrereleaseVersion creates a new immutable preReleaseVersion instance
+func newPrereleaseVersion(label string, major int, minor int, patch int) *preReleaseVersion {
 	version := newVersion(major, minor, patch)
-	return &PreReleaseVersion{
-		Label:   label,
-		Version: version,
+	return &preReleaseVersion{
+		label:   label,
+		version: version,
 	}
 }
 
-// ParsePrereleaseVersion parses a version string and returns a new PreReleaseVersion instance.
+// parsePrereleaseVersion parses a version string and returns a new preReleaseVersion instance.
 // It handles versions with 1, 2, or 3 parts. E.g., "1" becomes "1.0.0", "1.2" becomes "1.2.0".
-func ParsePrereleaseVersion(versionStr string) (*PreReleaseVersion, error) {
+func parsePrereleaseVersion(versionStr string) (*preReleaseVersion, error) {
 	// alpha+build.1
 	// alpha.1
 	parts := strings.Split(versionStr, "+")
@@ -33,7 +33,7 @@ func ParsePrereleaseVersion(versionStr string) (*PreReleaseVersion, error) {
 	version := parts[0]
 
 	if utils.IsAllAlphabetic(version) && len(parts) == 1 {
-		return NewPrereleaseVersion(version, 0, 0, 0), nil
+		return newPrereleaseVersion(version, 0, 0, 0), nil
 	}
 
 	vals := strings.Split(version, ".")
@@ -83,58 +83,58 @@ func ParsePrereleaseVersion(versionStr string) (*PreReleaseVersion, error) {
 		}
 	}
 
-	return NewPrereleaseVersion(label, major, minor, patch), nil
+	return newPrereleaseVersion(label, major, minor, patch), nil
 }
 
 // String returns the reduced version string by removing trailing ".0" parts
-func (v *PreReleaseVersion) String() string {
+func (v *preReleaseVersion) String() string {
 	var retval string
-	if v.Version.patch != 0 {
-		retval = fmt.Sprintf("%d.%d.%d", v.Version.major, v.Version.minor, v.Version.patch)
-	} else if v.Version.minor != 0 {
-		retval = fmt.Sprintf("%d.%d", v.Version.major, v.Version.minor)
+	if v.version.patch != 0 {
+		retval = fmt.Sprintf("%d.%d.%d", v.version.major, v.version.minor, v.version.patch)
+	} else if v.version.minor != 0 {
+		retval = fmt.Sprintf("%d.%d", v.version.major, v.version.minor)
 	} else {
-		retval = fmt.Sprintf("%d", v.Version.major)
+		retval = fmt.Sprintf("%d", v.version.major)
 	}
 
 	// alpha.0.0.0 -> alpha
 	if retval == "0" {
-		retval = fmt.Sprint(v.Label)
-	} else if v.Label != "" {
-		retval = fmt.Sprintf("%s.%s", v.Label, retval)
+		retval = fmt.Sprint(v.label)
+	} else if v.label != "" {
+		retval = fmt.Sprintf("%s.%s", v.label, retval)
 	}
-	if v.Label != "" {
+	if v.label != "" {
 		retval = fmt.Sprint(retval)
 	}
 	return retval
 }
 
-// Compare compares two PreReleaseVersion instances.
+// Compare compares two preReleaseVersion instances.
 // Returns -1 if v is less than other, 1 if v is greater than other, and 0 if they are equal.
-func (v *PreReleaseVersion) Compare(other *PreReleaseVersion) int {
-	if v.Label != other.Label {
-		if v.Label < other.Label {
+func (v *preReleaseVersion) Compare(other *preReleaseVersion) int {
+	if v.label != other.label {
+		if v.label < other.label {
 			return -1
 		}
 		return 1
 	}
 
-	if v.Version.major != other.Version.major {
-		if v.Version.major < other.Version.major {
+	if v.version.major != other.version.major {
+		if v.version.major < other.version.major {
 			return -1
 		}
 		return 1
 	}
 
-	if v.Version.minor != other.Version.minor {
-		if v.Version.minor < other.Version.minor {
+	if v.version.minor != other.version.minor {
+		if v.version.minor < other.version.minor {
 			return -1
 		}
 		return 1
 	}
 
-	if v.Version.patch != other.Version.patch {
-		if v.Version.patch < other.Version.patch {
+	if v.version.patch != other.version.patch {
+		if v.version.patch < other.version.patch {
 			return -1
 		}
 		return 1
@@ -143,51 +143,52 @@ func (v *PreReleaseVersion) Compare(other *PreReleaseVersion) int {
 	return 0
 }
 
-// Bump returns a new PreReleaseVersion instance after incrementing the specified part
-func (v *PreReleaseVersion) Bump(versionPart int, preReleaseLabels []string) (*PreReleaseVersion, error) {
+// bump returns a new preReleaseVersion instance after incrementing the specified part
+func (v *preReleaseVersion) bump(versionPart int, preReleaseLabels []string) (*preReleaseVersion, error) {
 	if len(preReleaseLabels) == 0 {
-		panic("PreReleaseVersion.bump(): preReleaseLabels cannot be empty")
+		panic("preReleaseVersion.bump(): preReleaseLabels cannot be empty")
 	}
 	// sort pre-release labels
 	sort.Strings(preReleaseLabels)
 	// if the label is empty, this is the first pre-release version, so return the first label
-	label := v.Label
-	if v.Label == "" {
+	label := v.label
+	if v.label == "" {
 		label = preReleaseLabels[0]
 	}
 
 	switch versionPart {
 	case prMajor:
-		if v.Label == "" {
-			return NewPrereleaseVersion(label, v.Version.major, 0, 0), nil
+		if v.label == "" {
+			return newPrereleaseVersion(label, v.version.major, 0, 0), nil
 		} else {
-			return NewPrereleaseVersion(label, v.Version.major+1, 0, 0), nil
+			return newPrereleaseVersion(label, v.version.major+1, 0, 0), nil
 		}
 
 	case prMinor:
-		return NewPrereleaseVersion(label, v.Version.major, v.Version.minor+1, 0), nil
+		return newPrereleaseVersion(label, v.version.major, v.version.minor+1, 0), nil
 	case prPatch:
-		return NewPrereleaseVersion(label, v.Version.major, v.Version.minor, v.Version.patch+1), nil
+		return newPrereleaseVersion(label, v.version.major, v.version.minor, v.version.patch+1), nil
 	case prNext:
 		// find the index of the current label
 		idx := indexOf(label, preReleaseLabels)
 		// if the version being bumped has no label, return the first label
 		offset := 1
-		if v.Label == "" {
+		if v.label == "" {
 			offset = 0
 		}
 		if idx == -1 {
-			return nil, fmt.Errorf("label %s not found in preReleaseLabels: %v", v.Label, preReleaseLabels)
+			return nil, fmt.Errorf("label %s not found in preReleaseLabels: %v", v.label, preReleaseLabels)
 		} else if idx == len(preReleaseLabels)-1 {
-			return nil, fmt.Errorf("cannot bump beyond the last label %s", v.Label)
+			return nil, fmt.Errorf("cannot bump beyond the last label %s", v.label)
 		} else {
-			return NewPrereleaseVersion(preReleaseLabels[idx+offset], 0, 0, 0), nil
+			return newPrereleaseVersion(preReleaseLabels[idx+offset], 0, 0, 0), nil
 		}
 	default:
 		panic(fmt.Sprintf("invalid version part: %d.\n", versionPart))
 	}
 }
 
+// TODO: move to utils package
 func indexOf(s string, arr []string) int {
 	for i, v := range arr {
 		if v == s {

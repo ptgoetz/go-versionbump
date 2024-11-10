@@ -241,7 +241,7 @@ func bumpPatch(cmd *cobra.Command, args []string) error {
 }
 
 func bumpPreReleaseNext(cmd *cobra.Command, args []string) error {
-	return runVersionBump(semver.PreReleaseNext)
+	return runVersionBump(semver.PreRelease)
 }
 
 func bumpPreReleaseMajor(cmd *cobra.Command, args []string) error {

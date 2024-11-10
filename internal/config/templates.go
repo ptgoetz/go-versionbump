@@ -2,7 +2,7 @@ package config
 
 const DefaultConfigTemplate = `# The current version of the project. This is the source of truth for the project version. 
 # Set this once and let VersionBump manage it.
-version: "{{.Version}}" 
+version: "{{.version}}" 
 
 # Git configuration (optional)
 git-commit: {{ .GitCommit }} # Whether to create a git commit for the version bump.

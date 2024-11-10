@@ -24,7 +24,7 @@ const (
 	Major           VersionPart = "major"
 	Minor           VersionPart = "minor"
 	Patch           VersionPart = "patch"
-	PreReleaseNext  VersionPart = "prerelease-next"
+	PreRelease      VersionPart = "prerelease"
 	PreReleaseMajor VersionPart = "prerelease-major"
 	PreReleaseMinor VersionPart = "prerelease-minor"
 	PreReleasePatch VersionPart = "prerelease-patch"
@@ -39,7 +39,7 @@ func versionPartInt(part VersionPart) int {
 		return vMinor
 	case Patch:
 		return vPatch
-	case PreReleaseNext:
+	case PreRelease:
 		return prNext
 	case PreReleaseMajor:
 		return prMajor
@@ -55,9 +55,9 @@ func versionPartInt(part VersionPart) int {
 }
 
 type SemVersion struct {
-	Version           *Version
-	PreReleaseVersion *PreReleaseVersion
-	Build             *Build
+	version           *Version
+	preReleaseVersion *preReleaseVersion
+	b                 *build
 }
 
 // String returns the version string
@@ -65,12 +65,12 @@ func (v *SemVersion) String() string {
 	if v == nil {
 		return ""
 	}
-	version := v.Version.String()
-	if v.PreReleaseVersion != nil && v.PreReleaseVersion.String() != "" {
-		version += "-" + v.PreReleaseVersion.String()
+	version := v.version.String()
+	if v.preReleaseVersion != nil && v.preReleaseVersion.String() != "" {
+		version += "-" + v.preReleaseVersion.String()
 	}
-	if v.Build != nil && v.Build.String() != "" {
-		version += "+" + v.Build.String()
+	if v.b != nil && v.b.String() != "" {
+		version += "+" + v.b.String()
 	}
 	return version
 }
@@ -80,39 +80,39 @@ func (v *SemVersion) String() string {
 // be provided. If the part is a root version part, preReleaseLabels and buildLabel are ignored.
 func (v *SemVersion) Bump(part VersionPart, preReleaseLabels []string, buildLabel string) (*SemVersion, error) {
 	var version *Version
-	var preReleaseVersion *PreReleaseVersion
-	var build *Build
+	var preReleaseVersion *preReleaseVersion
+	var build *build
 	var err error
 	versionPart := versionPartInt(part)
 	if versionPart >= vMajor && versionPart <= vPatch {
 		// bump the root version
-		version = v.Version.bump(versionPart)
+		version = v.version.bump(versionPart)
 
 		// reset all pre-release versions
-		preReleaseVersion = NewPrereleaseVersion("", 0, 0, 0)
+		preReleaseVersion = newPrereleaseVersion("", 0, 0, 0)
 	} else if versionPart >= prNext && versionPart <= prPatch {
-		version = newVersion(v.Version.major, v.Version.minor, v.Version.patch)
-		preReleaseVersion, err = v.PreReleaseVersion.Bump(versionPart, preReleaseLabels)
+		version = newVersion(v.version.major, v.version.minor, v.version.patch)
+		preReleaseVersion, err = v.preReleaseVersion.bump(versionPart, preReleaseLabels)
 		if err != nil {
 			fmt.Printf("Error: %v\n", err)
 			return nil, err
 		}
 
 	} else if versionPart == prBuild {
-		version = newVersion(v.Version.major, v.Version.minor, v.Version.patch)
-		preReleaseVersion = NewPrereleaseVersion(v.PreReleaseVersion.Label, v.PreReleaseVersion.Version.major, v.PreReleaseVersion.Version.minor, v.PreReleaseVersion.Version.patch)
-		if v.Build != nil {
-			build = v.Build.Bump()
+		version = newVersion(v.version.major, v.version.minor, v.version.patch)
+		preReleaseVersion = newPrereleaseVersion(v.preReleaseVersion.label, v.preReleaseVersion.version.major, v.preReleaseVersion.version.minor, v.preReleaseVersion.version.patch)
+		if v.b != nil {
+			build = v.b.bump()
 		} else {
-			build = NewBuild(buildLabel, 1)
+			build = newBuild(buildLabel, 1)
 		}
 	} else {
 		return nil, fmt.Errorf("invalid version part: %d", versionPart)
 	}
 	return &SemVersion{
-		Version:           version,
-		PreReleaseVersion: preReleaseVersion,
-		Build:             build,
+		version:           version,
+		preReleaseVersion: preReleaseVersion,
+		b:                 build,
 	}, nil
 
 }
@@ -120,46 +120,46 @@ func (v *SemVersion) Bump(part VersionPart, preReleaseLabels []string, buildLabe
 // Compare compares two SemVersion instances.
 // Returns -1 if v is less than other, 1 if v is greater than other, and 0 if they are equal.
 func (v *SemVersion) Compare(other *SemVersion) int {
-	if v.Version.major != other.Version.major {
-		if v.Version.major < other.Version.major {
+	if v.version.major != other.version.major {
+		if v.version.major < other.version.major {
 			return -1
 		}
 		return 1
 	}
 
-	if v.Version.minor != other.Version.minor {
-		if v.Version.minor < other.Version.minor {
+	if v.version.minor != other.version.minor {
+		if v.version.minor < other.version.minor {
 			return -1
 		}
 		return 1
 	}
 
-	if v.Version.patch != other.Version.patch {
-		if v.Version.patch < other.Version.patch {
+	if v.version.patch != other.version.patch {
+		if v.version.patch < other.version.patch {
 			return -1
 		}
 		return 1
 	}
 
-	if v.PreReleaseVersion != nil && other.PreReleaseVersion != nil {
-		preReleaseComparison := v.PreReleaseVersion.Compare(other.PreReleaseVersion)
+	if v.preReleaseVersion != nil && other.preReleaseVersion != nil {
+		preReleaseComparison := v.preReleaseVersion.Compare(other.preReleaseVersion)
 		if preReleaseComparison != 0 {
 			return preReleaseComparison
 		}
-	} else if v.PreReleaseVersion != nil {
+	} else if v.preReleaseVersion != nil {
 		return -1
-	} else if other.PreReleaseVersion != nil {
+	} else if other.preReleaseVersion != nil {
 		return 1
 	}
 
-	if v.Build != nil && other.Build != nil {
-		buildComparison := v.Build.Compare(other.Build)
+	if v.b != nil && other.b != nil {
+		buildComparison := v.b.Compare(other.b)
 		if buildComparison != 0 {
 			return buildComparison
 		}
-	} else if v.Build != nil {
+	} else if v.b != nil {
 		return 1
-	} else if other.Build != nil {
+	} else if other.b != nil {
 		return -1
 	}
 
@@ -196,19 +196,19 @@ func ParseSemVersion(versionStr string) (*SemVersion, error) {
 	if err != nil {
 		return nil, err
 	}
-	preReleaseVersion, err := ParsePrereleaseVersion(preReleasePart)
+	preReleaseVersion, err := parsePrereleaseVersion(preReleasePart)
 	if err != nil {
 		return nil, err
 	}
 
-	build, err := ParseBuild(buildPart)
+	build, err := parseBuild(buildPart)
 	if err != nil {
 		return nil, err
 	}
 	return &SemVersion{
-		Version:           version,
-		PreReleaseVersion: preReleaseVersion,
-		Build:             build,
+		version:           version,
+		preReleaseVersion: preReleaseVersion,
+		b:                 build,
 	}, nil
 }
 
