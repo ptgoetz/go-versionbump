@@ -254,18 +254,7 @@ func InitVersionBumpProject(opts config.Options) error {
 		return fmt.Errorf("configuration file already exists: %s", opts.InitOpts.File)
 	}
 
-	conf := &config.Config{
-		Version:   "0.0.0",
-		GitSign:   false,
-		GitCommit: false,
-		GitTag:    false,
-		//Files:                 []config.File{"VERSION"},
-		GitTagTemplate:        config.DefaultGitTagTemplate,
-		GitTagMessageTemplate: config.DefaultGitTagMessageTemplate,
-		GitCommitTemplate:     config.DefaultGitCommitTemplate,
-		BuildLabel:            "build",
-		PreReleaseLabels:      []string{"alpha", "beta", "rc"},
-	}
+	conf := config.NewConfig()
 
 	// prompt the user for pre-release labels
 	prLabels := promptUserForValue(

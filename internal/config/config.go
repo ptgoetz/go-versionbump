@@ -14,6 +14,12 @@ const (
 	DefaultGitCommitTemplate     = "bump version {old} --> {new}"
 	DefaultGitTagTemplate        = "v{new}"
 	DefaultGitTagMessageTemplate = "Release version {new}"
+	DefaultBuildLabel            = "build"
+)
+
+var (
+	DetaultPreReleaseLabels = []string{"alpha", "beta", "rc"}
+	DefaultVersion          = "0.0.0"
 )
 
 // Config represents the version bump configuration.
@@ -163,4 +169,20 @@ func LoadConfig(filePath string) (*Config, string, error) {
 		configPtr.GitTagMessageTemplate = DefaultGitTagMessageTemplate
 	}
 	return configPtr, root, nil
+}
+
+// NewConfig creates a new Config instance with default values
+func NewConfig() *Config {
+	return &Config{
+		Version:               DefaultVersion,
+		BuildLabel:            DefaultBuildLabel,
+		PreReleaseLabels:      DetaultPreReleaseLabels,
+		GitCommit:             false,
+		GitCommitTemplate:     DefaultGitCommitTemplate,
+		GitSign:               false,
+		GitTag:                false,
+		GitTagTemplate:        DefaultGitTagTemplate,
+		GitTagMessageTemplate: DefaultGitTagMessageTemplate,
+		Files:                 []VersionedFile{},
+	}
 }
