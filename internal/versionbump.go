@@ -240,18 +240,6 @@ func (vb *VersionBump) ShowEffectiveConfig() error {
 	logVerbose(vb.Options, "Effective Configuration YAML:")
 
 	conf := &vb.Config
-	// TODO: we should be loading the default configuration and merging it with the user configuration
-	// set defaults if not overridden
-	if conf.GitCommitTemplate == "" {
-		conf.GitCommitTemplate = config.DefaultGitCommitTemplate
-	}
-	if conf.GitTagTemplate == "" {
-		conf.GitTagTemplate = config.DefaultGitTagTemplate
-	}
-	if conf.GitTagMessageTemplate == "" {
-		conf.GitTagMessageTemplate = config.DefaultGitTagMessageTemplate
-	}
-
 	b, err := yaml.Marshal(conf)
 	if err != nil {
 		return err
