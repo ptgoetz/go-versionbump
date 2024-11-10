@@ -8,25 +8,25 @@ import (
 	"strings"
 )
 
-// preReleaseVersion is similar to Version, but its string representation is reduced by removing trailing ".0"
-type preReleaseVersion struct {
+// PreReleaseVersion is similar to Version, but its string representation is reduced by removing trailing ".0"
+type PreReleaseVersion struct {
 	version *Version
 	label   string
 }
 
-// newPrereleaseVersion creates a new immutable preReleaseVersion instance
-func newPrereleaseVersion(label string, major int, minor int, patch int) *preReleaseVersion {
+// newPrereleaseVersion creates a new immutable PreReleaseVersion instance
+func newPrereleaseVersion(label string, major int, minor int, patch int) *PreReleaseVersion {
 	version := newVersion(major, minor, patch)
-	return &preReleaseVersion{
+	return &PreReleaseVersion{
 		label:   label,
 		version: version,
 	}
 }
 
-// parsePrereleaseVersion parses a version string and returns a new preReleaseVersion instance.
+// parsePrereleaseVersion parses a version string and returns a new PreReleaseVersion instance.
 // It handles versions with 1, 2, or 3 parts. E.g., "1" becomes "1.0.0", "1.2" becomes "1.2.0".
-func parsePrereleaseVersion(versionStr string) (*preReleaseVersion, error) {
-	// alpha+build.1
+func parsePrereleaseVersion(versionStr string) (*PreReleaseVersion, error) {
+	// alpha+BuildVersion.1
 	// alpha.1
 	parts := strings.Split(versionStr, "+")
 
@@ -86,8 +86,16 @@ func parsePrereleaseVersion(versionStr string) (*preReleaseVersion, error) {
 	return newPrereleaseVersion(label, major, minor, patch), nil
 }
 
+func (v *PreReleaseVersion) Label() string {
+	return v.label
+}
+
+func (v *PreReleaseVersion) Version() Version {
+	return *v.version
+}
+
 // String returns the reduced version string by removing trailing ".0" parts
-func (v *preReleaseVersion) String() string {
+func (v *PreReleaseVersion) String() string {
 	var retval string
 	if v.version.patch != 0 {
 		retval = fmt.Sprintf("%d.%d.%d", v.version.major, v.version.minor, v.version.patch)
@@ -109,9 +117,9 @@ func (v *preReleaseVersion) String() string {
 	return retval
 }
 
-// Compare compares two preReleaseVersion instances.
+// Compare compares two PreReleaseVersion instances.
 // Returns -1 if v is less than other, 1 if v is greater than other, and 0 if they are equal.
-func (v *preReleaseVersion) Compare(other *preReleaseVersion) int {
+func (v *PreReleaseVersion) Compare(other *PreReleaseVersion) int {
 	if v.label != other.label {
 		if v.label < other.label {
 			return -1
@@ -143,10 +151,10 @@ func (v *preReleaseVersion) Compare(other *preReleaseVersion) int {
 	return 0
 }
 
-// bump returns a new preReleaseVersion instance after incrementing the specified part
-func (v *preReleaseVersion) bump(versionPart int, preReleaseLabels []string) (*preReleaseVersion, error) {
+// bump returns a new PreReleaseVersion instance after incrementing the specified part
+func (v *PreReleaseVersion) bump(versionPart int, preReleaseLabels []string) (*PreReleaseVersion, error) {
 	if len(preReleaseLabels) == 0 {
-		panic("preReleaseVersion.bump(): preReleaseLabels cannot be empty")
+		panic("PreReleaseVersion.bump(): preReleaseLabels cannot be empty")
 	}
 	// sort pre-release labels
 	sort.Strings(preReleaseLabels)
@@ -169,7 +177,7 @@ func (v *preReleaseVersion) bump(versionPart int, preReleaseLabels []string) (*p
 	case prPatch:
 		return newPrereleaseVersion(label, v.version.major, v.version.minor, v.version.patch+1), nil
 	case prNext:
-		// find the index of the current label
+		// find the number of the current label
 		idx := indexOf(label, preReleaseLabels)
 		// if the version being bumped has no label, return the first label
 		offset := 1

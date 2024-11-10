@@ -16,8 +16,8 @@ func TestParseSemVersion(t *testing.T) {
 		{"1.2.3", "1.2.3", false},
 		{"1.0.0-alpha", "1.0.0-alpha", false},
 		{"1.0.0-alpha.1", "1.0.0-alpha.1", false},
-		{"1.0.0-alpha+build.1", "1.0.0-alpha+build.1", false},
-		{"1.0.0+build.1", "1.0.0+build.1", false},
+		{"1.0.0-alpha+BuildVersion.1", "1.0.0-alpha+BuildVersion.1", false},
+		{"1.0.0+BuildVersion.1", "1.0.0+BuildVersion.1", false},
 		{"2.0", "", true},     // Should fail as it's not a valid semantic version
 		{"", "", true},        // Empty version string should fail
 		{"1.2.3.4", "", true}, // Invalid semver format
@@ -106,9 +106,9 @@ func TestSemVersion_Compare(t *testing.T) {
 		{"1.0.0-alpha", "1.0.0-beta", -1},
 		{"1.0.0-beta", "1.0.0-alpha", 1},
 		{"1.0.0-alpha", "1.0.0-alpha", 0},
-		{"1.0.0-alpha+build.1", "1.0.0-alpha+build.2", -1},
-		{"1.0.0-alpha+build.2", "1.0.0-alpha+build.1", 1},
-		{"1.0.0-alpha+build.1", "1.0.0-alpha+build.1", 0},
+		{"1.0.0-alpha+BuildVersion.1", "1.0.0-alpha+BuildVersion.2", -1},
+		{"1.0.0-alpha+BuildVersion.2", "1.0.0-alpha+BuildVersion.1", 1},
+		{"1.0.0-alpha+BuildVersion.1", "1.0.0-alpha+BuildVersion.1", 0},
 	}
 
 	for _, test := range tests {

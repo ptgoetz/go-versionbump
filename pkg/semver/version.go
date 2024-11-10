@@ -57,3 +57,15 @@ func (v *Version) bump(versionPart int) *Version {
 		panic(fmt.Sprintf("invalid version part: %d.\n", versionPart))
 	}
 }
+
+func (v *Version) Major() int {
+	return v.major
+}
+
+func (v *Version) Minor() int {
+	return v.minor
+}
+
+func (v *Version) Patch() int {
+	return v.patch
+}

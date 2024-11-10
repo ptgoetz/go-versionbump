@@ -28,7 +28,7 @@ const (
 	PreReleaseMajor VersionPart = "prerelease-major"
 	PreReleaseMinor VersionPart = "prerelease-minor"
 	PreReleasePatch VersionPart = "prerelease-patch"
-	PreReleaseBuild VersionPart = "prerelease-build"
+	PreReleaseBuild VersionPart = "prerelease-BuildVersion"
 )
 
 func versionPartInt(part VersionPart) int {
@@ -56,8 +56,20 @@ func versionPartInt(part VersionPart) int {
 
 type SemVersion struct {
 	version           *Version
-	preReleaseVersion *preReleaseVersion
-	b                 *build
+	preReleaseVersion *PreReleaseVersion
+	buildVersion      *BuildVersion
+}
+
+func (v *SemVersion) RootVersion() Version {
+	return *v.version
+}
+
+func (v *SemVersion) PreReleaseVersion() PreReleaseVersion {
+	return *v.preReleaseVersion
+}
+
+func (v *SemVersion) BuildVersion() BuildVersion {
+	return *v.buildVersion
 }
 
 // String returns the version string
@@ -69,19 +81,19 @@ func (v *SemVersion) String() string {
 	if v.preReleaseVersion != nil && v.preReleaseVersion.String() != "" {
 		version += "-" + v.preReleaseVersion.String()
 	}
-	if v.b != nil && v.b.String() != "" {
-		version += "+" + v.b.String()
+	if v.buildVersion != nil && v.buildVersion.String() != "" {
+		version += "+" + v.buildVersion.String()
 	}
 	return version
 }
 
 // Bump returns a new SemVersion instance after incrementing the specified part.
-// If the part is a pre-release part, preReleaseLabels must be provided. If the part is a build part, buildLabel must
+// If the part is a pre-release part, preReleaseLabels must be provided. If the part is a BuildVersion part, buildLabel must
 // be provided. If the part is a root version part, preReleaseLabels and buildLabel are ignored.
 func (v *SemVersion) Bump(part VersionPart, preReleaseLabels []string, buildLabel string) (*SemVersion, error) {
 	var version *Version
-	var preReleaseVersion *preReleaseVersion
-	var build *build
+	var preReleaseVersion *PreReleaseVersion
+	var build *BuildVersion
 	var err error
 	versionPart := versionPartInt(part)
 	if versionPart >= vMajor && versionPart <= vPatch {
@@ -101,8 +113,8 @@ func (v *SemVersion) Bump(part VersionPart, preReleaseLabels []string, buildLabe
 	} else if versionPart == prBuild {
 		version = newVersion(v.version.major, v.version.minor, v.version.patch)
 		preReleaseVersion = newPrereleaseVersion(v.preReleaseVersion.label, v.preReleaseVersion.version.major, v.preReleaseVersion.version.minor, v.preReleaseVersion.version.patch)
-		if v.b != nil {
-			build = v.b.bump()
+		if v.buildVersion != nil {
+			build = v.buildVersion.bump()
 		} else {
 			build = newBuild(buildLabel, 1)
 		}
@@ -112,7 +124,7 @@ func (v *SemVersion) Bump(part VersionPart, preReleaseLabels []string, buildLabe
 	return &SemVersion{
 		version:           version,
 		preReleaseVersion: preReleaseVersion,
-		b:                 build,
+		buildVersion:      build,
 	}, nil
 
 }
@@ -152,14 +164,14 @@ func (v *SemVersion) Compare(other *SemVersion) int {
 		return 1
 	}
 
-	if v.b != nil && other.b != nil {
-		buildComparison := v.b.Compare(other.b)
+	if v.buildVersion != nil && other.buildVersion != nil {
+		buildComparison := v.buildVersion.Compare(other.buildVersion)
 		if buildComparison != 0 {
 			return buildComparison
 		}
-	} else if v.b != nil {
+	} else if v.buildVersion != nil {
 		return 1
-	} else if other.b != nil {
+	} else if other.buildVersion != nil {
 		return -1
 	}
 
@@ -186,7 +198,7 @@ func ParseSemVersion(versionStr string) (*SemVersion, error) {
 		parts := strings.Split(versionStr, "+")
 		rootPart = parts[0]
 		buildPart = parts[1]
-	} else if !isBuild && isPreRelease { // pre-release and no build
+	} else if !isBuild && isPreRelease { // pre-release and no BuildVersion
 		parts := strings.Split(versionStr, "-")
 		rootPart = parts[0]
 		preReleasePart = parts[1]
@@ -208,7 +220,7 @@ func ParseSemVersion(versionStr string) (*SemVersion, error) {
 	return &SemVersion{
 		version:           version,
 		preReleaseVersion: preReleaseVersion,
-		b:                 build,
+		buildVersion:      build,
 	}, nil
 }
 
