@@ -23,7 +23,7 @@ func newPrereleaseVersion(label string, major int, minor int, patch int) *PreRel
 	}
 }
 
-// parsePrereleaseVersion parses a version string and returns a new PreReleaseVersion instance.
+// parsePrereleaseVersion parses a rootVersion string and returns a new PreReleaseVersion instance.
 // It handles versions with 1, 2, or 3 parts. E.g., "1" becomes "1.0.0", "1.2" becomes "1.2.0".
 func parsePrereleaseVersion(versionStr string) (*PreReleaseVersion, error) {
 	// alpha+BuildVersion.1
@@ -47,39 +47,39 @@ func parsePrereleaseVersion(versionStr string) (*PreReleaseVersion, error) {
 
 	switch len(vals) {
 	case 0:
-		// No version parts provided, e.g. "alpha"
+		// No rootVersion parts provided, e.g. "alpha"
 		major, minor, patch = 0, 0, 0
 	case 1:
 		// Only major part provided, e.g. "1"
 		major, err = strconv.Atoi(vals[0])
 		if err != nil {
-			return nil, fmt.Errorf("invalid major version: %s", vals[0])
+			return nil, fmt.Errorf("invalid major rootVersion: %s", vals[0])
 		}
 		minor, patch = 0, 0
 	case 2:
 		// Major and minor parts provided, e.g. "1.2"
 		major, err = strconv.Atoi(vals[0])
 		if err != nil {
-			return nil, fmt.Errorf("invalid major version: %s", vals[0])
+			return nil, fmt.Errorf("invalid major rootVersion: %s", vals[0])
 		}
 		minor, err = strconv.Atoi(vals[1])
 		if err != nil {
-			return nil, fmt.Errorf("invalid minor version: %s", vals[1])
+			return nil, fmt.Errorf("invalid minor rootVersion: %s", vals[1])
 		}
 		patch = 0
 	case 3:
-		// Full semantic version provided, e.g. "1.2.3"
+		// Full semantic rootVersion provided, e.g. "1.2.3"
 		major, err = strconv.Atoi(vals[0])
 		if err != nil {
-			return nil, fmt.Errorf("invalid major version: %s", vals[0])
+			return nil, fmt.Errorf("invalid major rootVersion: %s", vals[0])
 		}
 		minor, err = strconv.Atoi(vals[1])
 		if err != nil {
-			return nil, fmt.Errorf("invalid minor version: %s", vals[1])
+			return nil, fmt.Errorf("invalid minor rootVersion: %s", vals[1])
 		}
 		patch, err = strconv.Atoi(vals[2])
 		if err != nil {
-			return nil, fmt.Errorf("invalid patch version: %s", vals[2])
+			return nil, fmt.Errorf("invalid patch rootVersion: %s", vals[2])
 		}
 	}
 
@@ -94,7 +94,7 @@ func (v *PreReleaseVersion) Version() Version {
 	return *v.version
 }
 
-// String returns the reduced version string by removing trailing ".0" parts
+// String returns the reduced rootVersion string by removing trailing ".0" parts
 func (v *PreReleaseVersion) String() string {
 	var retval string
 	if v.version.patch != 0 {
@@ -158,7 +158,7 @@ func (v *PreReleaseVersion) bump(versionPart int, preReleaseLabels []string) (*P
 	}
 	// sort pre-release labels
 	sort.Strings(preReleaseLabels)
-	// if the label is empty, this is the first pre-release version, so return the first label
+	// if the label is empty, this is the first pre-release rootVersion, so return the first label
 	label := v.label
 	if v.label == "" {
 		label = preReleaseLabels[0]
@@ -179,7 +179,7 @@ func (v *PreReleaseVersion) bump(versionPart int, preReleaseLabels []string) (*P
 	case prNext:
 		// find the number of the current label
 		idx := indexOf(label, preReleaseLabels)
-		// if the version being bumped has no label, return the first label
+		// if the rootVersion being bumped has no label, return the first label
 		offset := 1
 		if v.label == "" {
 			offset = 0
@@ -192,7 +192,7 @@ func (v *PreReleaseVersion) bump(versionPart int, preReleaseLabels []string) (*P
 			return newPrereleaseVersion(preReleaseLabels[idx+offset], 0, 0, 0), nil
 		}
 	default:
-		panic(fmt.Sprintf("invalid version part: %d.\n", versionPart))
+		panic(fmt.Sprintf("invalid rootVersion part: %d.\n", versionPart))
 	}
 }
 

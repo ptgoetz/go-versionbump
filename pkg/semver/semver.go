@@ -50,34 +50,34 @@ func versionPartInt(part VersionPart) int {
 	case PreReleaseBuild:
 		return prBuild
 	default:
-		panic(fmt.Sprintf("invalid version part: %s", part))
+		panic(fmt.Sprintf("invalid rootVersion part: %s", part))
 	}
 }
 
-type SemVersion struct {
-	version           *Version
+type SemanticVersion struct {
+	rootVersion       *Version
 	preReleaseVersion *PreReleaseVersion
 	buildVersion      *BuildVersion
 }
 
-func (v *SemVersion) RootVersion() Version {
-	return *v.version
+func (v *SemanticVersion) RootVersion() Version {
+	return *v.rootVersion
 }
 
-func (v *SemVersion) PreReleaseVersion() PreReleaseVersion {
+func (v *SemanticVersion) PreReleaseVersion() PreReleaseVersion {
 	return *v.preReleaseVersion
 }
 
-func (v *SemVersion) BuildVersion() BuildVersion {
+func (v *SemanticVersion) BuildVersion() BuildVersion {
 	return *v.buildVersion
 }
 
-// String returns the version string
-func (v *SemVersion) String() string {
+// String returns the rootVersion string
+func (v *SemanticVersion) String() string {
 	if v == nil {
 		return ""
 	}
-	version := v.version.String()
+	version := v.rootVersion.String()
 	if v.preReleaseVersion != nil && v.preReleaseVersion.String() != "" {
 		version += "-" + v.preReleaseVersion.String()
 	}
@@ -87,23 +87,23 @@ func (v *SemVersion) String() string {
 	return version
 }
 
-// Bump returns a new SemVersion instance after incrementing the specified part.
+// Bump returns a new SemanticVersion instance after incrementing the specified part.
 // If the part is a pre-release part, preReleaseLabels must be provided. If the part is a BuildVersion part, buildLabel must
-// be provided. If the part is a root version part, preReleaseLabels and buildLabel are ignored.
-func (v *SemVersion) Bump(part VersionPart, preReleaseLabels []string, buildLabel string) (*SemVersion, error) {
+// be provided. If the part is a root rootVersion part, preReleaseLabels and buildLabel are ignored.
+func (v *SemanticVersion) Bump(part VersionPart, preReleaseLabels []string, buildLabel string) (*SemanticVersion, error) {
 	var version *Version
 	var preReleaseVersion *PreReleaseVersion
 	var build *BuildVersion
 	var err error
 	versionPart := versionPartInt(part)
 	if versionPart >= vMajor && versionPart <= vPatch {
-		// bump the root version
-		version = v.version.bump(versionPart)
+		// bump the root rootVersion
+		version = v.rootVersion.bump(versionPart)
 
 		// reset all pre-release versions
 		preReleaseVersion = newPrereleaseVersion("", 0, 0, 0)
 	} else if versionPart >= prNext && versionPart <= prPatch {
-		version = newVersion(v.version.major, v.version.minor, v.version.patch)
+		version = newVersion(v.rootVersion.major, v.rootVersion.minor, v.rootVersion.patch)
 		preReleaseVersion, err = v.preReleaseVersion.bump(versionPart, preReleaseLabels)
 		if err != nil {
 			fmt.Printf("Error: %v\n", err)
@@ -111,7 +111,7 @@ func (v *SemVersion) Bump(part VersionPart, preReleaseLabels []string, buildLabe
 		}
 
 	} else if versionPart == prBuild {
-		version = newVersion(v.version.major, v.version.minor, v.version.patch)
+		version = newVersion(v.rootVersion.major, v.rootVersion.minor, v.rootVersion.patch)
 		preReleaseVersion = newPrereleaseVersion(v.preReleaseVersion.label, v.preReleaseVersion.version.major, v.preReleaseVersion.version.minor, v.preReleaseVersion.version.patch)
 		if v.buildVersion != nil {
 			build = v.buildVersion.bump()
@@ -119,35 +119,35 @@ func (v *SemVersion) Bump(part VersionPart, preReleaseLabels []string, buildLabe
 			build = newBuild(buildLabel, 1)
 		}
 	} else {
-		return nil, fmt.Errorf("invalid version part: %d", versionPart)
+		return nil, fmt.Errorf("invalid rootVersion part: %d", versionPart)
 	}
-	return &SemVersion{
-		version:           version,
+	return &SemanticVersion{
+		rootVersion:       version,
 		preReleaseVersion: preReleaseVersion,
 		buildVersion:      build,
 	}, nil
 
 }
 
-// Compare compares two SemVersion instances.
+// Compare compares two SemanticVersion instances.
 // Returns -1 if v is less than other, 1 if v is greater than other, and 0 if they are equal.
-func (v *SemVersion) Compare(other *SemVersion) int {
-	if v.version.major != other.version.major {
-		if v.version.major < other.version.major {
+func (v *SemanticVersion) Compare(other *SemanticVersion) int {
+	if v.rootVersion.major != other.rootVersion.major {
+		if v.rootVersion.major < other.rootVersion.major {
 			return -1
 		}
 		return 1
 	}
 
-	if v.version.minor != other.version.minor {
-		if v.version.minor < other.version.minor {
+	if v.rootVersion.minor != other.rootVersion.minor {
+		if v.rootVersion.minor < other.rootVersion.minor {
 			return -1
 		}
 		return 1
 	}
 
-	if v.version.patch != other.version.patch {
-		if v.version.patch < other.version.patch {
+	if v.rootVersion.patch != other.rootVersion.patch {
+		if v.rootVersion.patch < other.rootVersion.patch {
 			return -1
 		}
 		return 1
@@ -178,8 +178,8 @@ func (v *SemVersion) Compare(other *SemVersion) int {
 	return 0
 }
 
-// ParseSemVersion parses a semantic version string and returns a new SemVersion instance
-func ParseSemVersion(versionStr string) (*SemVersion, error) {
+// ParseSemVersion parses a semantic rootVersion string and returns a new SemanticVersion instance
+func ParseSemVersion(versionStr string) (*SemanticVersion, error) {
 	isPreRelease := strings.Contains(versionStr, "-")
 	isBuild := strings.Contains(versionStr, "+")
 
@@ -217,14 +217,14 @@ func ParseSemVersion(versionStr string) (*SemVersion, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &SemVersion{
-		version:           version,
+	return &SemanticVersion{
+		rootVersion:       version,
 		preReleaseVersion: preReleaseVersion,
 		buildVersion:      build,
 	}, nil
 }
 
-// ValidateSemVersion checks if the provided version string is a valid semantic version
+// ValidateSemVersion checks if the provided rootVersion string is a valid semantic rootVersion
 func ValidateSemVersion(versionStr string) bool {
 	_, err := ParseSemVersion(versionStr)
 	return err == nil
@@ -252,7 +252,7 @@ func ValidatePreReleaseLabelsString(preReleaseLabels string) bool {
 	return ValidatePreReleaseLabels(labels)
 }
 
-func SortVersions(versions []*SemVersion) {
+func SortVersions(versions []*SemanticVersion) {
 	sort.Slice(versions, func(i, j int) bool {
 		return versions[i].Compare(versions[j]) > 0
 	})

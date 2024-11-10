@@ -18,8 +18,8 @@ func TestParseSemVersion(t *testing.T) {
 		{"1.0.0-alpha.1", "1.0.0-alpha.1", false},
 		{"1.0.0-alpha+BuildVersion.1", "1.0.0-alpha+BuildVersion.1", false},
 		{"1.0.0+BuildVersion.1", "1.0.0+BuildVersion.1", false},
-		{"2.0", "", true},     // Should fail as it's not a valid semantic version
-		{"", "", true},        // Empty version string should fail
+		{"2.0", "", true},     // Should fail as it's not a valid semantic rootVersion
+		{"", "", true},        // Empty rootVersion string should fail
 		{"1.2.3.4", "", true}, // Invalid semver format
 	}
 
@@ -29,21 +29,21 @@ func TestParseSemVersion(t *testing.T) {
 
 			if test.shouldFail {
 				// Assert an error was returned
-				assert.Error(t, err, "expected an error for version %s", test.versionStr)
+				assert.Error(t, err, "expected an error for rootVersion %s", test.versionStr)
 			} else {
 				// Assert no error was returned
-				assert.NoError(t, err, "unexpected error for version %s", test.versionStr)
+				assert.NoError(t, err, "unexpected error for rootVersion %s", test.versionStr)
 
 				semVerStr := semVer.String()
-				// Assert the parsed version matches the expected output
-				assert.Equal(t, sv.IsValid("v"+semVerStr), true, "expected a valid semver version")
+				// Assert the parsed rootVersion matches the expected output
+				assert.Equal(t, sv.IsValid("v"+semVerStr), true, "expected a valid semver rootVersion")
 				assert.Equal(t, test.expected, semVer.String(), "expected %s, got %s", test.expected, semVerStr)
 			}
 		})
 	}
 }
 
-// TestBumpPreRelease ensures that bumping the version correctly returns a new subversion instance
+// TestBumpPreRelease ensures that bumping the rootVersion correctly returns a new subversion instance
 func TestSemVersion_Bump(t *testing.T) {
 	buildLabel := "ptgoetz"
 	preReleaseLabels := []string{"alpha", "beta", "rc"}
@@ -71,19 +71,19 @@ func TestSemVersion_Bump(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Unexpected error for input %s: %v", test.input, err)
 		}
-		assert.Equal(t, sv.IsValid("v"+version.String()), true, "expected a valid semver version")
+		assert.Equal(t, sv.IsValid("v"+version.String()), true, "expected a valid semver rootVersion")
 
 		bumped, err := version.Bump(test.bumpType, preReleaseLabels, buildLabel)
 
 		if test.shouldFail {
 			// Assert an error was returned
-			assert.Error(t, err, "expected an error for version %s", test.input)
+			assert.Error(t, err, "expected an error for rootVersion %s", test.input)
 		} else {
 
 			// Assert no error was returned
-			assert.NoError(t, err, "unexpected error for version %s", test.input)
+			assert.NoError(t, err, "unexpected error for rootVersion %s", test.input)
 			result := bumped.String()
-			assert.Equal(t, sv.IsValid("v"+result), true, "expected a valid semver version")
+			assert.Equal(t, sv.IsValid("v"+result), true, "expected a valid semver rootVersion")
 			assert.Equal(t, test.expected, result, "expected %s, got %s", test.expected, result)
 		}
 
@@ -114,10 +114,10 @@ func TestSemVersion_Compare(t *testing.T) {
 	for _, test := range tests {
 		t.Run(fmt.Sprintf("%s vs %s", test.version1, test.version2), func(t *testing.T) {
 			semVer1, err := ParseSemVersion(test.version1)
-			assert.NoError(t, err, "unexpected error for version %s", test.version1)
+			assert.NoError(t, err, "unexpected error for rootVersion %s", test.version1)
 
 			semVer2, err := ParseSemVersion(test.version2)
-			assert.NoError(t, err, "unexpected error for version %s", test.version2)
+			assert.NoError(t, err, "unexpected error for rootVersion %s", test.version2)
 
 			result := semVer1.Compare(semVer2)
 			assert.Equal(t, test.expected, result, "expected %d, got %d", test.expected, result)

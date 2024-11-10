@@ -78,7 +78,7 @@ func (vb *VersionBump) ShowVersion() {
 	fmt.Println(vb.Config.Version)
 }
 
-func checkBumpError(v *semver.SemVersion, err error) string {
+func checkBumpError(v *semver.SemanticVersion, err error) string {
 	if err != nil {
 		return "Not Possible"
 	} else {
@@ -190,12 +190,12 @@ func (vb *VersionBump) LatestVersion() error {
 	return nil
 }
 
-func (vb *VersionBump) GetSortedVersions() ([]*semver.SemVersion, error) {
+func (vb *VersionBump) GetSortedVersions() ([]*semver.SemanticVersion, error) {
 	tags, err := git.GetTags(vb.ParentDir)
 	if err != nil {
 		return nil, err
 	}
-	versions := make([]*semver.SemVersion, 0)
+	versions := make([]*semver.SemanticVersion, 0)
 	for _, tag := range tags {
 		vStr, err := ExtractVersion(vb.Config.GitTagTemplate, tag)
 		if err != nil {

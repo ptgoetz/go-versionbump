@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-// Version represents a semantic version
+// Version represents a semantic rootVersion
 type Version struct {
 	major int
 	minor int
@@ -18,11 +18,11 @@ func newVersion(major int, minor int, patch int) *Version {
 	return &Version{major: major, minor: minor, patch: patch}
 }
 
-// parseVersion parses a version string and returns a new Version instance
+// parseVersion parses a rootVersion string and returns a new Version instance
 func parseVersion(version string) (*Version, error) {
 	vals := strings.Split(version, ".")
 	if len(vals) != 3 {
-		return nil, fmt.Errorf("invalid semantic version string: %s", version)
+		return nil, fmt.Errorf("invalid semantic rootVersion string: %s", version)
 	}
 	major, err := strconv.Atoi(vals[vMajor])
 	if err != nil {
@@ -39,7 +39,7 @@ func parseVersion(version string) (*Version, error) {
 	return newVersion(major, minor, patch), nil
 }
 
-// String returns the version string
+// String returns the rootVersion string
 func (v *Version) String() string {
 	return fmt.Sprintf("%d.%d.%d", v.major, v.minor, v.patch)
 }
@@ -54,7 +54,7 @@ func (v *Version) bump(versionPart int) *Version {
 	case vPatch:
 		return newVersion(v.major, v.minor, v.patch+1)
 	default:
-		panic(fmt.Sprintf("invalid version part: %d.\n", versionPart))
+		panic(fmt.Sprintf("invalid rootVersion part: %d.\n", versionPart))
 	}
 }
 
