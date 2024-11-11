@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"github.com/ptgoetz/go-versionbump/internal/config"
 	"github.com/ptgoetz/go-versionbump/internal/git"
-	"github.com/ptgoetz/go-versionbump/internal/semver"
 	"github.com/ptgoetz/go-versionbump/internal/utils"
 	vbu "github.com/ptgoetz/go-versionbump/internal/utils"
+	"github.com/ptgoetz/go-versionbump/pkg/semver"
 	"gopkg.in/yaml.v2"
 	"os"
 	"path"
@@ -43,7 +43,7 @@ func NewVersionBump(options config.Options) (*VersionBump, error) {
 
 func (vb *VersionBump) GetOldVersion() string {
 	if !semver.ValidateSemVersion(vb.Config.Version) {
-		logFatal(vb.Options, fmt.Sprintf("Failed to parse semantic Version string for old Version: %s", vb.Config.Version))
+		logFatal(vb.Options, fmt.Sprintf("Failed to parse semantic version string for old version: %s", vb.Config.Version))
 	}
 	oldVersion, _ := semver.ParseSemVersion(vb.Config.Version)
 	return oldVersion.String()
@@ -53,7 +53,7 @@ func (vb *VersionBump) GetNewVersion() string {
 	if vb.Options.IsResetVersion() {
 		v, err := semver.ParseSemVersion(vb.Options.ResetVersion)
 		if err != nil {
-			logFatal(vb.Options, fmt.Sprintf("Failed to parse semantic Version string for reset Version: %s", vb.Options.ResetVersion))
+			logFatal(vb.Options, fmt.Sprintf("Failed to parse semantic version string for reset version: %s", vb.Options.ResetVersion))
 		}
 		return v.String()
 	}
@@ -78,9 +78,10 @@ func (vb *VersionBump) ShowVersion() {
 	fmt.Println(vb.Config.Version)
 }
 
-func checkBumpError(v *semver.SemVersion, err error) string {
+func checkBumpError(vb *VersionBump, v *semver.SemanticVersion, err error) string {
 	if err != nil {
-		return "Not Possible"
+		logWarning(vb.Options, err.Error())
+		return "❌"
 	} else {
 		return v.String()
 	}
@@ -101,32 +102,32 @@ func (vb *VersionBump) Show(versionStr string) error {
 	}
 
 	if !isProject {
-		logVerbose(vb.Options, fmt.Sprintf("Potential versioning paths for Version: %s",
+		logVerbose(vb.Options, fmt.Sprintf("Potential versioning paths for version: %s",
 			curVersion.String()))
 	} else {
-		logVerbose(vb.Options, fmt.Sprintf("Potential versioning paths for project Version: %s",
+		logVerbose(vb.Options, fmt.Sprintf("Potential versioning paths for project version: %s",
 			curVersion.String()))
 	}
-	// we now know we have a valid Version
+	// we now know we have a valid version
 	majorVersion, err := curVersion.Bump(semver.Major, vb.Config.PreReleaseLabels, vb.Config.BuildLabel)
-	majorVersionStr := checkBumpError(majorVersion, err)
-	minorVersion, _ := curVersion.Bump(semver.Minor, vb.Config.PreReleaseLabels, vb.Config.BuildLabel)
-	minorVersionStr := checkBumpError(minorVersion, err)
-	patchVersion, _ := curVersion.Bump(semver.Patch, vb.Config.PreReleaseLabels, vb.Config.BuildLabel)
-	patchVersionStr := checkBumpError(patchVersion, err)
-	prNextVersion, _ := curVersion.Bump(semver.PreReleaseNext, vb.Config.PreReleaseLabels, vb.Config.BuildLabel)
-	prNextVersionStr := checkBumpError(prNextVersion, err)
-	prMajorVersion, _ := curVersion.Bump(semver.PreReleaseMajor, vb.Config.PreReleaseLabels, vb.Config.BuildLabel)
-	prMajorVersionStr := checkBumpError(prMajorVersion, err)
-	prMinorVersion, _ := curVersion.Bump(semver.PreReleaseMinor, vb.Config.PreReleaseLabels, vb.Config.BuildLabel)
-	prMinorVersionStr := checkBumpError(prMinorVersion, err)
-	prPatchVersion, _ := curVersion.Bump(semver.PreReleasePatch, vb.Config.PreReleaseLabels, vb.Config.BuildLabel)
-	prPatchVersionStr := checkBumpError(prPatchVersion, err)
-	prBuildVersion, _ := curVersion.Bump(semver.PreReleaseBuild, vb.Config.PreReleaseLabels, vb.Config.BuildLabel)
-	prBuildVersionStr := checkBumpError(prBuildVersion, err)
+	majorVersionStr := checkBumpError(vb, majorVersion, err)
+	minorVersion, err := curVersion.Bump(semver.Minor, vb.Config.PreReleaseLabels, vb.Config.BuildLabel)
+	minorVersionStr := checkBumpError(vb, minorVersion, err)
+	patchVersion, err := curVersion.Bump(semver.Patch, vb.Config.PreReleaseLabels, vb.Config.BuildLabel)
+	patchVersionStr := checkBumpError(vb, patchVersion, err)
+	prNextVersion, err := curVersion.Bump(semver.PreRelease, vb.Config.PreReleaseLabels, vb.Config.BuildLabel)
+	prNextVersionStr := checkBumpError(vb, prNextVersion, err)
+	prMajorVersion, err := curVersion.Bump(semver.PreReleaseMajor, vb.Config.PreReleaseLabels, vb.Config.BuildLabel)
+	prMajorVersionStr := checkBumpError(vb, prMajorVersion, err)
+	prMinorVersion, err := curVersion.Bump(semver.PreReleaseMinor, vb.Config.PreReleaseLabels, vb.Config.BuildLabel)
+	prMinorVersionStr := checkBumpError(vb, prMinorVersion, err)
+	prPatchVersion, err := curVersion.Bump(semver.PreReleasePatch, vb.Config.PreReleaseLabels, vb.Config.BuildLabel)
+	prPatchVersionStr := checkBumpError(vb, prPatchVersion, err)
+	prBuildVersion, err := curVersion.Bump(semver.PreReleaseBuild, vb.Config.PreReleaseLabels, vb.Config.BuildLabel)
+	prBuildVersionStr := checkBumpError(vb, prBuildVersion, err)
 
 	if prNextVersionStr == "" {
-		prNextVersionStr = "ERROR_NO_PATH"
+		prNextVersionStr = "❌"
 	}
 
 	padLen := len(curVersion.String())
@@ -167,7 +168,7 @@ func (vb *VersionBump) GitTagHistory() error {
 	if vb.Options.NoGit {
 		return nil
 	}
-	logVerbose(vb.Options, "Version History:")
+	logVerbose(vb.Options, "version History:")
 	versions, err := vb.GetSortedVersions()
 	if err != nil {
 		return err
@@ -190,12 +191,12 @@ func (vb *VersionBump) LatestVersion() error {
 	return nil
 }
 
-func (vb *VersionBump) GetSortedVersions() ([]*semver.SemVersion, error) {
+func (vb *VersionBump) GetSortedVersions() ([]*semver.SemanticVersion, error) {
 	tags, err := git.GetTags(vb.ParentDir)
 	if err != nil {
 		return nil, err
 	}
-	versions := make([]*semver.SemVersion, 0)
+	versions := make([]*semver.SemanticVersion, 0)
 	for _, tag := range tags {
 		vStr, err := ExtractVersion(vb.Config.GitTagTemplate, tag)
 		if err != nil {
@@ -239,18 +240,6 @@ func (vb *VersionBump) ShowEffectiveConfig() error {
 	logVerbose(vb.Options, "Effective Configuration YAML:")
 
 	conf := &vb.Config
-	// TODO: we should be loading the default configuration and merging it with the user configuration
-	// set defaults if not overridden
-	if conf.GitCommitTemplate == "" {
-		conf.GitCommitTemplate = config.DefaultGitCommitTemplate
-	}
-	if conf.GitTagTemplate == "" {
-		conf.GitTagTemplate = config.DefaultGitTagTemplate
-	}
-	if conf.GitTagMessageTemplate == "" {
-		conf.GitTagMessageTemplate = config.DefaultGitTagMessageTemplate
-	}
-
 	b, err := yaml.Marshal(conf)
 	if err != nil {
 		return err
@@ -265,18 +254,7 @@ func InitVersionBumpProject(opts config.Options) error {
 		return fmt.Errorf("configuration file already exists: %s", opts.InitOpts.File)
 	}
 
-	conf := &config.Config{
-		Version:   "0.0.0",
-		GitSign:   false,
-		GitCommit: false,
-		GitTag:    false,
-		//Files:                 []config.File{"VERSION"},
-		GitTagTemplate:        config.DefaultGitTagTemplate,
-		GitTagMessageTemplate: config.DefaultGitTagMessageTemplate,
-		GitCommitTemplate:     config.DefaultGitCommitTemplate,
-		BuildLabel:            "build",
-		PreReleaseLabels:      []string{"alpha", "beta", "rc"},
-	}
+	conf := config.NewConfig()
 
 	// prompt the user for pre-release labels
 	prLabels := promptUserForValue(
@@ -367,7 +345,7 @@ func (vb *VersionBump) gitPreFlight() {
 				"VersionBump requires Git to be installed and available in the system PATH in order †o perform Giit "+
 				"operations")
 		} else {
-			logVerbose(vb.Options, fmt.Sprintf("Git Version: %s", strings.TrimSpace(version)[12:]))
+			logVerbose(vb.Options, fmt.Sprintf("Git version: %s", strings.TrimSpace(version)[12:]))
 		}
 	}
 
@@ -422,7 +400,7 @@ func (vb *VersionBump) gitPreFlight() {
 		}
 		if tagExists {
 			logFatal(vb.Options, fmt.Sprintf("Tag '%s' already exists in the git repository. "+
-				"Please bump to a different Version or remove the existing tag.\n", gitMeta.TagName))
+				"Please bump to a different version or remove the existing tag.\n", gitMeta.TagName))
 		}
 	}
 
@@ -523,11 +501,11 @@ func (vb *VersionBump) gitCommit() {
 // bumpPreflight performs a pre-flight check for the Version bump operation.
 func (vb *VersionBump) bumpPreflight() {
 	if !vb.Options.IsResetVersion() {
-		logVerbose(vb.Options, fmt.Sprintf("Bumping Version part: %s", vb.Options.BumpPart))
+		logVerbose(vb.Options, fmt.Sprintf("Bumping version part: %s", vb.Options.BumpPart))
 	} else {
-		logVerbose(vb.Options, fmt.Sprintf("Resetting Version to: %s", vb.GetNewVersion()))
+		logVerbose(vb.Options, fmt.Sprintf("Resetting version to: %s", vb.GetNewVersion()))
 	}
-	logVerbose(vb.Options, fmt.Sprintf("Will bump Version %s --> %s", vb.GetOldVersion(), vb.GetNewVersion()))
+	logVerbose(vb.Options, fmt.Sprintf("Will bump version %s --> %s", vb.GetOldVersion(), vb.GetNewVersion()))
 
 	// log what changes will be made to each file
 	for _, file := range vb.Config.Files {

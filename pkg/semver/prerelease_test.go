@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-// TestBumpPreRelease ensures that bumping the version correctly returns a new subversion instance
+// TestBumpPreRelease ensures that bumping the rootVersion correctly returns a new subversion instance
 func TestBumpPreRelease(t *testing.T) {
 	preReleaseLabels := []string{"alpha", "beta", "rc"}
 	tests := []struct {
@@ -29,19 +29,19 @@ func TestBumpPreRelease(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		subv, err := ParsePrereleaseVersion(test.input)
+		subv, err := parsePrereleaseVersion(test.input)
 		if err != nil {
 			t.Fatalf("Unexpected error for input %s: %v", test.input, err)
 		}
 
-		bumped, err := subv.Bump(test.bumpType, preReleaseLabels)
+		bumped, err := subv.bump(test.bumpType, preReleaseLabels)
 
 		if test.shouldFail {
 			// Assert an error was returned
-			assert.Error(t, err, "expected an error for version %s", test.input)
+			assert.Error(t, err, "expected an error for rootVersion %s", test.input)
 		} else {
 			// Assert no error was returned
-			assert.NoError(t, err, "unexpected error for version %s", test.input)
+			assert.NoError(t, err, "unexpected error for rootVersion %s", test.input)
 			result := bumped.String()
 			assert.Equal(t, test.expected, result, "expected %s, got %s", test.expected, result)
 		}
@@ -66,17 +66,17 @@ func TestParsePrereleaseVersion(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.versionStr, func(t *testing.T) {
-			semVer, err := ParsePrereleaseVersion(test.versionStr)
+			semVer, err := parsePrereleaseVersion(test.versionStr)
 
 			if test.shouldFail {
 				// Assert an error was returned
-				assert.Error(t, err, "expected an error for version %s", test.versionStr)
+				assert.Error(t, err, "expected an error for rootVersion %s", test.versionStr)
 			} else {
 				// Assert no error was returned
-				assert.NoError(t, err, "unexpected error for version %s", test.versionStr)
+				assert.NoError(t, err, "unexpected error for rootVersion %s", test.versionStr)
 
 				semVerStr := semVer.String()
-				// Assert the parsed version matches the expected output
+				// Assert the parsed rootVersion matches the expected output
 				assert.Equal(t, test.expected, semVer.String(), "expected %s, got %s", test.expected, semVerStr)
 			}
 		})

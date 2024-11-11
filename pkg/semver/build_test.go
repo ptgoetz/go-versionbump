@@ -12,12 +12,12 @@ func TestParseBuild(t *testing.T) {
 		{"foo.1", prBuild, "foo.2"},
 	}
 	for _, test := range tests {
-		build, err := ParseBuild(test.input)
+		build, err := parseBuild(test.input)
 		if err != nil {
 			t.Fatalf("Unexpected error for input %s: %v", test.input, err)
 		}
 
-		bumped := build.Bump()
+		bumped := build.bump()
 		if result := bumped.String(); result != test.expected {
 			t.Errorf("For input '%s' and bumpType %d, expected %s, but got %s", test.input, test.bumpType, test.expected, result)
 		}
