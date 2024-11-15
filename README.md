@@ -133,8 +133,7 @@ system path.
 Run VersionBump without any arguments to see the available flags and commands:
 
 ```console
-$ versionbump
-                                              
+$ versionbump 
 VersionBump is a command-line tool designed to automate version string management in projects.
 
 Usage:
@@ -145,20 +144,26 @@ Available Commands:
   completion       Generate the autocompletion script for the specified shell
   config           Show the effective configuration of the project.
   help             Help about any command
-  major            Bump the major version number (e.g. 1.2.3 -> 2.0.0).
-  minor            Bump the minor version number (e.g. 1.2.3 -> 1.3.0).
-  patch            Bump the patch version number (e.g. 1.2.3 -> 1.2.4).
-  pre-release-next Bump the next pre-release version label (e.g. 1.2.3-alpha -> 1.2.3-beta).
-  prerelease-build Bump the pre-release build version number (e.g. 1.2.3-alpha -> 1.2.3-alpha+build.1).
-  prerelease-major Bump the pre-release major version number (e.g. 1.2.3-alpha -> 1.2.3-alpha.1).
-  prerelease-minor Bump the pre-release minor version number (e.g. 1.2.3-alpha -> 1.2.3-alpha.0.1).
-  prerelease-patch Bump the pre-release patch version number (e.g. 1.2.3-alpha -> 1.2.3-alpha.0.0.1).
+  history          Show the sorted version history based on git tags.
+  init             Initialize a new versionbump configuration file.
+  latest           Show the latest project release version based on git tags.
+  major            bump the major version number (e.g. 1.2.3 -> 2.0.0).
+  minor            bump the minor version number (e.g. 1.2.3 -> 1.3.0).
+  patch            bump the patch version number (e.g. 1.2.3 -> 1.2.4).
+  prerelease       bump the next pre-release version label (e.g. 1.2.3-alpha -> 1.2.3-beta).
+  prerelease-build bump the pre-release build version number (e.g. 1.2.3 -> 1.2.3+build.1).
+  prerelease-major bump the pre-release major version number (e.g. 1.2.3-alpha -> 1.2.3-alpha.1).
+  prerelease-minor bump the pre-release minor version number (e.g. 1.2.3-alpha -> 1.2.3-alpha.0.1).
+  prerelease-patch bump the pre-release patch version number (e.g. 1.2.3-alpha -> 1.2.3-alpha.0.0.1).
   reset            Reset the project version to the specified value.
   show             Show potential versioning paths for the project version or a specific version.
+  show-version     Show the current project version.
 
 Flags:
   -h, --help      help for versionbump
   -V, --version   Show the VersionBump version and exit.
+
+Use "versionbump [command] --help" for more information about a command.
 
 ```
 
@@ -336,19 +341,62 @@ M       versionbump.yaml
 
 ```
 
+*** Init Command
+The `init` command will create a new configuration file with default values in the current directory. If a configuration
+file already exists, it will not be overwritten.
+
+```console
+$ versionbump init
+Enter pre-release labels (comma-separated) [alpha,beta,rc]: 
+Enter build label [build]: 
+Enter the initial version [0.0.0]: 
+
+$cat versionbump.yaml
+# The current version of the project. This is the source of truth for the project version. 
+# Set this once and let VersionBump manage it.
+version: "0.0.0" 
+
+# Git configuration (optional)
+git-commit: false # Whether to create a git commit for the version bump.
+git-sign: false   # Whether to sign the git commit and tag.
+git-tag: false    # Whether to create a git tag for the version bump.
+
+# Git commit and tag templates. These are the templates used for the git commit and tag messages.
+git-commit-template: "bump version {old} --> {new}" # The template for the git commit message.
+git-tag-template: "v{new}" # The template for the git tag name.
+git-tag-message-template: "Release version {new}" # The template for the git tag message.
+
+# Prerelease labels. These are the labels that will be used for prerelease versions.
+# VersionBump with sort these labels in ascending order when determining the next version.
+# If the bump type is 'prerelease-next'', the next label will be used. Attempting to bump past the last label 
+# will result in an error.
+prerelease-labels:
+  - "alpha"
+  - "beta"
+  - "rc"
+
+# The build label. This is the label that will be used for build versions.
+build-label: "build"
+
+files:  # The files to update with the new version (i.e. "Tracked files").
+# The following example will replace all occurrences of the old version with the new version in the README.md file.
+#   - path: "README.md"
+#    replace:
+#      - "v{version}"
+```
+
 ### Show Command
 Without parameters, the `show` command will display the potential versioning paths for the project version:
 ```console
-$ versionbump show
-Potential versioning paths for project Version: 0.4.1
-0.4.1 ─┬─ major ─ 1.0.0
-       ├─ minor ─ 0.5.0
-       ├─ patch ─ 0.4.2
-       ├─ prerelease-next ── 0.4.1-alpha
-       ├─ prerelease-major ─ 0.4.1-1
-       ├─ prerelease-minor ─ 0.4.1-0.1
-       ├─ prerelease-patch ─ 0.4.1-0.0.1
-       ╰─ prerelease-build ─ 0.4.1+build.1
+$ 0.6.0-alpha ─┬─ major ─ 1.0.0
+             ├─ minor ─ 0.7.0
+             ├─ patch ─ 0.6.1
+             ├─ prerelease ─ 0.6.0-beta
+             ├─ prerelease-major ─ 0.6.0-alpha.1
+             ├─ prerelease-minor ─ 0.6.0-alpha.0.1
+             ├─ prerelease-patch ─ 0.6.0-alpha.0.0.1
+             ╰─ prerelease-build ─ 0.6.0-alpha+build.1
+
 
 ```
 
@@ -359,11 +407,27 @@ Potential versioning paths for Version: 0.4.1-alpha
 0.4.1-alpha ─┬─ major ─ 1.0.0
              ├─ minor ─ 0.5.0
              ├─ patch ─ 0.4.2
-             ├─ prerelease-next ── 0.4.1-beta
+             ├─ prerelease ─ 0.4.1-beta
              ├─ prerelease-major ─ 0.4.1-alpha.1
              ├─ prerelease-minor ─ 0.4.1-alpha.0.1
              ├─ prerelease-patch ─ 0.4.1-alpha.0.0.1
              ╰─ prerelease-build ─ 0.4.1-alpha+build.1
+
+```
+
+### History Command
+The `history` command will display the sorted version history based on git tags. It will only show tags that are 
+considered valid semantic version numbers.
+    
+```console
+$ versionbump history
+version History:
+Error extracting version from tag: value 'not-a-versionbump-tag' does not match template 'v{new}'
+  - 1.0.18-alpha.2
+  - 1.0.18-alpha.1
+  - 1.0.18-alpha
+  - 1.0.17
+  - 1.0.16
 ```
 
 ### Config Command
@@ -376,33 +440,33 @@ $ versionbump config
 Config file: versionbump.yaml
 Project root: /Users/tgoetz/Projects/ptgoetz/go-versionbump
 Effective Configuration YAML:
-version: 0.5.0
+version: 0.6.0-alpha
 build-label: build
 prerelease-labels:
-    - alpha
-    - beta
-    - rc
+- alpha
+- beta
+- rc
 git-commit: true
-git-commit-template: Bump version {old} --> {new}
+git-commit-template: bump version {old} --> {new}
 git-sign: true
 git-tag: true
 git-tag-template: v{new}
 git-tag-message-template: Release version {new}
 files:
-    - path: internal/versionbump.go
-      replace:
-        - '"{version}"'
-    - path: README.md
-      replace:
-        - '**Latest Version:** v{version}'
-        - /v{version}
-        - VersionBump v{version}
-    - path: Makefile
-      replace:
-        - VERSION := "v{version}"
-    - path: versionbump.yaml
-      replace:
-        - 'version: "{version}"'
+- path: internal/versionbump.go
+  replace:
+  - '"{version}"'
+- path: README.md
+  replace:
+  - '**Latest Version:** v{version}'
+  - /v{version}
+  - VersionBump v{version}
+- path: Makefile
+  replace:
+  - VERSION := "v{version}"
+- path: versionbump.yaml
+  replace:
+  - 'version: "{version}"'
 ```
 
 ## Failure Modes and Errors
