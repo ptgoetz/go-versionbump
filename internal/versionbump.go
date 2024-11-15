@@ -592,7 +592,7 @@ func promptUserConfirm(prompt string) bool {
 			logVerbose(config.Options{}, "Operation canceled by user.")
 			return false
 		} else {
-			printColor("Invalid input. Please enter 'y' or 'n'.", ColorYellow)
+			printColor("Invalid input. Please enter 'y' or 'n'.\n", ColorYellow)
 		}
 	}
 }
@@ -607,7 +607,7 @@ func promptUserForValue(prompt string, defaultValue string, validator func(strin
 		printColor(fmt.Sprintf("%s [%s]: ", prompt, defaultValue), ColorLightBlue)
 		input, err := reader.ReadString('\n')
 		if err != nil {
-			printColor("Error reading input. Please try again.", ColorYellow)
+			printColor("Error reading input. Please try again.\n", ColorYellow)
 			continue
 		}
 
