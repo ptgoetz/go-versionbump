@@ -274,6 +274,16 @@ func InitVersionBumpProject(opts config.Options) error {
 	initVersionStr := promptUserForValue("Enter the initial version", "0.0.0", semver.ValidateSemVersion)
 	conf.Version = initVersionStr
 
+	gitAvail, _ := git.IsGitAvailable()
+	if gitAvail {
+		if promptUserConfirm("Git is installed on this system. \nDo you want to enable Git commit and tag features?") {
+			conf.GitCommit = promptUserConfirm("Do you want to enable Git commit feature?")
+			if conf.GitCommit {
+				conf.GitTag = promptUserConfirm("Do you want to enable the Git tag feature?")
+			}
+		}
+	}
+
 	//
 	tmpl, err := template.New("yaml").Parse(config.DefaultConfigTemplate)
 	if err != nil {
