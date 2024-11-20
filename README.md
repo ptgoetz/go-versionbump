@@ -141,23 +141,26 @@ Usage:
   versionbump [command]
 
 Available Commands:
-  completion       Generate the autocompletion script for the specified shell
-  config           Show the effective configuration of the project.
-  help             Help about any command
-  history          Show the sorted version history based on git tags.
-  init             Initialize a new versionbump configuration file.
-  latest           Show the latest project release version based on git tags.
-  major            bump the major version number (e.g. 1.2.3 -> 2.0.0).
-  minor            bump the minor version number (e.g. 1.2.3 -> 1.3.0).
-  patch            bump the patch version number (e.g. 1.2.3 -> 1.2.4).
-  prerelease       bump the next pre-release version label (e.g. 1.2.3-alpha -> 1.2.3-beta).
-  prerelease-build bump the pre-release build version number (e.g. 1.2.3 -> 1.2.3+build.1).
-  prerelease-major bump the pre-release major version number (e.g. 1.2.3-alpha -> 1.2.3-alpha.1).
-  prerelease-minor bump the pre-release minor version number (e.g. 1.2.3-alpha -> 1.2.3-alpha.0.1).
-  prerelease-patch bump the pre-release patch version number (e.g. 1.2.3-alpha -> 1.2.3-alpha.0.0.1).
-  reset            Reset the project version to the specified value.
-  show             Show potential versioning paths for the project version or a specific version.
-  show-version     Show the current project version.
+  completion    Generate the autocompletion script for the specified shell
+  config        Show the effective configuration of the project.
+  help          Help about any command
+  history       Show the sorted version history based on git tags.
+  init          Initialize a new versionbump configuration file.
+  latest        Show the latest project release version based on git tags.
+  major         Bump the major version number (e.g. 1.2.3 -> 2.0.0).
+  minor         Bump the minor version number (e.g. 1.2.3 -> 1.3.0).
+  patch         Bump the patch version number (e.g. 1.2.3 -> 1.2.4).
+  pre           Bump the next pre-release version label (e.g. 1.2.3-alpha -> 1.2.3-beta).
+  pre-build     Bump the pre-release build version number (e.g. 1.2.3 -> 1.2.3+build.1).
+  pre-major     Bump the pre-release major version number (e.g. 1.2.3-alpha -> 1.2.3-alpha.1).
+  pre-minor     Bump the pre-release minor version number (e.g. 1.2.3-alpha -> 1.2.3-alpha.0.1).
+  pre-new-major Bump the major version and apply the first pre-release label (e.g. 1.2.3 -> 2.0.0-alpha).
+  pre-new-minor Bump the minor version and apply the first pre-release label (e.g. 1.2.3 -> 1.3.0-alpha).
+  pre-new-patch Bump the patch version and apply the first pre-release label (e.g. 1.2.3 -> 1.2.4-alpha).
+  pre-patch     Bump the pre-release patch version number (e.g. 1.2.3-alpha -> 1.2.3-alpha.0.0.1).
+  set           Set the project version to the specified value.
+  show          Show potential versioning paths for the project version or a specific version.
+  show-version  Show the current project version.
 
 Flags:
   -h, --help      help for versionbump
@@ -388,30 +391,35 @@ files:  # The files to update with the new version (i.e. "Tracked files").
 ### Show Command
 Without parameters, the `show` command will display the potential versioning paths for the project version:
 ```console
-$ 0.6.0-alpha ─┬─ major ─ 1.0.0
-             ├─ minor ─ 0.7.0
-             ├─ patch ─ 0.6.1
-             ├─ prerelease ─ 0.6.0-beta
-             ├─ prerelease-major ─ 0.6.0-alpha.1
-             ├─ prerelease-minor ─ 0.6.0-alpha.0.1
-             ├─ prerelease-patch ─ 0.6.0-alpha.0.0.1
-             ╰─ prerelease-build ─ 0.6.0-alpha+build.1
-
-
+$ 0.6.0-alpha.1 ─┬─ major ─ 1.0.0
+                 ├─ minor ─ 0.7.0
+                 ├─ patch ─ 0.6.1
+                 ├─ pre-new-major ─ 1.0.0-alpha
+                 ├─ pre-new-minor ─ 0.7.0-alpha
+                 ├─ pre-new-patch ─ 0.6.1-alpha
+                 ├─ pre ─ 0.6.0-beta
+                 ├─ pre-major ─ 0.6.0-alpha.2
+                 ├─ pre-minor ─ 0.6.0-alpha.1.1
+                 ├─ pre-patch ─ 0.6.0-alpha.1.0.1
+                 ╰─ pre-build ─ 0.6.0-alpha.1+build.1
 ```
 
 You can also specify any version identifier to see the potential versioning paths:
 ```console
-versionbump show 0.4.1-alpha
-Potential versioning paths for Version: 0.4.1-alpha
+$ versionbump show 0.4.1-alpha
+Potential versioning paths for version: 0.4.1-alpha
 0.4.1-alpha ─┬─ major ─ 1.0.0
              ├─ minor ─ 0.5.0
              ├─ patch ─ 0.4.2
-             ├─ prerelease ─ 0.4.1-beta
-             ├─ prerelease-major ─ 0.4.1-alpha.1
-             ├─ prerelease-minor ─ 0.4.1-alpha.0.1
-             ├─ prerelease-patch ─ 0.4.1-alpha.0.0.1
-             ╰─ prerelease-build ─ 0.4.1-alpha+build.1
+             ├─ pre-new-major ─ 1.0.0-alpha
+             ├─ pre-new-minor ─ 0.5.0-alpha
+             ├─ pre-new-patch ─ 0.4.2-alpha
+             ├─ pre ─ 0.4.1-beta
+             ├─ pre-major ─ 0.4.1-alpha.1
+             ├─ pre-minor ─ 0.4.1-alpha.0.1
+             ├─ pre-patch ─ 0.4.1-alpha.0.0.1
+             ╰─ pre-build ─ 0.4.1-alpha+build.1
+
 
 ```
 
@@ -422,12 +430,22 @@ considered valid semantic version numbers.
 ```console
 $ versionbump history
 version History:
-Error extracting version from tag: value 'not-a-versionbump-tag' does not match template 'v{new}'
-  - 1.0.18-alpha.2
-  - 1.0.18-alpha.1
-  - 1.0.18-alpha
-  - 1.0.17
-  - 1.0.16
+  - 0.6.0-alpha.1
+  - 0.6.0-alpha
+  - 0.5.4
+  - 0.5.3
+  - 0.5.2
+  - 0.5.1
+  - 0.5.0
+  - 0.4.1
+  - 0.4.0
+  - 0.3.0
+  - 0.2.0
+  - 0.1.1
+  - 0.1.0
+  - 0.0.2
+  - 0.0.1
+
 ```
 
 ### Config Command

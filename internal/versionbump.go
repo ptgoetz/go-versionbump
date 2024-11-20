@@ -115,14 +115,24 @@ func (vb *VersionBump) Show(versionStr string) error {
 	minorVersionStr := checkBumpError(vb, minorVersion, err)
 	patchVersion, err := curVersion.Bump(semver.Patch, vb.Config.PreReleaseLabels, vb.Config.BuildLabel)
 	patchVersionStr := checkBumpError(vb, patchVersion, err)
+
 	prNextVersion, err := curVersion.Bump(semver.PreRelease, vb.Config.PreReleaseLabels, vb.Config.BuildLabel)
 	prNextVersionStr := checkBumpError(vb, prNextVersion, err)
+
 	prMajorVersion, err := curVersion.Bump(semver.PreReleaseMajor, vb.Config.PreReleaseLabels, vb.Config.BuildLabel)
 	prMajorVersionStr := checkBumpError(vb, prMajorVersion, err)
 	prMinorVersion, err := curVersion.Bump(semver.PreReleaseMinor, vb.Config.PreReleaseLabels, vb.Config.BuildLabel)
 	prMinorVersionStr := checkBumpError(vb, prMinorVersion, err)
 	prPatchVersion, err := curVersion.Bump(semver.PreReleasePatch, vb.Config.PreReleaseLabels, vb.Config.BuildLabel)
 	prPatchVersionStr := checkBumpError(vb, prPatchVersion, err)
+
+	prNewMajorVersion, err := curVersion.Bump(semver.PreReleaseNewMajor, vb.Config.PreReleaseLabels, vb.Config.BuildLabel)
+	prNewMajorVersionStr := checkBumpError(vb, prNewMajorVersion, err)
+	prNewMinorVersion, err := curVersion.Bump(semver.PreReleaseNewMinor, vb.Config.PreReleaseLabels, vb.Config.BuildLabel)
+	prNewMinorVersionStr := checkBumpError(vb, prNewMinorVersion, err)
+	prNewPatchVersion, err := curVersion.Bump(semver.PreReleaseNewPatch, vb.Config.PreReleaseLabels, vb.Config.BuildLabel)
+	prNewPatchVersionStr := checkBumpError(vb, prNewPatchVersion, err)
+
 	prBuildVersion, err := curVersion.Bump(semver.PreReleaseBuild, vb.Config.PreReleaseLabels, vb.Config.BuildLabel)
 	prBuildVersionStr := checkBumpError(vb, prBuildVersion, err)
 
@@ -137,11 +147,14 @@ func (vb *VersionBump) Show(versionStr string) error {
 		`%s ─┬─ major ─ %s
   %s├─ minor ─ %s
   %s├─ patch ─ %s
-  %s├─ prerelease ─ %s
-  %s├─ prerelease-major ─ %s
-  %s├─ prerelease-minor ─ %s
-  %s├─ prerelease-patch ─ %s
-  %s╰─ prerelease-build ─ %s
+  %s├─ pre-new-major ─ %s
+  %s├─ pre-new-minor ─ %s
+  %s├─ pre-new-patch ─ %s
+  %s├─ pre ─ %s
+  %s├─ pre-major ─ %s
+  %s├─ pre-minor ─ %s
+  %s├─ pre-patch ─ %s
+  %s╰─ pre-build ─ %s
 `,
 		curVersion.String(),
 		majorVersionStr,
@@ -149,6 +162,12 @@ func (vb *VersionBump) Show(versionStr string) error {
 		minorVersionStr,
 		padding,
 		patchVersionStr,
+		padding,
+		prNewMajorVersionStr,
+		padding,
+		prNewMinorVersionStr,
+		padding,
+		prNewPatchVersionStr,
 		padding,
 		prNextVersionStr,
 		padding,
@@ -276,7 +295,7 @@ func InitVersionBumpProject(opts config.Options) error {
 
 	gitAvail, _ := git.IsGitAvailable()
 	if gitAvail {
-		if promptUserConfirm("Git is installed on this system. \nDo you want to enable Git commit and tag features?") {
+		if promptUserConfirm("Git is installed on this system. \nDo you want to enable Git features?") {
 			conf.GitCommit = promptUserConfirm("Do you want to enable Git commit feature?")
 			if conf.GitCommit {
 				conf.GitTag = promptUserConfirm("Do you want to enable the Git tag feature?")

@@ -27,22 +27,22 @@ var rootCmd = &cobra.Command{
 
 var majorCmd = &cobra.Command{
 	Use:   "major",
-	Short: `bump the major version number (e.g. 1.2.3 -> 2.0.0).`,
-	Long:  `bump the major version number (e.g. 1.2.3 -> 2.0.0).`,
+	Short: `Bump the major version number (e.g. 1.2.3 -> 2.0.0).`,
+	Long:  `Bump the major version number (e.g. 1.2.3 -> 2.0.0).`,
 	RunE:  bumpMajor, // Use RunE for better error handling
 }
 
 var minorCmd = &cobra.Command{
 	Use:   "minor",
-	Short: `bump the minor version number (e.g. 1.2.3 -> 1.3.0).`,
-	Long:  `bump the minor version number (e.g. 1.2.3 -> 1.3.0).`,
+	Short: `Bump the minor version number (e.g. 1.2.3 -> 1.3.0).`,
+	Long:  `Bump the minor version number (e.g. 1.2.3 -> 1.3.0).`,
 	RunE:  bumpMinor, // Use RunE for better error handling
 }
 
 var patchCmd = &cobra.Command{
 	Use:   "patch",
-	Short: `bump the patch version number (e.g. 1.2.3 -> 1.2.4).`,
-	Long:  `bump the patch version number (e.g. 1.2.3 -> 1.2.4).`,
+	Short: `Bump the patch version number (e.g. 1.2.3 -> 1.2.4).`,
+	Long:  `Bump the patch version number (e.g. 1.2.3 -> 1.2.4).`,
 	RunE:  bumpPatch, // Use RunE for better error handling
 }
 
@@ -54,9 +54,9 @@ var configCmd = &cobra.Command{
 }
 
 var resetCmd = &cobra.Command{
-	Use:   "reset <version>",
-	Short: `Reset the project version to the specified value.`,
-	Long:  `Reset the project version to the specified value. Value can be any valid semantic version string.`,
+	Use:   "set <version>",
+	Short: `Set the project version to the specified value.`,
+	Long:  `Set the project version to the specified value. Value can be any valid semantic version string.`,
 	Args:  cobra.ExactArgs(1),
 	RunE:  runResetCmd, // Use RunE for better error handling
 }
@@ -129,37 +129,58 @@ var gitTagHistoryCmd = &cobra.Command{
 }
 
 var preReleaseNextCmd = &cobra.Command{
-	Use:   "prerelease",
-	Short: `bump the next pre-release version label (e.g. 1.2.3-alpha -> 1.2.3-beta).`,
-	Long:  `bump the patch version number (e.g. 1.2.3 -> 1.2.4).`,
+	Use:   "pre",
+	Short: `Bump the next pre-release version label (e.g. 1.2.3-alpha -> 1.2.3-beta).`,
+	Long:  `Bump the patch version number (e.g. 1.2.3 -> 1.2.4).`,
 	RunE:  bumpPreReleaseNext, // Use RunE for better error handling
 }
 
 var preReleaseMajorCmd = &cobra.Command{
-	Use:   "prerelease-major",
-	Short: `bump the pre-release major version number (e.g. 1.2.3-alpha -> 1.2.3-alpha.1).`,
-	Long:  `ump the pre-release major version number (e.g. 1.2.3-alpha -> 1.2.3-alpha.1).`,
+	Use:   "pre-major",
+	Short: `Bump the pre-release major version number (e.g. 1.2.3-alpha -> 1.2.3-alpha.1).`,
+	Long:  `Bump the pre-release major version number (e.g. 1.2.3-alpha -> 1.2.3-alpha.1).`,
 	RunE:  bumpPreReleaseMajor, // Use RunE for better error handling
 }
 
 var preReleaseMinorCmd = &cobra.Command{
-	Use:   "prerelease-minor",
-	Short: `bump the pre-release minor version number (e.g. 1.2.3-alpha -> 1.2.3-alpha.0.1).`,
-	Long:  `ump the pre-release minor version number (e.g. 1.2.3-alpha -> 1.2.3-alpha.0.1).`,
+	Use:   "pre-minor",
+	Short: `Bump the pre-release minor version number (e.g. 1.2.3-alpha -> 1.2.3-alpha.0.1).`,
+	Long:  `Bump the pre-release minor version number (e.g. 1.2.3-alpha -> 1.2.3-alpha.0.1).`,
 	RunE:  bumpPreReleaseMinor, // Use RunE for better error handling
 }
 
 var preReleasePatchCmd = &cobra.Command{
-	Use:   "prerelease-patch",
-	Short: `bump the pre-release patch version number (e.g. 1.2.3-alpha -> 1.2.3-alpha.0.0.1).`,
-	Long:  `ump the pre-release patch version number (e.g. 1.2.3-alpha -> 1.2.3-alpha.0.0.1).`,
+	Use:   "pre-patch",
+	Short: `Bump the pre-release patch version number (e.g. 1.2.3-alpha -> 1.2.3-alpha.0.0.1).`,
+	Long:  `Bump the pre-release patch version number (e.g. 1.2.3-alpha -> 1.2.3-alpha.0.0.1).`,
 	RunE:  bumpPreReleasePatch, // Use RunE for better error handling
 }
 
+var preReleaseNewMajorCmd = &cobra.Command{
+	Use:   "pre-new-major",
+	Short: `Bump the major version and apply the first pre-release label (e.g. 1.2.3 -> 2.0.0-alpha).`,
+	Long:  `Bump the major version and apply the first pre-release label (e.g. 1.2.3 -> 2.0.0-alpha).`,
+	RunE:  bumpNewPreReleaseMajor, // Use RunE for better error handling
+}
+
+var preReleaseNewMinorCmd = &cobra.Command{
+	Use:   "pre-new-minor",
+	Short: `Bump the minor version and apply the first pre-release label (e.g. 1.2.3 -> 1.3.0-alpha).`,
+	Long:  `Bump the minor version and apply the first pre-release label (e.g. 1.2.3 -> 1.3.0-alpha).`,
+	RunE:  bumpNewPreReleaseMinor, // Use RunE for better error handling
+}
+
+var preReleaseNewPatchCmd = &cobra.Command{
+	Use:   "pre-new-patch",
+	Short: `Bump the patch version and apply the first pre-release label (e.g. 1.2.3 -> 1.2.4-alpha).`,
+	Long:  `Bump the patch version and apply the first pre-release label (e.g. 1.2.3 -> 1.2.4-alpha).`,
+	RunE:  bumpNewPreReleasePatch, // Use RunE for better error handling
+}
+
 var preReleaseBuildCmd = &cobra.Command{
-	Use:   "prerelease-build",
-	Short: `bump the pre-release build version number (e.g. 1.2.3 -> 1.2.3+build.1).`,
-	Long:  `bump the pre-release build version number (e.g. 1.2.3 -> 1.2.3+build.1).`,
+	Use:   "pre-build",
+	Short: `Bump the pre-release build version number (e.g. 1.2.3 -> 1.2.3+build.1).`,
+	Long:  `Bump the pre-release build version number (e.g. 1.2.3 -> 1.2.3+build.1).`,
 	RunE:  bumpPreReleaseBuild, // Use RunE for better error handling
 }
 
@@ -192,6 +213,9 @@ func init() {
 	preReleaseMinorCmd.Flags().AddFlagSet(prereleaserFlags)
 	preReleasePatchCmd.Flags().AddFlagSet(prereleaserFlags)
 	preReleaseBuildCmd.Flags().AddFlagSet(prereleaserFlags)
+	preReleaseNewMajorCmd.Flags().AddFlagSet(prereleaserFlags)
+	preReleaseNewMinorCmd.Flags().AddFlagSet(prereleaserFlags)
+	preReleaseNewPatchCmd.Flags().AddFlagSet(prereleaserFlags)
 
 	showCmd.Flags().AddFlagSet(configColorFlags)
 	showVersionCmd.Flags().AddFlagSet(commonFlags)
@@ -212,6 +236,9 @@ func init() {
 	rootCmd.AddCommand(preReleaseMinorCmd)
 	rootCmd.AddCommand(preReleasePatchCmd)
 	rootCmd.AddCommand(preReleaseBuildCmd)
+	rootCmd.AddCommand(preReleaseNewMajorCmd)
+	rootCmd.AddCommand(preReleaseNewMinorCmd)
+	rootCmd.AddCommand(preReleaseNewPatchCmd)
 	rootCmd.AddCommand(showCmd)
 	rootCmd.AddCommand(showVersionCmd)
 	rootCmd.AddCommand(showLatestCmd)
@@ -260,6 +287,18 @@ func bumpPreReleaseBuild(cmd *cobra.Command, args []string) error {
 	return runVersionBump(semver.PreReleaseBuild)
 }
 
+func bumpNewPreReleaseMajor(cmd *cobra.Command, args []string) error {
+	return runVersionBump(semver.PreReleaseNewMajor)
+}
+
+func bumpNewPreReleaseMinor(cmd *cobra.Command, args []string) error {
+	return runVersionBump(semver.PreReleaseNewMinor)
+}
+
+func bumpNewPreReleasePatch(cmd *cobra.Command, args []string) error {
+	return runVersionBump(semver.PreReleaseNewPatch)
+}
+
 func runResetCmd(cmd *cobra.Command, args []string) error {
 	opts.ResetVersion = args[0]
 	vb, err := internal.NewVersionBump(opts)
@@ -285,7 +324,7 @@ func runConfigCmd(cmd *cobra.Command, args []string) error {
 }
 
 // runVersionBump contains the logic for executing the version bump process
-func runVersionBump(bumpPart semver.VersionPart) error {
+func runVersionBump(bumpPart semver.BumpStrategy) error {
 	opts.BumpPart = bumpPart
 
 	vb, err := internal.NewVersionBump(opts)

@@ -16,25 +16,31 @@ const (
 	vPatch
 	prNext
 	prMajor
+	prNewMajor
+	prNewMinor
+	prNewPatch
 	prMinor
 	prPatch
 	prBuild
 )
 
-type VersionPart string
+type BumpStrategy string
 
 const (
-	Major           VersionPart = "major"
-	Minor           VersionPart = "minor"
-	Patch           VersionPart = "patch"
-	PreRelease      VersionPart = "prerelease"
-	PreReleaseMajor VersionPart = "prerelease-major"
-	PreReleaseMinor VersionPart = "prerelease-minor"
-	PreReleasePatch VersionPart = "prerelease-patch"
-	PreReleaseBuild VersionPart = "prerelease-build"
+	Major              BumpStrategy = "major"
+	Minor              BumpStrategy = "minor"
+	Patch              BumpStrategy = "patch"
+	PreRelease         BumpStrategy = "pre"
+	PreReleaseMajor    BumpStrategy = "pre-major"
+	PreReleaseMinor    BumpStrategy = "pre-minor"
+	PreReleasePatch    BumpStrategy = "pre-patch"
+	PreReleaseBuild    BumpStrategy = "pre-build"
+	PreReleaseNewMajor BumpStrategy = "pre-new-major"
+	PreReleaseNewMinor BumpStrategy = "pre-new-minor"
+	PreReleaseNewPatch BumpStrategy = "pre-new-patch"
 )
 
-func versionPartInt(part VersionPart) int {
+func versionPartInt(part BumpStrategy) int {
 	switch part {
 	case Major:
 		return vMajor
@@ -52,6 +58,12 @@ func versionPartInt(part VersionPart) int {
 		return prPatch
 	case PreReleaseBuild:
 		return prBuild
+	case PreReleaseNewMajor:
+		return prNewMajor
+	case PreReleaseNewMinor:
+		return prNewMinor
+	case PreReleaseNewPatch:
+		return prNewPatch
 	default:
 		panic(fmt.Sprintf("invalid rootVersion part: %s", part))
 	}
@@ -96,27 +108,32 @@ func (v *SemanticVersion) String() string {
 
 // Bump returns a new SemanticVersion instance after incrementing the specified part.
 // If the part is a pre-release part, `preReleaseLabels` must be provided. If the part is a build version part,
-// `buildLabel` `must  be provided. If the part is a root rootVersion part, preReleaseLabels and buildLabel are ignored.
-func (v *SemanticVersion) Bump(part VersionPart, preReleaseLabels []string, buildLabel string) (*SemanticVersion, error) {
+// `buildLabel` must be provided. If the part is a root version part, preReleaseLabels and buildLabel are ignored.
+func (v *SemanticVersion) Bump(strategy BumpStrategy, preReleaseLabels []string, buildLabel string) (*SemanticVersion, error) {
 	var version *Version
 	var preReleaseVersion *PreReleaseVersion
 	var build *BuildVersion
 	var err error
-	versionPart := versionPartInt(part)
-	if versionPart >= vMajor && versionPart <= vPatch {
-		// bump the root rootVersion
-		version = v.rootVersion.bump(versionPart)
+	versionPart := versionPartInt(strategy)
 
+	switch {
+	case versionPart >= vMajor && versionPart <= vPatch:
+		// bump the root version
+		version = v.rootVersion.bump(versionPart)
 		// reset all pre-release versions
 		preReleaseVersion = newPrereleaseVersion("", 0, 0, 0)
-	} else if versionPart >= prNext && versionPart <= prPatch {
+	case versionPart >= prNewMajor && versionPart <= prNewPatch:
+		// bump the root version
+		version = v.rootVersion.bump(versionPart - 5)
+		// reset all pre-release versions
+		preReleaseVersion = newPrereleaseVersion(preReleaseLabels[0], 0, 0, 0)
+	case versionPart >= prNext && versionPart <= prPatch:
 		version = newVersion(v.rootVersion.major, v.rootVersion.minor, v.rootVersion.patch)
 		preReleaseVersion, err = v.preReleaseVersion.bump(versionPart, preReleaseLabels)
 		if err != nil {
 			return nil, err
 		}
-
-	} else if versionPart == prBuild {
+	case versionPart == prBuild:
 		version = newVersion(v.rootVersion.major, v.rootVersion.minor, v.rootVersion.patch)
 		preReleaseVersion = newPrereleaseVersion(v.preReleaseVersion.label, v.preReleaseVersion.version.major, v.preReleaseVersion.version.minor, v.preReleaseVersion.version.patch)
 		if v.buildVersion != nil {
@@ -124,15 +141,15 @@ func (v *SemanticVersion) Bump(part VersionPart, preReleaseLabels []string, buil
 		} else {
 			build = newBuild(buildLabel, 1)
 		}
-	} else {
-		return nil, fmt.Errorf("invalid rootVersion part: %d", versionPart)
+	default:
+		return nil, fmt.Errorf("invalid version strategy: %d", versionPart)
 	}
+
 	return &SemanticVersion{
 		rootVersion:       version,
 		preReleaseVersion: preReleaseVersion,
 		buildVersion:      build,
 	}, nil
-
 }
 
 // Compare compares two SemanticVersion instances.

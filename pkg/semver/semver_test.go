@@ -49,7 +49,7 @@ func TestSemVersion_Bump(t *testing.T) {
 	preReleaseLabels := []string{"alpha", "beta", "rc"}
 	tests := []struct {
 		input      string
-		bumpType   VersionPart
+		bumpType   BumpStrategy
 		expected   string
 		shouldFail bool
 	}{

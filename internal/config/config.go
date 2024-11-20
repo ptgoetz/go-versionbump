@@ -58,7 +58,7 @@ type Options struct {
 	ResetVersion string
 	NoGit        bool
 	NoColor      bool
-	BumpPart     semver.VersionPart
+	BumpPart     semver.BumpStrategy
 	InitOpts     InitOptions
 }
 
