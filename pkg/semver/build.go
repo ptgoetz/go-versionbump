@@ -58,7 +58,7 @@ func parseBuild(buildStr string) (*BuildVersion, error) {
 	}, nil
 }
 
-// String returns the BuildVersion rootVersion string
+// String returns the BuildVersion version string
 func (b *BuildVersion) String() string {
 	if b.number > 0 {
 		return fmt.Sprintf("%s.%d", b.label, b.number)
