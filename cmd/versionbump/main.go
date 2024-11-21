@@ -26,21 +26,21 @@ var rootCmd = &cobra.Command{
 }
 
 var majorCmd = &cobra.Command{
-	Use:   "major",
+	Use:   semver.Major.String(),
 	Short: `Bump the major version number (e.g. 1.2.3 -> 2.0.0).`,
 	Long:  `Bump the major version number (e.g. 1.2.3 -> 2.0.0).`,
 	RunE:  bumpMajor, // Use RunE for better error handling
 }
 
 var minorCmd = &cobra.Command{
-	Use:   "minor",
+	Use:   semver.Minor.String(),
 	Short: `Bump the minor version number (e.g. 1.2.3 -> 1.3.0).`,
 	Long:  `Bump the minor version number (e.g. 1.2.3 -> 1.3.0).`,
 	RunE:  bumpMinor, // Use RunE for better error handling
 }
 
 var patchCmd = &cobra.Command{
-	Use:   "patch",
+	Use:   semver.Patch.String(),
 	Short: `Bump the patch version number (e.g. 1.2.3 -> 1.2.4).`,
 	Long:  `Bump the patch version number (e.g. 1.2.3 -> 1.2.4).`,
 	RunE:  bumpPatch, // Use RunE for better error handling
@@ -129,56 +129,56 @@ var gitTagHistoryCmd = &cobra.Command{
 }
 
 var preReleaseNextCmd = &cobra.Command{
-	Use:   "pre",
+	Use:   semver.PreRelease.String(),
 	Short: `Bump the next pre-release version label (e.g. 1.2.3-alpha -> 1.2.3-beta).`,
 	Long:  `Bump the patch version number (e.g. 1.2.3 -> 1.2.4).`,
 	RunE:  bumpPreReleaseNext, // Use RunE for better error handling
 }
 
 var preReleaseMajorCmd = &cobra.Command{
-	Use:   "pre-major",
+	Use:   semver.PreReleaseMajor.String(),
 	Short: `Bump the pre-release major version number (e.g. 1.2.3-alpha -> 1.2.3-alpha.1).`,
 	Long:  `Bump the pre-release major version number (e.g. 1.2.3-alpha -> 1.2.3-alpha.1).`,
 	RunE:  bumpPreReleaseMajor, // Use RunE for better error handling
 }
 
 var preReleaseMinorCmd = &cobra.Command{
-	Use:   "pre-minor",
+	Use:   semver.PreReleaseMinor.String(),
 	Short: `Bump the pre-release minor version number (e.g. 1.2.3-alpha -> 1.2.3-alpha.0.1).`,
 	Long:  `Bump the pre-release minor version number (e.g. 1.2.3-alpha -> 1.2.3-alpha.0.1).`,
 	RunE:  bumpPreReleaseMinor, // Use RunE for better error handling
 }
 
 var preReleasePatchCmd = &cobra.Command{
-	Use:   "pre-patch",
+	Use:   semver.PreReleasePatch.String(),
 	Short: `Bump the pre-release patch version number (e.g. 1.2.3-alpha -> 1.2.3-alpha.0.0.1).`,
 	Long:  `Bump the pre-release patch version number (e.g. 1.2.3-alpha -> 1.2.3-alpha.0.0.1).`,
 	RunE:  bumpPreReleasePatch, // Use RunE for better error handling
 }
 
 var preReleaseNewMajorCmd = &cobra.Command{
-	Use:   "pre-new-major",
+	Use:   semver.PreReleaseNewMajor.String(),
 	Short: `Bump the major version and apply the first pre-release label (e.g. 1.2.3 -> 2.0.0-alpha).`,
 	Long:  `Bump the major version and apply the first pre-release label (e.g. 1.2.3 -> 2.0.0-alpha).`,
 	RunE:  bumpNewPreReleaseMajor, // Use RunE for better error handling
 }
 
 var preReleaseNewMinorCmd = &cobra.Command{
-	Use:   "pre-new-minor",
+	Use:   semver.PreReleaseNewMinor.String(),
 	Short: `Bump the minor version and apply the first pre-release label (e.g. 1.2.3 -> 1.3.0-alpha).`,
 	Long:  `Bump the minor version and apply the first pre-release label (e.g. 1.2.3 -> 1.3.0-alpha).`,
 	RunE:  bumpNewPreReleaseMinor, // Use RunE for better error handling
 }
 
 var preReleaseNewPatchCmd = &cobra.Command{
-	Use:   "pre-new-patch",
+	Use:   semver.PreReleaseNewPatch.String(),
 	Short: `Bump the patch version and apply the first pre-release label (e.g. 1.2.3 -> 1.2.4-alpha).`,
 	Long:  `Bump the patch version and apply the first pre-release label (e.g. 1.2.3 -> 1.2.4-alpha).`,
 	RunE:  bumpNewPreReleasePatch, // Use RunE for better error handling
 }
 
 var preReleaseBuildCmd = &cobra.Command{
-	Use:   "pre-build",
+	Use:   semver.PreReleaseBuild.String(),
 	Short: `Bump the pre-release build version number (e.g. 1.2.3 -> 1.2.3+build.1).`,
 	Long:  `Bump the pre-release build version number (e.g. 1.2.3 -> 1.2.3+build.1).`,
 	RunE:  bumpPreReleaseBuild, // Use RunE for better error handling
