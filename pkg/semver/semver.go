@@ -35,10 +35,14 @@ const (
 	PreReleaseMinor    BumpStrategy = "pre-minor"
 	PreReleasePatch    BumpStrategy = "pre-patch"
 	PreReleaseBuild    BumpStrategy = "pre-build"
-	PreReleaseNewMajor BumpStrategy = "pre-new-major"
-	PreReleaseNewMinor BumpStrategy = "pre-new-minor"
-	PreReleaseNewPatch BumpStrategy = "pre-new-patch"
+	PreReleaseNewMajor BumpStrategy = "new-pre-major"
+	PreReleaseNewMinor BumpStrategy = "new-pre-minor"
+	PreReleaseNewPatch BumpStrategy = "new-pre-patch"
 )
+
+func (b BumpStrategy) String() string {
+	return string(b)
+}
 
 func versionPartInt(part BumpStrategy) int {
 	switch part {
@@ -106,9 +110,9 @@ func (v *SemanticVersion) String() string {
 	return version
 }
 
-// Bump returns a new SemanticVersion instance after incrementing the specified part.
-// If the part is a pre-release part, `preReleaseLabels` must be provided. If the part is a build version part,
-// `buildLabel` must be provided. If the part is a root version part, preReleaseLabels and buildLabel are ignored.
+// Bump returns a new SemanticVersion instance after applying the specified BumpStrategy.
+// If the strategy is a pre-release strategy, `preReleaseLabels` must be provided. If the strategy is a build strategy,
+// `buildLabel` must be provided. If the strategy is a root version strategy, preReleaseLabels and buildLabel are ignored.
 func (v *SemanticVersion) Bump(strategy BumpStrategy, preReleaseLabels []string, buildLabel string) (*SemanticVersion, error) {
 	var version *Version
 	var preReleaseVersion *PreReleaseVersion
@@ -263,7 +267,7 @@ func ValidatePreReleaseLabels(preReleaseLabels []string) bool {
 	return true
 }
 
-// ValidateBuildLabel checks if the provided pre-release labels are valid
+// ValidateBuildLabel checks if the provided build label is valid
 func ValidateBuildLabel(buildLabel string) bool {
 	return utils.IsAllAlphanumeric(buildLabel)
 }

@@ -147,9 +147,9 @@ func (vb *VersionBump) Show(versionStr string) error {
 		`%s ─┬─ major ─ %s
   %s├─ minor ─ %s
   %s├─ patch ─ %s
-  %s├─ pre-new-major ─ %s
-  %s├─ pre-new-minor ─ %s
-  %s├─ pre-new-patch ─ %s
+  %s├─ new-pre-major ─ %s
+  %s├─ new-pre-minor ─ %s
+  %s├─ new-pre-patch ─ %s
   %s├─ pre ─ %s
   %s├─ pre-major ─ %s
   %s├─ pre-minor ─ %s
