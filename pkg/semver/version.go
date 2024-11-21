@@ -39,7 +39,7 @@ func parseVersion(version string) (*Version, error) {
 	return newVersion(major, minor, patch), nil
 }
 
-// String returns the rootVersion string
+// String returns the string representation of the Version instance (e.g. "1.2.3")
 func (v *Version) String() string {
 	return fmt.Sprintf("%d.%d.%d", v.major, v.minor, v.patch)
 }
@@ -58,17 +58,17 @@ func (v *Version) bump(versionPart int) *Version {
 	}
 }
 
-// Major returns the major version part
+// Major returns the major version part. For example, for version "1.2.3", the major part is 1
 func (v *Version) Major() int {
 	return v.major
 }
 
-// Minor returns the minor version part
+// Minor returns the minor version part. For example, for version "1.2.3", the minor part is 2
 func (v *Version) Minor() int {
 	return v.minor
 }
 
-// Patch returns the patch version part
+// Patch returns the patch version part. For example, for version "1.2.3", the patch part is 3
 func (v *Version) Patch() int {
 	return v.patch
 }
