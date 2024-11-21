@@ -15,7 +15,7 @@ import (
 	"text/template"
 )
 
-const Version = "0.6.0-alpha.1"
+const Version = "0.6.0-alpha.2"
 
 // VersionBump represents the Version bump operation.
 type VersionBump struct {
