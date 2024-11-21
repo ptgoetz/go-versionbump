@@ -187,7 +187,7 @@ func (v *PreReleaseVersion) bump(versionPart int, preReleaseLabels []string) (*P
 		if idx == -1 {
 			return nil, fmt.Errorf("label %s not found in preReleaseLabels: %v", v.label, preReleaseLabels)
 		} else if idx == len(preReleaseLabels)-1 {
-			return nil, fmt.Errorf("cannot bump beyond the last label %s", v.label)
+			return nil, fmt.Errorf("cannot bump beyond the last pre-release label '%s' of %v", v.label, preReleaseLabels)
 		} else {
 			return newPrereleaseVersion(preReleaseLabels[idx+offset], 0, 0, 0), nil
 		}
