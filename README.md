@@ -2,11 +2,117 @@
 
 ![VersionBump Gopher](assets/versionbump_gopher-250.png)
 
-**Latest Version:** v0.6.0-alpha.2 ([Install](https://github.com/ptgoetz/go-versionbump?tab=readme-ov-file#installation))
+**Latest Version:** v0.6.0-alpha.2 ([Install](#installation))
 
 VersionBump is a powerful command-line tool designed to streamline the process of version management in your projects. 
 By automating version bumping, VersionBump ensures that your project’s version numbers are always up-to-date across all 
 relevant files, reducing the risk of human error and saving you valuable time.
+
+## Quickstart
+
+1. **Install VersionBump**:
+   ```shell
+   go install github.com/ptgoetz/go-versionbump/cmd/versionbump@latest
+   ```
+
+2. **Initialize a New VersionBump Configuration File**:
+
+   In this example, we're accepting the default values for pre-release labels, build label, and initial version.
+   ```console
+    $ mkdir my-project && cd my-project
+    $ versionbump init
+    Enter pre-release labels (comma-separated) [alpha,beta,rc]: 
+    Enter build label [build]:
+    Enter the initial version [0.0.0]:
+    Git is installed on this system.
+    Do you want to enable Git features? [y/N]: y
+    Do you want to enable Git commit feature? [y/N]: y
+    Do you want to enable the Git tag feature? [y/N]: y
+    ```
+   This will create a new `versionbump.yaml` configuration file in the current directory.
+3. **Show the Current Project Version**:
+   ```shell
+   $ versionbump show-version
+   Current project version: 0.0.0
+   ```
+4. **Show the Potential Versioning Paths**:
+   This will display the potential versioning paths for the current project version based on each possible bump strategy. 
+   ```console
+   $ versionbump show
+    Potential versioning paths for project version: 0.0.0
+    0.0.0 ─┬─ major ─ 1.0.0
+           ├─ minor ─ 0.1.0
+           ├─ patch ─ 0.0.1
+           ├─ new-pre-major ─ 1.0.0-alpha
+           ├─ new-pre-minor ─ 0.1.0-alpha
+           ├─ new-pre-patch ─ 0.0.1-alpha
+           ├─ pre ─ 0.0.0-alpha
+           ├─ pre-major ─ 0.0.0-alpha
+           ├─ pre-minor ─ 0.0.0-alpha.0.1
+           ├─ pre-patch ─ 0.0.0-alpha.0.0.1
+           ╰─ pre-build ─ 0.0.0+build.1
+   ```
+5. **Bump the Version**:
+
+   In the following example, we'll create a new pre-release patch version for an upcoming release.
+
+    ```console
+    $ versionbump new-pre-patch
+    VersionBump 0.6.0-alpha.2
+    Configuration file: versionbump.yaml
+    Project root directory: /Users/tgoetz/my-project
+    Checking git configuration...
+    Git version: 2.39.3 (Apple Git-146)
+    The project directory is not a git repository.
+    Do you want to initialize a git repository in the project directory? [y/N]: y
+    Initialized Git repository.
+    Adding tracked files...
+    Tracked Files:
+      - versionbump.yaml
+    Performing initial commit.
+    Current branch: main
+    Checking for existing tag...
+    GPG signing of git commits is enabled. Checking configuration...
+    WARNING: GPG signing of git commits is enabled by default in the git configuration. Consider enabling GPG signing in the VersionBump configuration.
+    Git commits will be signed with GPG key: ACEFE18DD2322E1E84587A148DE03962E80B8FFD
+    Tracked Files:
+      - versionbump.yaml
+    Bumping version part: new-pre-patch
+    Will bump version 0.0.0 --> 0.0.1-alpha
+    versionbump.yaml
+         Find: "version: "0.0.0""
+      Replace: "version: "0.0.1-alpha""
+        Found 1 replacement(s)
+    Proceed with the changes? [y/N]: y
+    Updated file: versionbump.yaml
+    Commit Message: bump version 0.0.0 --> 0.0.1-alpha
+    Tag Message: Release version 0.0.1-alpha
+    Tag Name: v0.0.1-alpha
+    Do you want to commit the changes to the git repository? [y/N]: y
+    Committing changes...
+    Committed changes with message: bump version 0.0.0 --> 0.0.1-alpha
+    Tagging changes...
+    Tag 'v0.0.1-alpha' created with message: Release version 0.0.1-alpha
+   
+    # Show the current project version
+    $ versionbump show-version
+    0.0.1-alpha
+   
+    # Show the bump strategy tree for the current project version
+    $ versionbump show
+    Potential versioning paths for project version: 0.0.1-alpha
+    0.0.1-alpha ─┬─ major ─ 1.0.0
+                 ├─ minor ─ 0.1.0
+                 ├─ patch ─ 0.0.2
+                 ├─ new-pre-major ─ 1.0.0-alpha
+                 ├─ new-pre-minor ─ 0.1.0-alpha
+                 ├─ new-pre-patch ─ 0.0.2-alpha
+                 ├─ pre ─ 0.0.1-beta
+                 ├─ pre-major ─ 0.0.1-alpha
+                 ├─ pre-minor ─ 0.0.1-alpha.0.1
+                 ├─ pre-patch ─ 0.0.1-alpha.0.0.1
+                 ╰─ pre-build ─ 0.0.1-alpha+build.1
+    ```
 
 ## Key Features
 

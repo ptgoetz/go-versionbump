@@ -1,0 +1,51 @@
+name: Release go-VersionBump
+
+on:
+  workflow_dispatch: # Manual trigger, adjust as needed
+    inputs:
+      bumpType:
+        description: 'Version bump type'
+        required: true
+        type: choice
+        options:
+          - major
+          - minor
+          - patch
+          - pre
+          - pre-new-major
+          - pre-new-minor
+          - pre-new-patch
+          - pre-build
+          - pre-major
+          - pre-minor
+          - pre-patch
+          - pre-build
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Display initiator
+        run: echo "This workflow was triggered by $GITHUB_ACTOR"
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.22.2'
+
+      - name: Install versionbump
+        run: |
+          go install github.com/ptgoetz/go-versionbump/cmd/versionbump@v0.6.0-alpha.2
+          echo "Versionbump installed successfully."
+
+      - name: Bump version
+        run: |
+          git config --global user.email "ptgoetz@gmail.com"
+          git config --global user.name "P. Taylor Goetz"
+          echo "Running on branch ${{ github.ref }}"
+          # versionbump ${{ github.event.inputs.bumpType }} --no-prompt
+          echo "Version bumped successfully."
+          git push origin main --tags
