@@ -1,4 +1,4 @@
-name: Release go-VersionBump
+name: Release New Version
 
 on:
   workflow_dispatch: # Manual trigger, adjust as needed
