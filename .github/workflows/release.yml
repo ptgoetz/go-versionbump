@@ -12,9 +12,9 @@ on:
           - minor
           - patch
           - pre
-          - pre-new-major
-          - pre-new-minor
-          - pre-new-patch
+          - new-pre-major
+          - new-pre-minor
+          - new-pre-patch
           - pre-build
           - pre-major
           - pre-minor
@@ -45,7 +45,7 @@ jobs:
         run: |
           git config --global user.email "ptgoetz@gmail.com"
           git config --global user.name "P. Taylor Goetz"
-          echo "Running on branch ${{ github.ref }}"
-          # versionbump ${{ github.event.inputs.bumpType }} --no-prompt
+          echo "Running on branch ${{ github.event.inputs.branch }}"
+          versionbump ${{ github.event.inputs.bumpType }} --no-prompt
           echo "Version bumped successfully."
           git push origin main --tags
