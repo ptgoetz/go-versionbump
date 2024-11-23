@@ -255,28 +255,23 @@ Available Commands:
   latest        Show the latest project release version based on git tags.
   major         Bump the major version number (e.g. 1.2.3 -> 2.0.0).
   minor         Bump the minor version number (e.g. 1.2.3 -> 1.3.0).
+  new-pre-major Bump the major version and apply the first pre-release label (e.g. 1.2.3 -> 2.0.0-alpha).
+  new-pre-minor Bump the minor version and apply the first pre-release label (e.g. 1.2.3 -> 1.3.0-alpha).
+  new-pre-patch Bump the patch version and apply the first pre-release label (e.g. 1.2.3 -> 1.2.4-alpha).
   patch         Bump the patch version number (e.g. 1.2.3 -> 1.2.4).
   pre           Bump the next pre-release version label (e.g. 1.2.3-alpha -> 1.2.3-beta).
   pre-build     Bump the pre-release build version number (e.g. 1.2.3 -> 1.2.3+build.1).
   pre-major     Bump the pre-release major version number (e.g. 1.2.3-alpha -> 1.2.3-alpha.1).
   pre-minor     Bump the pre-release minor version number (e.g. 1.2.3-alpha -> 1.2.3-alpha.0.1).
-  pre-new-major Bump the major version and apply the first pre-release label (e.g. 1.2.3 -> 2.0.0-alpha).
-  pre-new-minor Bump the minor version and apply the first pre-release label (e.g. 1.2.3 -> 1.3.0-alpha).
-  pre-new-patch Bump the patch version and apply the first pre-release label (e.g. 1.2.3 -> 1.2.4-alpha).
   pre-patch     Bump the pre-release patch version number (e.g. 1.2.3-alpha -> 1.2.3-alpha.0.0.1).
   set           Set the project version to the specified value.
   show          Show potential versioning paths for the project version or a specific version.
   show-version  Show the current project version.
 
-Flags:
-  -h, --help      help for versionbump
-  -V, --version   Show the VersionBump version and exit.
-
-Use "versionbump [command] --help" for more information about a command.
-
 ```
 
-The commands `major`, `minor` `patch`, `reset`, `prerelease-next`, `prerelease-major`, `prerelease-minor`, `prerelease-patch` and `prerelease-build` support the following flags:'
+The commands `major`, `minor` `patch`, `set`, `new-pre-major`, `new-pre-minor`, `new-pre-patch`, `pre`, `pre-major`, 
+`pre-minor`, `pre-patch` and `pre-build` support the following flags:'
 - `-c`, `-config`: Path to the configuration file (default: `./versionbump.yaml`).
 - `-no-prompt`: Do not prompt the user for confirmation before making changes.
 - `-no-git`: Do not commit or tag the changes in a Git repository.
@@ -323,7 +318,7 @@ files:                   # The files to update with the new version.
 sorted lexically/aphabetically. When the `prerelease-next` bump part is used, it will advance to the next label (e.g. 
 `alpha -> beta`, `beta -> rc`, etc.). Attempting to advance past the last label will produce an error (default: 
 [`alpha`, `beta`, `rc`]).
-- `build-label`: (Optional) The build label to append to the version number (default: `build`).
+- `build-label`: (Optional) The build label to append to the version number (default: `""`).
 - `files`: (Required) A list of files to update with the new version number.
    - `path`: The path to the file. **Note**: Relative file paths are relative to the config file parent directory. 
              Absolute paths are used as-is.

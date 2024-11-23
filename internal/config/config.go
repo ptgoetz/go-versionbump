@@ -147,11 +147,6 @@ func LoadConfig(filePath string) (*Config, string, error) {
 	// include the config file as a file to update
 	configPtr.Files = append(configPtr.Files, VersionedFile{Path: configFile, Replace: []string{"version: \"{version}\""}})
 
-	// set the default build label if not provided
-	if config.BuildLabel == "" {
-		configPtr.BuildLabel = "build"
-	}
-
 	// set the default pre-release labels if not provided
 	if len(config.PreReleaseLabels) < 1 {
 		configPtr.PreReleaseLabels = []string{"alpha", "beta", "rc"}

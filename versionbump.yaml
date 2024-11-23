@@ -2,6 +2,7 @@ version: "0.6.0-alpha.3"         # The current version of the project.
 git-commit: true         # Whether to create a git commit for the version bump.
 git-tag: true            # Whether to create a git tag for the version bump.
 git-sign: false          # Whether to sign the git tag.
+build-label: "build"     # The label to use for build versions.
 
 files:                   # The files to update with the new version.
   - path: "internal/versionbump.go"   # The path to the file to update.
