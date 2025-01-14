@@ -2,9 +2,10 @@ package semver
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 	sv "golang.org/x/mod/semver"
-	"testing"
 )
 
 func TestParseSemVersion(t *testing.T) {
@@ -57,13 +58,20 @@ func TestSemVersion_Bump(t *testing.T) {
 		{"0.0.1", Minor, "0.1.0", false},
 		{"0.1.0", Major, "1.0.0", false},
 		{"1.0.0", PreRelease, "1.0.0-alpha", false},
+		{"1.0.0-alpha+ptgoetz.1", PreRelease, "1.0.0-beta", false},
 		{"1.0.0", PreReleaseMajor, "1.0.0-alpha", false},
+		{"1.0.0-beta", PreReleaseMajor, "1.0.0-beta.1", false},
 		{"1.0.0-alpha", PreReleaseBuild, "1.0.0-alpha+ptgoetz.1", false},
 		{"1.0.0-alpha+ptgoetz.1", PreReleaseBuild, "1.0.0-alpha+ptgoetz.2", false},
-		{"1.0.0-alpha+ptgoetz.1", PreRelease, "1.0.0-beta", false},
 		{"1.0.0-beta", PreReleasePatch, "1.0.0-beta.0.0.1", false},
 		{"1.0.0-beta", PreReleaseMinor, "1.0.0-beta.0.1", false},
-		{"1.0.0-beta", PreReleaseMajor, "1.0.0-beta.1", false},
+		{"1.0.0", PreReleaseNewMajor, "2.0.0-alpha", false},
+		{"1.0.0-alpha", PreReleaseNewMajor, "2.0.0-alpha", false},
+		{"1.0.0", PreReleaseNewMinor, "1.1.0-alpha", false},
+		{"1.0.0-alpha", PreReleaseNewMinor, "1.1.0-alpha", false},
+		{"1.0.0", PreReleaseNewPatch, "1.0.1-alpha", false},
+		{"1.0.0-alpha", PreReleaseNewPatch, "1.0.1-alpha", false},
+		{"1.0.0-beta", Release, "1.0.0", false},
 	}
 
 	for _, test := range tests {

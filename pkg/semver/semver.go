@@ -5,15 +5,17 @@ package semver
 
 import (
 	"fmt"
-	"github.com/ptgoetz/go-versionbump/internal/utils"
 	"sort"
 	"strings"
+
+	"github.com/ptgoetz/go-versionbump/internal/utils"
 )
 
 const (
 	vMajor = iota
 	vMinor
 	vPatch
+	vRelease
 	prNext
 	prMajor
 	prNewMajor
@@ -30,6 +32,7 @@ const (
 	Major              BumpStrategy = "major"
 	Minor              BumpStrategy = "minor"
 	Patch              BumpStrategy = "patch"
+	Release            BumpStrategy = "release"
 	PreRelease         BumpStrategy = "pre"
 	PreReleaseMajor    BumpStrategy = "pre-major"
 	PreReleaseMinor    BumpStrategy = "pre-minor"
@@ -52,6 +55,8 @@ func versionPartInt(part BumpStrategy) int {
 		return vMinor
 	case Patch:
 		return vPatch
+	case Release:
+		return vRelease
 	case PreRelease:
 		return prNext
 	case PreReleaseMajor:
@@ -128,7 +133,7 @@ func (v *SemanticVersion) Bump(strategy BumpStrategy, preReleaseLabels []string,
 		preReleaseVersion = newPrereleaseVersion("", 0, 0, 0)
 	case versionPart >= prNewMajor && versionPart <= prNewPatch:
 		// bump the root version
-		version = v.rootVersion.bump(versionPart - 5)
+		version = v.rootVersion.bump(versionPart - 6)
 		// reset all pre-release versions
 		preReleaseVersion = newPrereleaseVersion(preReleaseLabels[0], 0, 0, 0)
 	case versionPart >= prNext && versionPart <= prPatch:
@@ -145,6 +150,10 @@ func (v *SemanticVersion) Bump(strategy BumpStrategy, preReleaseLabels []string,
 		} else {
 			build = newBuild(buildLabel, 1)
 		}
+	case versionPart == vRelease:
+		version = v.rootVersion
+		preReleaseVersion = nil
+		build = nil
 	default:
 		return nil, fmt.Errorf("invalid version strategy: %d", versionPart)
 	}
