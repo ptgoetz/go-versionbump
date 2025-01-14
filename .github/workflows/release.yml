@@ -4,13 +4,14 @@ on:
   workflow_dispatch: # Manual trigger, adjust as needed
     inputs:
       bumpType:
-        description: 'Version bump type'
+        description: "Version bump type"
         required: true
         type: choice
         options:
           - major
           - minor
           - patch
+          - release
           - pre
           - new-pre-major
           - new-pre-minor
@@ -34,11 +35,11 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: '1.22.2'
+          go-version: "1.22.2"
 
       - name: Install versionbump
         run: |
-          go install github.com/ptgoetz/go-versionbump/cmd/versionbump@v0.6.0-alpha.2
+          go install github.com/ptgoetz/go-versionbump/cmd/versionbump@v0.7.0-alpha
           echo "Versionbump installed successfully."
 
       - name: Bump version

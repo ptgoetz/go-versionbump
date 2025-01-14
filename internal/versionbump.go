@@ -3,19 +3,20 @@ package internal
 import (
 	"bufio"
 	"fmt"
+	"os"
+	"path"
+	"strings"
+	"text/template"
+
 	"github.com/ptgoetz/go-versionbump/internal/config"
 	"github.com/ptgoetz/go-versionbump/internal/git"
 	"github.com/ptgoetz/go-versionbump/internal/utils"
 	vbu "github.com/ptgoetz/go-versionbump/internal/utils"
 	"github.com/ptgoetz/go-versionbump/pkg/semver"
 	"gopkg.in/yaml.v2"
-	"os"
-	"path"
-	"strings"
-	"text/template"
 )
 
-const Version = "1.0.0-alpha"
+const Version = "0.7.0-alpha"
 
 // VersionBump represents the Version bump operation.
 type VersionBump struct {
@@ -116,6 +117,9 @@ func (vb *VersionBump) Show(versionStr string) error {
 	patchVersion, err := curVersion.Bump(semver.Patch, vb.Config.PreReleaseLabels, vb.Config.BuildLabel)
 	patchVersionStr := checkBumpError(vb, patchVersion, err)
 
+	releaseVersion, err := curVersion.Bump(semver.Release, vb.Config.PreReleaseLabels, vb.Config.BuildLabel)
+	releaseVersionStr := checkBumpError(vb, releaseVersion, err)
+
 	prNextVersion, err := curVersion.Bump(semver.PreRelease, vb.Config.PreReleaseLabels, vb.Config.BuildLabel)
 	prNextVersionStr := checkBumpError(vb, prNextVersion, err)
 
@@ -147,6 +151,7 @@ func (vb *VersionBump) Show(versionStr string) error {
 		`%s ─┬─ major ─ %s
   %s├─ minor ─ %s
   %s├─ patch ─ %s
+  %s├─ release ─ %s
   %s├─ new-pre-major ─ %s
   %s├─ new-pre-minor ─ %s
   %s├─ new-pre-patch ─ %s
@@ -162,6 +167,8 @@ func (vb *VersionBump) Show(versionStr string) error {
 		minorVersionStr,
 		padding,
 		patchVersionStr,
+		padding,
+		releaseVersionStr,
 		padding,
 		prNewMajorVersionStr,
 		padding,

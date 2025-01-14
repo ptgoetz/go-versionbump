@@ -2,7 +2,7 @@
 
 ![VersionBump Gopher](assets/versionbump_gopher-250.png)
 
-**Latest Version:** v1.0.0-alpha ([Install](#installation))
+**Latest Version:** v0.7.0-alpha ([Install](#installation))
 
 VersionBump is a powerful command-line tool designed to streamline the process of version management in your projects. 
 By automating version bumping, VersionBump ensures that your project’s version numbers are always up-to-date across all 
@@ -43,6 +43,7 @@ relevant files, reducing the risk of human error and saving you valuable time.
     0.0.0 ─┬─ major ─ 1.0.0
            ├─ minor ─ 0.1.0
            ├─ patch ─ 0.0.1
+           ├─ release ─ 0.0.0
            ├─ new-pre-major ─ 1.0.0-alpha
            ├─ new-pre-minor ─ 0.1.0-alpha
            ├─ new-pre-patch ─ 0.0.1-alpha
@@ -104,6 +105,7 @@ relevant files, reducing the risk of human error and saving you valuable time.
     0.0.1-alpha ─┬─ major ─ 1.0.0
                  ├─ minor ─ 0.1.0
                  ├─ patch ─ 0.0.2
+                 ├─ release ─ 0.0.1
                  ├─ new-pre-major ─ 1.0.0-alpha
                  ├─ new-pre-minor ─ 0.1.0-alpha
                  ├─ new-pre-patch ─ 0.0.2-alpha
@@ -202,7 +204,7 @@ go install github.com/ptgoetz/go-versionbump/cmd/versionbump@latest
 
 ### Without Go
 If you don't have Go installed and just want the binary executable, you can download a prebuilt binaries from  
-[here](https://github.com/ptgoetz/go-versionbump/releases/tag/v1.0.0-alpha).
+[here](https://github.com/ptgoetz/go-versionbump/releases/tag/v0.7.0-alpha).
 
 VersionBump binary distribution archives include the `README.md` and `versionbump[.exe]` files:
 
@@ -259,6 +261,7 @@ Available Commands:
   new-pre-minor Bump the minor version and apply the first pre-release label (e.g. 1.2.3 -> 1.3.0-alpha).
   new-pre-patch Bump the patch version and apply the first pre-release label (e.g. 1.2.3 -> 1.2.4-alpha).
   patch         Bump the patch version number (e.g. 1.2.3 -> 1.2.4).
+  release       Bump the pre-release version to a release version (e.g. 1.2.3-alpha -> 1.2.3).
   pre           Bump the next pre-release version label (e.g. 1.2.3-alpha -> 1.2.3-beta).
   pre-build     Bump the pre-release build version number (e.g. 1.2.3 -> 1.2.3+build.1).
   pre-major     Bump the pre-release major version number (e.g. 1.2.3-alpha -> 1.2.3-alpha.1).
@@ -270,7 +273,7 @@ Available Commands:
 
 ```
 
-The commands `major`, `minor` `patch`, `set`, `new-pre-major`, `new-pre-minor`, `new-pre-patch`, `pre`, `pre-major`, 
+The commands `major`, `minor` `patch`, `release`, `set`, `new-pre-major`, `new-pre-minor`, `new-pre-patch`, `pre`, `pre-major`, 
 `pre-minor`, `pre-patch` and `pre-build` support the following flags:'
 - `-c`, `-config`: Path to the configuration file (default: `./versionbump.yaml`).
 - `-no-prompt`: Do not prompt the user for confirmation before making changes.
@@ -370,7 +373,7 @@ and perform an initial commit before continuing.
 
 ```console
 $ versionbump patch
-VersionBump v1.0.0-alpha
+VersionBump v0.7.0-alpha
 Configuration file: versionbump.yaml
 Project root directory: /Users/tgoetz/Projects/ptgoetz/test-project
 Checking git configuration...
@@ -495,6 +498,7 @@ Without parameters, the `show` command will display the potential versioning pat
 $ 0.6.0-alpha.1 ─┬─ major ─ 1.0.0
                  ├─ minor ─ 0.7.0
                  ├─ patch ─ 0.6.1
+                 ├─ release ─ 0.6.0
                  ├─ pre-new-major ─ 1.0.0-alpha
                  ├─ pre-new-minor ─ 0.7.0-alpha
                  ├─ pre-new-patch ─ 0.6.1-alpha
@@ -512,6 +516,7 @@ Potential versioning paths for version: 0.4.1-alpha
 0.4.1-alpha ─┬─ major ─ 1.0.0
              ├─ minor ─ 0.5.0
              ├─ patch ─ 0.4.2
+             ├─ release ─ 0.4.1
              ├─ pre-new-major ─ 1.0.0-alpha
              ├─ pre-new-minor ─ 0.5.0-alpha
              ├─ pre-new-patch ─ 0.4.2-alpha
@@ -531,6 +536,9 @@ considered valid semantic version numbers.
 ```console
 $ versionbump history
 version History:
+  - 0.7.0
+  - 0.7.0-alpha
+  - 0.6.0
   - 0.6.0-alpha.1
   - 0.6.0-alpha
   - 0.5.4

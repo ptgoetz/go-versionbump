@@ -2,7 +2,7 @@
 
 # Variables
 APP_NAME := "versionbump"
-VERSION := "v1.0.0-alpha"
+VERSION := "v0.7.0-alpha"
 GO_FILES := $(shell find . -name '*.go' | grep -v /vendor/)
 PKG := ./...
 INTEGRATION_TEST_DIR := ./test/integration
