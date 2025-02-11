@@ -2,7 +2,7 @@
 
 ![VersionBump Gopher](assets/versionbump_gopher-250.png)
 
-**Latest Version:** v0.7.1 ([Install](#installation))
+**Latest Version:** v0.7.0 ([Install](#installation))
 
 VersionBump is a powerful command-line tool designed to streamline the process of version management in your projects. 
 By automating version bumping, VersionBump ensures that your project’s version numbers are always up-to-date across all 
@@ -204,7 +204,7 @@ go install github.com/ptgoetz/go-versionbump/cmd/versionbump@latest
 
 ### Without Go
 If you don't have Go installed and just want the binary executable, you can download a prebuilt binaries from  
-[here](https://github.com/ptgoetz/go-versionbump/releases/tag/v0.7.1).
+[here](https://github.com/ptgoetz/go-versionbump/releases/tag/v0.7.0).
 
 VersionBump binary distribution archives include the `README.md` and `versionbump[.exe]` files:
 
@@ -373,7 +373,7 @@ and perform an initial commit before continuing.
 
 ```console
 $ versionbump patch
-VersionBump v0.7.1
+VersionBump v0.7.0
 Configuration file: versionbump.yaml
 Project root directory: /Users/tgoetz/Projects/ptgoetz/test-project
 Checking git configuration...
