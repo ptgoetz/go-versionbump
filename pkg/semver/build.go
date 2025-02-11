@@ -44,9 +44,8 @@ func parseBuild(buildStr string) (*BuildVersion, error) {
 	if vals[1] == "" {
 		return nil, fmt.Errorf("invalid build version, build number is required: %s", buildStr)
 	}
-	// build label must be alphabetic
-	if !utils.IsAllAlphabetic(vals[0]) {
-		return nil, fmt.Errorf("invalid build version, build label must not contain digits: %s", buildStr)
+	if !utils.IsAllAlphanumeric(vals[0]) {
+		return nil, fmt.Errorf("invalid build version, build label must be alphanumeric: %s", buildStr)
 	}
 	buildNum, err := strconv.Atoi(vals[1])
 	if err != nil {
