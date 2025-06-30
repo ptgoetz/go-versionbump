@@ -16,7 +16,7 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-const Version = "0.7.1"
+const Version = "0.8.0-alpha"
 
 // VersionBump represents the Version bump operation.
 type VersionBump struct {
